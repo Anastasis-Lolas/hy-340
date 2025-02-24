@@ -171,13 +171,24 @@ WHITESPACE         [ \t\n\r]+
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
+                            struct alpha_token_t {
+                                unsigned int     numline = yylineno;
+                                unsigned int     numToken += 1;
+                                char          *content = "*";
+                                char          *type = "OPERATOR  MULT" ;
+                                char          *arrow = "<-enumerated" ;
+                                struct alpha_token_t *alpha_yylex;
+                            }
                         // (2) "/" --> DIV
+                            struct alpha_token_t {
+                                unsigned int     numline = yylineno;
+                                unsigned int     numToken += 1;
+                                char          *content = "/";
+                                char          *type = "OPERATOR  DIV" ;
+                                char          *arrow = "<-enumerated" ;
+                                struct alpha_token_t *alpha_yylex;
+                            }
                     }
-
-
-
-
-
                     */
 
                 }

@@ -90,6 +90,32 @@ COMMENT_END         "*/"
 
 {COMMENT_LINE} { /* Ignore // comments */ }
 
+{START_BLOCK} {/*Push sto stack*/}
+
+{COMMENT_END}   {
+                    /*
+                    int line = pop_element(head);
+                    if(line != -1)
+                    {
+                        if(stack_size(head) == 0)
+                        {
+                            // BLOCK_COMMENT "line - yylineno"
+                        }else{
+                            // NESTED_COMMENT
+                        }
+                    }else{
+                        // Duo tokens:
+                        // (1) "*" --> MULT
+                        // (2) "/" --> DIV
+                    }
+
+
+
+
+
+                    */
+
+                }
 %%
 
 

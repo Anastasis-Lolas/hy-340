@@ -98,6 +98,7 @@ WHITESPACE         [ \t\n\r]+
 
 
 {INTCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tINTCONST " << yytext <<" <-int"<< endl;} 
+{REALCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tREALCONST " << yytext <<" <-int"<< endl;}
 {IDENT}             {cout << yylineno << ": #" << mylineno++ << "\t \"" << yytext << "\"\tIDENT \t\"" << yytext <<"\" <-char*"<< endl;}
 
 "="                     { printToken(yytext, "OPERATOR", "ASSIGN"); }

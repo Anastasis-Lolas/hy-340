@@ -3,6 +3,13 @@
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
+
+enum TokenTypes {
+    KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
+};
+
+void printToken(const string& text, const string& type, const string& name) {
+    cout << yylineno << ": #" << mylineno++ << "  \"" << text << "\"\t" << type << "  " << name << "  <-enumerated" << endl;}
 %}
 
 /* Flex options */
@@ -10,7 +17,6 @@ int mylineno = 1;  // keep track of lines
 %option yylineno
 
 /* Define Flex macros */
-
 /*KEYWORDS*/
 IF                  "if"
 ELSE                "else"
@@ -36,7 +42,7 @@ MULT                "*"
 DIV                 "/"
 MOD                 "%"
 EQUAL               "=="
-NEQUAL              "!=" /*NOT SURE POS LEGETAI*/
+NEQUAL              "!=" 
 PLUS_PLUS           "++"
 MINUS_MINUS         "--"
 GREATER             ">"
@@ -44,12 +50,9 @@ LESS                "<"
 GREATER_EQUAL       ">="
 LESS_EQUAL          "<="
 
-
 INTCONST      [0-9]+
-
-
 REALCONST     [0-9]+\.[0-9]+ 
-
+IDENT         [a-zA-Z0-9][a-zA-Z0-9_]*
 
 /*PUNCTUATION*/
 
@@ -67,28 +70,68 @@ NAMESPACE     "::"
 COLON         ":"
 LINE_COMMENT  "//".*
 START_BLOCK   "/*"
-
-
-IDENT         [a-zA-Z0-9][a-zA-Z0-9_]*
-
-COMMENT_LINE        "//".*
 COMMENT_START       "/*"
 COMMENT_END         "*/"
-
-
-/* EDW OI KANONES GIA KATHE ENA */ 
-
-/* PROXEIRA DOKIMES / OXI SWSTA */
+WHITESPACE         [ \t\n\r]+              
 
 
 %%
-\n             { mylineno++; }
 
 
-[0-9]+      { cout << "INTCONST" << yytext << endl; }
-[a-zA-Z]+   { cout << "IDENT" << yytext << endl; }
+\n                      {}
+"if"                    { printToken(yytext, "KEYWORD", "IF"); }
+"else"                  { printToken(yytext, "KEYWORD", "ELSE"); }
+"while"                 { printToken(yytext, "KEYWORD", "WHILE"); }
+"for"                   { printToken(yytext, "KEYWORD", "FOR"); }
+"function"              { printToken(yytext, "KEYWORD", "FUNCTION"); }
+"return"                { printToken(yytext, "KEYWORD", "RETURN"); }
+"break"                 { printToken(yytext, "KEYWORD", "BREAK"); }
+"continue"              { printToken(yytext, "KEYWORD", "CONTINUE"); }
+"and"                   { printToken(yytext, "KEYWORD", "AND"); }
+"not"                   { printToken(yytext, "KEYWORD", "NOT"); }
+"or"                    { printToken(yytext, "KEYWORD", "OR"); }
+"local"                 { printToken(yytext, "KEYWORD", "LOCAL"); }
+"true"                  { printToken(yytext, "KEYWORD", "TRUE"); }
+"false"                 { printToken(yytext, "KEYWORD", "FALSE"); }
+"nil"                   { printToken(yytext, "KEYWORD", "NIL"); }
 
-{COMMENT_LINE} { /* Ignore // comments */ }
+
+
+{INTCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tINTCONST " << yytext <<" <-int"<< endl;} 
+{IDENT}             {cout << yylineno << ": #" << mylineno++ << "\t \"" << yytext << "\"\tIDENT \t\"" << yytext <<"\" <-char*"<< endl;}
+
+"="                     { printToken(yytext, "OPERATOR", "ASSIGN"); }
+"+"                     { printToken(yytext, "OPERATOR", "PLUS"); }
+"-"                     { printToken(yytext, "OPERATOR", "MINUS"); }
+"*"                     { printToken(yytext, "OPERATOR", "MULT"); }
+"/"                     { printToken(yytext, "OPERATOR", "DIV"); }
+"%"                     { printToken(yytext, "OPERATOR", "MOD"); }
+"=="                    { printToken(yytext, "OPERATOR", "EQUAL"); }
+"!="                    { printToken(yytext, "OPERATOR", "NEQUAL"); }
+"++"                    { printToken(yytext, "OPERATOR", "PLUS_PLUS"); }
+"--"                    { printToken(yytext, "OPERATOR", "MINUS_MINUS"); }
+">"                     { printToken(yytext, "OPERATOR", "GREATER"); }
+"<"                     { printToken(yytext, "OPERATOR", "LESS"); }
+">="                    { printToken(yytext, "OPERATOR", "GREATER_EQUAL"); }
+"<="                    { printToken(yytext, "OPERATOR", "LESS_EQUAL"); }
+
+"{"                     { printToken(yytext, "PUNCTUATION", "LEFT_BRACE"); }
+"}"                     { printToken(yytext, "PUNCTUATION", "RIGHT_BRACE"); }
+"["                     { printToken(yytext, "PUNCTUATION", "LEFT_BRACKET"); }
+"]"                     { printToken(yytext, "PUNCTUATION", "RIGHT_BRACKET"); }
+"("                     { printToken(yytext, "PUNCTUATION", "LEFT_PAREN"); }
+")"                     { printToken(yytext, "PUNCTUATION", "RIGHT_PAREN"); }
+";"                     { printToken(yytext, "PUNCTUATION", "SEMICOLON"); }
+","                     { printToken(yytext, "PUNCTUATION", "COMMA"); }
+".."                    { printToken(yytext, "PUNCTUATION", "DOUBLE_DOT"); }
+"."                     { printToken(yytext, "PUNCTUATION", "DOT"); }
+"::"                    { printToken(yytext, "PUNCTUATION", "NAMESPACE"); }
+":"                     { printToken(yytext, "PUNCTUATION", "COLON"); }
+
+{LINE_COMMENT}   { printToken("", "COMMENT", "LINE_COMMENT"); }
+{WHITESPACE}            
+
+
 
 {START_BLOCK} {/*Push sto stack*/}
 
@@ -117,10 +160,6 @@ COMMENT_END         "*/"
 
                 }
 %%
-
-
-
-
 
 int main(int argc, char** argv) {
 

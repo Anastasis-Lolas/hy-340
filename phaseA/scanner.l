@@ -140,11 +140,33 @@ WHITESPACE         [ \t\n\r]+
                     int line = pop_element(head);
                     if(line != -1)
                     {
+
                         if(stack_size(head) == 0)
                         {
                             // BLOCK_COMMENT "line - yylineno"
+                            struct alpha_token_t {
+                                unsigned int     numline = yylineno;
+                                unsigned int     numToken += 1;
+                                char          *content = "line - yylineno";
+                                char          *type = "COMMENT BLOCK_COMMENT";
+                                char          *arrow = "<-enumerated" ;
+                                struct alpha_token_t *alpha_yylex;
+                            }
+                            add_token(yylineno, ++numToken, "line - yylineno", "COMMENT BLOCK_COMMENT", "<-enumerated");
+
+
                         }else{
                             // NESTED_COMMENT
+                            struct alpha_token_t {
+                                unsigned int     numline = yylineno;
+                                unsigned int     numToken += 1;
+                                char          *content = "";
+                                char          *type = "NESTED_COMMENT" ;
+                                char          *arrow = "<-enumerated" ;
+                                struct alpha_token_t *alpha_yylex;
+                            }
+                            add_token(yylineno, ++numToken, "", "NESTED_COMMENT", "<-enumerated");
+
                         }
                     }else{
                         // Duo tokens:

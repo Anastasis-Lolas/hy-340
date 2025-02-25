@@ -8,14 +8,14 @@ typedef struct alpha_token_t{
 
     unsigned int numline;
     unsigned int numToken;
-    char * content;
-    char * type;
-    char * arrow ;
+    string content;
+    string type;
+    string arrow ;
     struct alpha_token_t * next;
 
 }list_token_t;
 
-list_token_t * insert_token(list_token_t * head ,int nline,int nToken,const char * content,const char * type);
+list_token_t * insert_token(list_token_t * head ,int nline,int nToken,const string content,const string type);
 
 void print(list_token_t *head) ;
 

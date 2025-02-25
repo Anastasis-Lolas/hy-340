@@ -144,7 +144,7 @@ WHITESPACE         [ \t\n\r]+
 {LINE_COMMENT}  { 
                     if(is_empty(head_stack))
                     {
-                        insert_token(yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
+                        insert_token(head_token, yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
                     }
                     //else ignore
                 }
@@ -164,17 +164,17 @@ WHITESPACE         [ \t\n\r]+
                         if(stack_size(head) == 0)
                         {
                             std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
-                            insert_token(yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
+                            insert_token(head_token, yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
                         }else{
                             // NESTED_COMMENT
-                            insert_token(yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
+                            insert_token(head_token,yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
                         }
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
-                        insert_token(yylineno, ++numToken, "*";, "OPERATOR  MULT", "<-enumerated");
+                        insert_token(head_token,yylineno, ++numToken, "*";, "OPERATOR  MULT", "<-enumerated");
                         // (2) "/" --> DIV
-                        insert_token(yylineno, ++numToken, "/";, "OPERATOR  DIV", "<-enumerated");
+                        insert_token(head_token,yylineno, ++numToken, "/";, "OPERATOR  DIV", "<-enumerated");
 
                     }
                 }

@@ -172,9 +172,9 @@ WHITESPACE         [ \t\n\r]+
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
-                        insert_token(head_token,yylineno, ++numToken, "*";, "OPERATOR  MULT", "<-enumerated");
+                        insert_token(head_token,yylineno, ++numToken, "*", "OPERATOR  MULT", "<-enumerated");
                         // (2) "/" --> DIV
-                        insert_token(head_token,yylineno, ++numToken, "/";, "OPERATOR  DIV", "<-enumerated");
+                        insert_token(head_token,yylineno, ++numToken, "/", "OPERATOR  DIV", "<-enumerated");
 
                     }
                 }

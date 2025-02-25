@@ -20,8 +20,15 @@ void add_element(comments_t **head, int linum)
         return;
 
     new_node->linum = linum;
-    new_node->next = *head;
-    *head = new_node;
+    if (*head == nullptr)
+    {
+        *head = new_node;
+    }
+    else
+    {
+        new_node->next = *head;
+        *head = new_node;
+    }
 }
 
 // flag

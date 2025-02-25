@@ -3,10 +3,9 @@
 #include "Stack/stack.h"
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
-int numToken = 0;
 
 list_token_t *head_token = new list_token_t;
-comments_t *head_stack = new comments_t;
+comments_t *head_stack = nullptr;
 
 enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
@@ -143,9 +142,9 @@ WHITESPACE         [ \t\n\r]+
 ":"                     { printToken(yytext, "PUNCTUATION", "COLON"); }
 
 {LINE_COMMENT}  { 
-                    if(is_empty(head_stack))
+                    if(stack_is_empty(head_stack))
                     {
-                        head_token = insert_token(head_token, yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
+                        head_token = insert_token(head_token, yylineno, mylineno++, "","COMMENT", "LINE_COMMENT", "<-enumerated");
                     }
                     //else ignore
                 }
@@ -162,20 +161,20 @@ WHITESPACE         [ \t\n\r]+
                     if(line != -1)
                     {
 
-                        if(stack_size(head) == 0)
+                        if(stack_size(head_stack) == 0)
                         {
                             std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
-                           head_token = insert_token(head_token, yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
+                           head_token = insert_token(head_token, yylineno, mylineno++, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
                         }else{
                             // NESTED_COMMENT
-                           head_token = insert_token(head_token,yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
+                           head_token = insert_token(head_token,yylineno, mylineno++, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
                         }
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
-                       head_token = insert_token(head_token,yylineno, ++numToken, "*", "OPERATOR", "MULT", "<-enumerated");
+                       head_token = insert_token(head_token,yylineno, mylineno++, "*", "OPERATOR", "MULT", "<-enumerated");
                         // (2) "/" --> DIV
-                       head_token = insert_token(head_token,yylineno, ++numToken, "/", "OPERATOR", "DIV", "<-enumerated");
+                       head_token = insert_token(head_token,yylineno, mylineno++, "/", "OPERATOR", "DIV", "<-enumerated");
 
                     }
                 }

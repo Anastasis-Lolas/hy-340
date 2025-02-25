@@ -11,6 +11,15 @@ enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
 };
 
+enum EscapeChar {
+    NEWLINE = '\n',
+    BACKSLASH = '\\',
+    DOUBLE_QUOTE = '"',
+    TAB = '\t',
+    VERTICAL_TAB = '\v',
+    CARRIAGE_RETURN = '\r'
+};
+
 void printToken(const string& text, const string& type, const string& name) {
     cout << yylineno << ": #" << mylineno++ << "  \"" << text << "\"\t" << type << "  " << name << "  <-enumerated" << endl;}
 %}

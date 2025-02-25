@@ -1,8 +1,9 @@
 %{
-#include "header_alpha.h"
+#include "list.h"
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
+list_token_t *head_token = new list_token_t;
 
 enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
@@ -79,7 +80,7 @@ WHITESPACE         [ \t\n\r]+
 
 
 \n                      {}
-"if"                    { printToken(yytext, "KEYWORD", "IF"); }
+"if"                    { head_token = insert_token(head_token,yylineno,mylineno++,yytext,"KEYWORD"); }
 "else"                  { printToken(yytext, "KEYWORD", "ELSE"); }
 "while"                 { printToken(yytext, "KEYWORD", "WHILE"); }
 "for"                   { printToken(yytext, "KEYWORD", "FOR"); }
@@ -208,6 +209,7 @@ int main(int argc, char** argv) {
     }
 
     yylex(); 
+    print(head_token);
 
     return 0;
 }

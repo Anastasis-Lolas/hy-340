@@ -3,6 +3,7 @@
 #include "Stack/stack.h"
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
+int numToken = 0;
 
 list_token_t *head_token = new list_token_t;
 comments_t *head_stack = new comments_t;
@@ -91,7 +92,7 @@ WHITESPACE         [ \t\n\r]+
 
 
 \n                      {}
-"if"                    { head_token = insert_token(head_token,yylineno,mylineno++,yytext,"KEYWORD"); }
+"if"                    {head_token = insert_token(head_token,yylineno,mylineno++,yytext,"KEYWORD"); }
 "else"                  { printToken(yytext, "KEYWORD", "ELSE"); }
 "while"                 { printToken(yytext, "KEYWORD", "WHILE"); }
 "for"                   { printToken(yytext, "KEYWORD", "FOR"); }
@@ -144,7 +145,7 @@ WHITESPACE         [ \t\n\r]+
 {LINE_COMMENT}  { 
                     if(is_empty(head_stack))
                     {
-                        insert_token(head_token, yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
+                        head_token = insert_token(head_token, yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
                     }
                     //else ignore
                 }
@@ -153,28 +154,28 @@ WHITESPACE         [ \t\n\r]+
 
 
 {START_BLOCK}   {
-                    add_element(head_stack, yylineno);
+                    add_element(&head_stack, yylineno);
                 }
 
 {COMMENT_END}   {
-                    int line = pop_element(head);
+                    int line = pop_element(&head_stack);
                     if(line != -1)
                     {
 
                         if(stack_size(head) == 0)
                         {
                             std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
-                            insert_token(head_token, yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
+                           head_token = insert_token(head_token, yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
                         }else{
                             // NESTED_COMMENT
-                            insert_token(head_token,yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
+                           head_token = insert_token(head_token,yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
                         }
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
-                        insert_token(head_token,yylineno, ++numToken, "*", "OPERATOR  MULT", "<-enumerated");
+                       head_token = insert_token(head_token,yylineno, ++numToken, "*", "OPERATOR", "MULT", "<-enumerated");
                         // (2) "/" --> DIV
-                        insert_token(head_token,yylineno, ++numToken, "/", "OPERATOR  DIV", "<-enumerated");
+                       head_token = insert_token(head_token,yylineno, ++numToken, "/", "OPERATOR", "DIV", "<-enumerated");
 
                     }
                 }

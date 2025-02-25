@@ -16,3 +16,5 @@ void print_stack(comments_t *head);
 void free_stack(comments_t **head);
 
 int stack_size(comments_t *head);
+
+int is_empty(comments_t *head);

@@ -60,6 +60,15 @@ void free_stack(comments_t **head)
     }
 }
 
+int is_empty(comments_t *head)
+{
+    if (head == nullptr)
+    {
+        return 1;
+    }
+    return 0;
+}
+
 int stack_size(comments_t *head)
 {
     int count = 0;

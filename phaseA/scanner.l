@@ -1,9 +1,11 @@
 %{
-#include "list.h"
+#include "List/list.h"
+#include "Stack/stack.h"
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
 list_token_t *head_token = new list_token_t;
+comments_t *head_stack = new comments_t;
 
 enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
@@ -130,69 +132,42 @@ WHITESPACE         [ \t\n\r]+
 "::"                    { printToken(yytext, "PUNCTUATION", "NAMESPACE"); }
 ":"                     { printToken(yytext, "PUNCTUATION", "COLON"); }
 
-{LINE_COMMENT}   { printToken("", "COMMENT", "LINE_COMMENT"); }
+{LINE_COMMENT}  { 
+                    if(is_empty(head_stack))
+                    {
+                        insert_token(yylineno, ++numToken, "","COMMENT", "LINE_COMMENT", "<-enumerated");
+                    }
+                    //else ignore
+                }
 {WHITESPACE}            
 
 
 
-{START_BLOCK} {/*Push sto stack*/}
+{START_BLOCK}   {
+                    add_element(head_stack, yylineno);
+                }
 
 {COMMENT_END}   {
-                    /*
                     int line = pop_element(head);
                     if(line != -1)
                     {
 
                         if(stack_size(head) == 0)
                         {
-                            // BLOCK_COMMENT "line - yylineno"
-                            struct alpha_token_t {
-                                unsigned int     numline = yylineno;
-                                unsigned int     numToken += 1;
-                                char          *content = "line - yylineno";
-                                char          *type = "COMMENT BLOCK_COMMENT";
-                                char          *arrow = "<-enumerated" ;
-                                struct alpha_token_t *alpha_yylex;
-                            }
-                            add_token(yylineno, ++numToken, "line - yylineno", "COMMENT BLOCK_COMMENT", "<-enumerated");
-
-
+                            std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
+                            insert_token(yylineno, ++numToken, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
                         }else{
                             // NESTED_COMMENT
-                            struct alpha_token_t {
-                                unsigned int     numline = yylineno;
-                                unsigned int     numToken += 1;
-                                char          *content = "";
-                                char          *type = "NESTED_COMMENT" ;
-                                char          *arrow = "<-enumerated" ;
-                                struct alpha_token_t *alpha_yylex;
-                            }
-                            add_token(yylineno, ++numToken, "", "NESTED_COMMENT", "<-enumerated");
-
+                            insert_token(yylineno, ++numToken, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
                         }
                     }else{
                         // Duo tokens:
                         // (1) "*" --> MULT
-                            struct alpha_token_t {
-                                unsigned int     numline = yylineno;
-                                unsigned int     numToken += 1;
-                                char          *content = "*";
-                                char          *type = "OPERATOR  MULT" ;
-                                char          *arrow = "<-enumerated" ;
-                                struct alpha_token_t *alpha_yylex;
-                            }
+                        insert_token(yylineno, ++numToken, "*";, "OPERATOR  MULT", "<-enumerated");
                         // (2) "/" --> DIV
-                            struct alpha_token_t {
-                                unsigned int     numline = yylineno;
-                                unsigned int     numToken += 1;
-                                char          *content = "/";
-                                char          *type = "OPERATOR  DIV" ;
-                                char          *arrow = "<-enumerated" ;
-                                struct alpha_token_t *alpha_yylex;
-                            }
-                    }
-                    */
+                        insert_token(yylineno, ++numToken, "/";, "OPERATOR  DIV", "<-enumerated");
 
+                    }
                 }
 %%
 

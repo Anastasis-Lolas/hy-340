@@ -9,8 +9,10 @@ list_token_t *insert_token(list_token_t *head, int nline, int nToken,const strin
     new_token->numline = nline;
     new_token->numToken = nToken;
 
+    new_token->arrow = "<--";
+
     // this will change after since int,const,char,float etc are not enumerated 
-    new_token->arrow = arrow;
+    new_token->arrow += arrow;
 
     new_token->content = content;
 

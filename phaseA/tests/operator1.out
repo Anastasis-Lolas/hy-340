@@ -1,0 +1,29 @@
+------------------- Lexical Analysis --------------------
+1: #1 "a"  IDENT "a" <-char*
+1: #2 "="  OPERATOR ASSIGN <-enumerated
+1: #3 "1"  CONST INT <-int
+2: #4 "++"  OPERATOR PLUS_PLUS <-enumerated
+2: #5 "a"  IDENT "a" <-char*
+2: #6 ";"  PUNCTUATION SEMICOLON <-enumerated
+3: #7 "--"  OPERATOR MINUS_MINUS <-enumerated
+3: #8 "a"  IDENT "a" <-char*
+3: #9 ";"  PUNCTUATION SEMICOLON <-enumerated
+4: #10 "a"  IDENT "a" <-char*
+4: #11 "++"  OPERATOR PLUS_PLUS <-enumerated
+4: #12 ";"  PUNCTUATION SEMICOLON <-enumerated
+5: #13 "a"  IDENT "a" <-char*
+5: #14 "--"  OPERATOR MINUS_MINUS <-enumerated
+5: #15 ";"  PUNCTUATION SEMICOLON <-enumerated
+7: #16 "+"  OPERATOR PLUS <-enumerated
+7: #17 "="  OPERATOR ASSIGN <-enumerated
+7: #18 "++"  OPERATOR PLUS_PLUS <-enumerated
+7: #19 "-"  OPERATOR MINUS <-enumerated
+7: #20 "/"  OPERATOR DIV <-enumerated
+7: #21 "--"  OPERATOR MINUS_MINUS <-enumerated
+9: #22 "a"  IDENT "a" <-char*
+9: #23 "*"  OPERATOR MULT <-enumerated
+9: #24 "2"  CONST INT <-int
+10: #25 "a"  IDENT "a" <-char*
+10: #26 "=="  OPERATOR EQUAL <-enumerated
+10: #27 "3"  CONST INT <-int
+

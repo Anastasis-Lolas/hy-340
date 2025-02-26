@@ -4,7 +4,6 @@
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
-list_token_t *head_token = nullptr;
 vector<int> coms;
 vector<list_token_t *> tokens_list;
 
@@ -58,7 +57,7 @@ MULT                "*"
 DIV                 "/"
 MOD                 "%"
 EQUAL               "=="
-NEQUAL              "!=" 
+NOT_EQUALS          "!=" 
 PLUS_PLUS           "++"
 MINUS_MINUS         "--"
 GREATER             ">"
@@ -72,20 +71,20 @@ IDENT         [a-zA-Z0-9][a-zA-Z0-9_]*
 
 /*PUNCTUATION*/
 
-LEFT_BRACE    "{"
-RIGHT_BRACE   "}"
-LEFT_BRACKET  "["
-RIGHT_BRACKET "]"
-LEFT_PAREN    "("
-RIGHT_PAREN   ")"
-SEMICOLON     ";"
-COMMA         ","
-DOUBLE_DOT    ".."
-DOT           "."
-NAMESPACE     "::"
-COLON         ":"
-LINE_COMMENT  "//".*
-START_BLOCK   "/*"
+LEFT_BRACE          "{"
+RIGHT_BRACE         "}"
+LEFT_BRACKET        "["
+RIGHT_BRACKET       "]"
+LEFT_PARENTHESIS    "("
+RIGHT_PARENTHESIS   ")"
+SEMICOLON           ";"
+COMMA               ","
+DOUBLE_DOT          ".."
+DOT                 "."
+NAMESPACE           "::"
+COLON               ":"
+LINE_COMMENT        "//".*
+START_BLOCK         "/*"
 COMMENT_START       "/*"
 COMMENT_END         "*/"
 WHITESPACE         [ \t\n\r]+              
@@ -114,39 +113,38 @@ WHITESPACE         [ \t\n\r]+
 
 
 
-{INTCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tINTCONST " << yytext <<" <-int"<< endl;} 
-{REALCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tREALCONST " << yytext <<" <-int"<< endl;}
-{IDENT}             {
-                        head_token = insert_token(head_token, yylineno, mylineno++, yytext,"IDENT", yytext, "char*");
-                    }
+{INTCONST}              {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int");} 
+{REALCONST}             {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real");}
+{IDENT}                 {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*");}
 
-"="                     { printToken(yytext, "OPERATOR", "ASSIGN"); }
-"+"                     { printToken(yytext, "OPERATOR", "PLUS"); }
-"-"                     { printToken(yytext, "OPERATOR", "MINUS"); }
-"*"                     { head_token = insert_token(head_token, yylineno, mylineno++, yytext,"OPERATOR", "MULT", "enumerated");}
-"/"                     { head_token = insert_token(head_token, yylineno, mylineno++, yytext,"OPERATOR", "DIV", "enumerated");}
-"%"                     { printToken(yytext, "OPERATOR", "MOD"); }
-"=="                    { printToken(yytext, "OPERATOR", "EQUAL"); }
-"!="                    { printToken(yytext, "OPERATOR", "NEQUAL"); }
-"++"                    { printToken(yytext, "OPERATOR", "PLUS_PLUS"); }
-"--"                    { printToken(yytext, "OPERATOR", "MINUS_MINUS"); }
-">"                     { printToken(yytext, "OPERATOR", "GREATER"); }
-"<"                     { printToken(yytext, "OPERATOR", "LESS"); }
-">="                    { printToken(yytext, "OPERATOR", "GREATER_EQUAL"); }
-"<="                    { printToken(yytext, "OPERATOR", "LESS_EQUAL"); }
+"="                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); } 
+"+"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); }
+"-"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS", "enumerated"); }
+"*"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MULT", "enumerated"); }
+"/"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "DIV", "enumerated"); }
+"%"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MOD", "enumerated"); }
+"=="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "EQUAL", "enumerated"); }
+"!="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "NOT_EQUALS", "enumerated"); }
+"++"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS_PLUS", "enumerated"); }
+"--"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS_MINUS", "enumerated"); }
+">"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER", "enumerated"); }
+"<"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS", "enumerated"); }
+">="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER_EQUAL", "enumerated"); }
+"<="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS_EQUAL", "enumerated"); }
 
-"{"                     { printToken(yytext, "PUNCTUATION", "LEFT_BRACE"); }
-"}"                     { printToken(yytext, "PUNCTUATION", "RIGHT_BRACE"); }
-"["                     { printToken(yytext, "PUNCTUATION", "LEFT_BRACKET"); }
-"]"                     { printToken(yytext, "PUNCTUATION", "RIGHT_BRACKET"); }
-"("                     { printToken(yytext, "PUNCTUATION", "LEFT_PAREN"); }
-")"                     { printToken(yytext, "PUNCTUATION", "RIGHT_PAREN"); }
-";"                     { printToken(yytext, "PUNCTUATION", "SEMICOLON"); }
-","                     { printToken(yytext, "PUNCTUATION", "COMMA"); }
-".."                    { printToken(yytext, "PUNCTUATION", "DOUBLE_DOT"); }
-"."                     { printToken(yytext, "PUNCTUATION", "DOT"); }
-"::"                    { printToken(yytext, "PUNCTUATION", "NAMESPACE"); }
-":"                     { printToken(yytext, "PUNCTUATION", "COLON"); }
+"{"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACE", "enumerated"); }
+"}"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACE", "enumerated"); }
+"["                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACKET", "enumerated"); }
+"]"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACKET", "enumerated"); }
+"("                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_PARENTHESIS", "enumerated"); }
+")"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_PARENTHESIS", "enumerated"); }
+";"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); }
+","                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); }
+".."                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); }
+"."                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); }
+"::"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
+":"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
+
 
 {WHITESPACE}
 
@@ -167,11 +165,11 @@ WHITESPACE         [ \t\n\r]+
                                 std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
                                 if(coms.empty())
                                 {
-                                    head_token = insert_token(head_token, yylineno, mylineno++, content,"COMMENT", "BLOCK_COMMENT", "enumerated");
+                                    ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "BLOCK_COMMENT", "enumerated");
                                     BEGIN(INITIAL);
                                 }else{
                                     // NESTED_COMMENT
-                                    head_token = insert_token(head_token,yylineno, mylineno++, content,"COMMENT", "NESTED_COMMENT", "enumerated");
+                                    ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "NESTED_COMMENT", "enumerated");
                                 }
                             }else{
                                 std::cerr << "???" << std::endl;
@@ -191,7 +189,7 @@ WHITESPACE         [ \t\n\r]+
 
 <LINE_COMMENT_COND>.  {}
 <LINE_COMMENT_COND>\n   {
-                            head_token = insert_token(head_token, yylineno-1, mylineno++, "","COMMENT", "LINE_COMMENT", "enumerated");
+                            ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
                             BEGIN(INITIAL);
                         }
 

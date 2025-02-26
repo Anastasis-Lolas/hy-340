@@ -54,6 +54,7 @@ void print(vector<list_token_t *> print_tokens)
     cout << endl;
 }
 
+
 void print_token(list_token_t *node)
 {
     cout << node->numline << ": #" << node->numToken << " \"" << node->content << "\"  ";
@@ -68,8 +69,8 @@ void print_token(list_token_t *node)
     }
 }
 
-void ins_token(vector<list_token_t *> &tokenList, int nline, int nToken, const string content, const string type, const string upper_content, const string arrow)
-{
+
+void ins_token(vector<list_token_t *> &tokenList,int nline,int nToken,const string content, const string type, const string upper_content, const string arrow){
     list_token_t *new_token = new list_token_t;
     new_token->numline = nline;
     new_token->numToken = nToken;
@@ -86,5 +87,9 @@ void ins_token(vector<list_token_t *> &tokenList, int nline, int nToken, const s
 
     tokenList.push_back(new_token);
 
-    // print_token(new_token);
+    //print_token(new_token);
+
+
 }
+
+

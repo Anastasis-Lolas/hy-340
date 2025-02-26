@@ -15,8 +15,8 @@ $(SCANNER_CPP): $(SCANNER_L)
 $(EXEC): $(LIST_CPP) $(SCANNER_CPP)
 	$(CC) $^ -o $@
 
-ComTest: $(EXEC)
-	cd tests && python3 checker.py ../scanner comment.in comment.out
-	
+test: $(EXEC)
+	cd tests && python3 checker.py ../scanner $(FILE).in $(FILE).out
+
 clean:
 	rm -f $(SCANNER_CPP) $(EXEC)

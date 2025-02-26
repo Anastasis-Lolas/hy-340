@@ -166,7 +166,6 @@ WHITESPACE         [ \t\n\r]+
                                 if(coms.empty())
                                 {
                                     head_token = insert_token(head_token, yylineno, mylineno++, content,"COMMENT", "BLOCK_COMMENT", "enumerated");
-                                    std::cout<<"BEGIN(INITIAL)"<<endl;
                                     BEGIN(INITIAL);
                                 }else{
                                     // NESTED_COMMENT
@@ -179,6 +178,10 @@ WHITESPACE         [ \t\n\r]+
 
 <BLOCK_COMMENT>.      {}
 <BLOCK_COMMENT>\n     {}
+<BLOCK_COMMENT><<EOF>>  {
+                            std::string msg = "Comment block is open.";
+                            cout<<msd<<endl; 
+                        }
 
 "//"            {
                     BEGIN(LINE_COMMENT_COND);

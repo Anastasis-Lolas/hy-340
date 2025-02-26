@@ -34,6 +34,7 @@ normalized_expected = [normalize(line) for line in expected_output]
 if normalized_actual == normalized_expected:
     print("✅ Output is correct!")
 else:
+    print("❌ Output is incorrect! Differences (ignoring spaces):")
     for i, (actual_line, expected_line) in enumerate(zip(normalized_actual, normalized_expected)):
         if actual_line != expected_line:
             print(f"Line {i + 1}:")
@@ -41,6 +42,6 @@ else:
             print(f"  Actual:   {actual_output[i].strip() if i < len(actual_output) else '<missing>'}")
             print()
     if len(normalized_actual) != len(normalized_expected):
-        print("❌ Output is incorrect! Differences (ignoring spaces):")
+        print("Error: Output length mismatch.")
         sys.exit(1)
 

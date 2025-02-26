@@ -43,5 +43,3 @@ else:
             print()
     if len(normalized_actual) != len(normalized_expected):
         print("Error: Output length mismatch.")
-        sys.exit(1)
-

@@ -87,7 +87,7 @@ LINE_COMMENT        "//".*
 START_BLOCK         "/*"
 COMMENT_START       "/*"
 COMMENT_END         "*/"
-WHITESPACE         [ \t\n\r]+              
+WHITESPACE         [ \t\n\r\v]+              
 
 
 %%
@@ -145,15 +145,10 @@ WHITESPACE         [ \t\n\r]+
 "::"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
 ":"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
 
-
-{WHITESPACE}
-
-
-
-"/*"            {
-                    coms.push_back(yylineno);
-                    BEGIN(BLOCK_COMMENT);
-                }
+"/*"                    {
+                            coms.push_back(yylineno);
+                            BEGIN(BLOCK_COMMENT);
+                        }
 <BLOCK_COMMENT>"/*"     {
                             coms.push_back(yylineno);
                         }
@@ -177,24 +172,30 @@ WHITESPACE         [ \t\n\r]+
                             }
                         }
 
-<BLOCK_COMMENT>.      {}
-<BLOCK_COMMENT>\n     {}
+<BLOCK_COMMENT>.        {}
+<BLOCK_COMMENT>\n       {}
 <BLOCK_COMMENT><<EOF>>  {
                             std::string msg = "Comment block is open.";
                             cout<<msg<<endl;
                             return -1;
                         }
 
-"//"            {
-                    BEGIN(LINE_COMMENT_COND);
-                }
+"//"                    {
+                            BEGIN(LINE_COMMENT_COND);
+                        }
 
-<LINE_COMMENT_COND>.  {}
+<LINE_COMMENT_COND>.    {}
 <LINE_COMMENT_COND>\n   {
                             ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
                             BEGIN(INITIAL);
                         }
+{WHITESPACE}            {}
 
+<<EOF>>                 {return 0;}                       
+
+<*>.                    {
+                            ins_token(tokens_list, yylineno, mylineno++, yytext, "not acceptable", "character", "null");
+                        }
 
 %%
 

@@ -1,7 +1,7 @@
 %{
 #include "List/list.h"
 #include <vector>
-#define YY_DECL int yylex()
+#define YY_DECL int alpha_yylex(void * ylval)
 int mylineno = 1;  // keep track of lines
 
 vector<int> coms;
@@ -87,7 +87,7 @@ LINE_COMMENT        "//".*
 START_BLOCK         "/*"
 COMMENT_START       "/*"
 COMMENT_END         "*/"
-WHITESPACE         [ \t\n\r\v]+              
+WHITESPACE         [ \t\n\r]+              
 
 
 %%
@@ -145,10 +145,15 @@ WHITESPACE         [ \t\n\r\v]+
 "::"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
 ":"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
 
-"/*"                    {
-                            coms.push_back(yylineno);
-                            BEGIN(BLOCK_COMMENT);
-                        }
+
+{WHITESPACE}
+
+
+
+"/*"            {
+                    coms.push_back(yylineno);
+                    BEGIN(BLOCK_COMMENT);
+                }
 <BLOCK_COMMENT>"/*"     {
                             coms.push_back(yylineno);
                         }
@@ -168,34 +173,26 @@ WHITESPACE         [ \t\n\r\v]+
                                 }
                             }else{
                                 std::cerr << "???" << std::endl;
-                                return -1;
                             }
                         }
 
-<BLOCK_COMMENT>.        {}
-<BLOCK_COMMENT>\n       {}
+<BLOCK_COMMENT>.      {}
+<BLOCK_COMMENT>\n     {}
 <BLOCK_COMMENT><<EOF>>  {
                             std::string msg = "Comment block is open.";
-                            cout<<msg<<endl;
-                            return -1;
+                            cout<<msg<<endl; 
                         }
 
-"//"                    {
-                            BEGIN(LINE_COMMENT_COND);
-                        }
+"//"            {
+                    BEGIN(LINE_COMMENT_COND);
+                }
 
-<LINE_COMMENT_COND>.    {}
+<LINE_COMMENT_COND>.  {}
 <LINE_COMMENT_COND>\n   {
                             ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
                             BEGIN(INITIAL);
                         }
-{WHITESPACE}            {}
 
-<<EOF>>                 {return 0;}                       
-
-<*>.                    {
-                            ins_token(tokens_list, yylineno, mylineno++, yytext, "not acceptable", "character", "null");
-                        }
 
 %%
 
@@ -210,9 +207,9 @@ int main(int argc, char** argv) {
     } else {
         yyin = stdin;
     }
-    
+
+    alpha_yylex(nullptr); 
     std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
-    yylex(); 
     print(tokens_list);
 
     return 0;

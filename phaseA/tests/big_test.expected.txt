@@ -1,0 +1,51 @@
+------------------- Lexical Analysis --------------------
+1: #1 "if"  KEYWORD IF <-enumerated
+1: #2 "else"  KEYWORD ELSE <-enumerated
+1: #3 "while"  KEYWORD WHILE <-enumerated
+1: #4 "for"  KEYWORD FOR <-enumerated
+1: #5 "function"  KEYWORD FUNCTION <-enumerated
+1: #6 "return"  KEYWORD RETURN <-enumerated
+1: #7 "break"  KEYWORD BREAK <-enumerated
+1: #8 "continue"  KEYWORD CONTINUE <-enumerated
+1: #9 "and"  KEYWORD AND <-enumerated
+1: #10 "not"  KEYWORD NOT <-enumerated
+1: #11 "or"  KEYWORD OR <-enumerated
+2: #12 "local"  KEYWORD LOCAL <-enumerated
+2: #13 "true"  KEYWORD TRUE <-enumerated
+2: #14 "false"  KEYWORD FALSE <-enumerated
+2: #15 "nil"  KEYWORD NIL <-enumerated
+2: #16 "="  OPERATOR ASSIGN <-enumerated
+2: #17 "+"  OPERATOR PLUS <-enumerated
+2: #18 "-"  OPERATOR MINUS <-enumerated
+2: #19 "*"  OPERATOR MULT <-enumerated
+2: #20 "/"  OPERATOR DIV <-enumerated
+2: #21 "%"  OPERATOR MOD <-enumerated
+2: #22 "=="  OPERATOR EQUAL <-enumerated
+2: #23 "!="  OPERATOR NOT_EQUALS <-enumerated
+2: #24 "++"  OPERATOR PLUS_PLUS <-enumerated
+2: #25 "--"  OPERATOR MINUS_MINUS <-enumerated
+2: #26 ">"  OPERATOR GREATER <-enumerated
+2: #27 "<"  OPERATOR LESS <-enumerated
+2: #28 "<="  OPERATOR LESS_EQUAL <-enumerated
+2: #29 ">="  OPERATOR GREATER_EQUAL <-enumerated
+2: #30 "{"  PUNCTUATION LEFT_BRACE <-enumerated
+2: #31 "}"  PUNCTUATION RIGHT_BRACE <-enumerated
+2: #32 "["  PUNCTUATION LEFT_BRACKET <-enumerated
+2: #33 "]"  PUNCTUATION RIGHT_BRACKET <-enumerated
+3: #34 "("  PUNCTUATION LEFT_PARENTHESIS <-enumerated
+3: #35 ")"  PUNCTUATION RIGHT_PARENTHESIS <-enumerated
+3: #36 ";"  PUNCTUATION SEMICOLON <-enumerated
+3: #37 ","  PUNCTUATION COMMA <-enumerated
+3: #38 "."  PUNCTUATION DOT <-enumerated
+3: #39 "."  PUNCTUATION DOT <-enumerated
+3: #40 "."  PUNCTUATION DOT <-enumerated
+3: #41 "::"  PUNCTUATION NAMESPACE <-enumerated
+3: #42 ":"  PUNCTUATION COLON <-enumerated
+4: #43 "4 - 4"  COMMENT BLOCK_COMMENT <-enumerated
+5: #44 ""  COMMENT LINE_COMMENT <-enumerated
+8: #45 "6 - 8"  COMMENT BLOCK_COMMENT <-enumerated
+9: #46 "int"  IDENT "int" <-char*
+9: #47 "45"  CONST INT <-int
+9: #48 "float"  IDENT "float" <-char*
+9: #49 "63.6"  CONST REAL <-real
+

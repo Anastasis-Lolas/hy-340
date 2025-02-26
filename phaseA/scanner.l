@@ -1,11 +1,11 @@
 %{
 #include "List/list.h"
-#include "Stack/stack.h"
+#include <vector>
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
 list_token_t *head_token = new list_token_t;
-comments_t *head_stack = nullptr;
+vector<int> coms;
 
 enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
@@ -27,6 +27,9 @@ void printToken(const string& text, const string& type, const string& name) {
 /* Flex options */
 %option noyywrap 
 %option yylineno
+
+%x BLOCK_COMMENT
+%x LINE_COMMENT_COND
 
 /* Define Flex macros */
 /*KEYWORDS*/
@@ -91,7 +94,7 @@ WHITESPACE         [ \t\n\r]+
 
 
 \n                      {}
-"if"                    {head_token = insert_token(head_token,yylineno,mylineno++,yytext,"KEYWORD"); }
+"if"                    {}
 "else"                  { printToken(yytext, "KEYWORD", "ELSE"); }
 "while"                 { printToken(yytext, "KEYWORD", "WHILE"); }
 "for"                   { printToken(yytext, "KEYWORD", "FOR"); }
@@ -111,13 +114,15 @@ WHITESPACE         [ \t\n\r]+
 
 {INTCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tINTCONST " << yytext <<" <-int"<< endl;} 
 {REALCONST}          {cout << yylineno << ": #" << mylineno++ << "\t\"" << yytext << "\"\tREALCONST " << yytext <<" <-int"<< endl;}
-{IDENT}             {cout << yylineno << ": #" << mylineno++ << "\t \"" << yytext << "\"\tIDENT \t\"" << yytext <<"\" <-char*"<< endl;}
+{IDENT}             {
+                        head_token = insert_token(head_token, yylineno, mylineno++, yytext,"IDENT", yytext, "char*");
+                    }
 
 "="                     { printToken(yytext, "OPERATOR", "ASSIGN"); }
 "+"                     { printToken(yytext, "OPERATOR", "PLUS"); }
 "-"                     { printToken(yytext, "OPERATOR", "MINUS"); }
-"*"                     { printToken(yytext, "OPERATOR", "MULT"); }
-"/"                     { printToken(yytext, "OPERATOR", "DIV"); }
+"*"                     { head_token = insert_token(head_token, yylineno, mylineno++, yytext,"OPERATOR", "MULT", "enumerated");}
+"/"                     { head_token = insert_token(head_token, yylineno, mylineno++, yytext,"OPERATOR", "DIV", "enumerated");}
 "%"                     { printToken(yytext, "OPERATOR", "MOD"); }
 "=="                    { printToken(yytext, "OPERATOR", "EQUAL"); }
 "!="                    { printToken(yytext, "OPERATOR", "NEQUAL"); }
@@ -141,43 +146,51 @@ WHITESPACE         [ \t\n\r]+
 "::"                    { printToken(yytext, "PUNCTUATION", "NAMESPACE"); }
 ":"                     { printToken(yytext, "PUNCTUATION", "COLON"); }
 
-{LINE_COMMENT}  { 
-                    if(stack_is_empty(head_stack))
-                    {
-                        head_token = insert_token(head_token, yylineno, mylineno++, "","COMMENT", "LINE_COMMENT", "<-enumerated");
-                    }
-                    //else ignore
+{WHITESPACE}
+
+
+
+"/*"            {
+                    coms.push_back(yylineno);
+                    BEGIN(BLOCK_COMMENT);
                 }
-{WHITESPACE}            
-
-
-
-{START_BLOCK}   {
-                    add_element(&head_stack, yylineno);
-                }
-
-{COMMENT_END}   {
-                    int line = pop_element(&head_stack);
-                    if(line != -1)
-                    {
-
-                        if(stack_size(head_stack) == 0)
-                        {
-                            std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
-                           head_token = insert_token(head_token, yylineno, mylineno++, content,"COMMENT", "BLOCK_COMMENT", "<-enumerated");
-                        }else{
-                            // NESTED_COMMENT
-                           head_token = insert_token(head_token,yylineno, mylineno++, "","COMMENT", "NESTED_COMMENT", "<-enumerated");
+<BLOCK_COMMENT>"/*"     {
+                            coms.push_back(yylineno);
                         }
-                    }else{
-                        // Duo tokens:
-                        // (1) "*" --> MULT
-                       head_token = insert_token(head_token,yylineno, mylineno++, "*", "OPERATOR", "MULT", "<-enumerated");
-                        // (2) "/" --> DIV
-                       head_token = insert_token(head_token,yylineno, mylineno++, "/", "OPERATOR", "DIV", "<-enumerated");
+<BLOCK_COMMENT>"*/"     { 
+                            if(!coms.empty())
+                            {
+                                int line = coms.front();
+                                coms.erase(coms.begin());
+                                std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
+                                if(coms.empty())
+                                {
+                                    head_token = insert_token(head_token, yylineno, mylineno++, content,"COMMENT", "BLOCK_COMMENT", "enumerated");
+                                    std::cout<<"BEGIN(INITIAL)"<<endl;
+                                    BEGIN(INITIAL);
+                                }else{
+                                    // NESTED_COMMENT
+                                    head_token = insert_token(head_token,yylineno, mylineno++, content,"COMMENT", "NESTED_COMMENT", "enumerated");
+                                }
+                            }else{
+                                std::cerr << "???" << std::endl;
+                            }
+                        }
 
-                    }
+<BLOCK_COMMENT>.      {}
+<BLOCK_COMMENT>\n     {}
+
+"//"            {
+                    BEGIN(LINE_COMMENT_COND);
                 }
+
+<LINE_COMMENT_COND>.  {}
+<LINE_COMMENT_COND>\n   {
+                            head_token = insert_token(head_token, yylineno - 1, mylineno++, "","COMMENT", "LINE_COMMENT", "enumerated");
+                            BEGIN(INITIAL);
+                        }
+
+
 %%
 
 int main(int argc, char** argv) {

@@ -36,7 +36,6 @@ int pop_element(comments_t **head)
 {
     if (*head == nullptr)
     {
-        std::cerr << "Stack is empty! Cannot pop." << std::endl;
         return -1;
     }
 

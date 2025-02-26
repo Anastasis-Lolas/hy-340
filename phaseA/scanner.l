@@ -6,6 +6,7 @@ int mylineno = 1;  // keep track of lines
 
 list_token_t *head_token = nullptr;
 vector<int> coms;
+vector<list_token_t *> tokens_list;
 
 enum TokenTypes {
     KEYWORD, OPERATOR, CONSTANT, IDENTIFIER, PUNCTUATION
@@ -94,21 +95,22 @@ WHITESPACE         [ \t\n\r]+
 
 
 \n                      {}
-"if"                    {}
-"else"                  { printToken(yytext, "KEYWORD", "ELSE"); }
-"while"                 { printToken(yytext, "KEYWORD", "WHILE"); }
-"for"                   { printToken(yytext, "KEYWORD", "FOR"); }
-"function"              { printToken(yytext, "KEYWORD", "FUNCTION"); }
-"return"                { printToken(yytext, "KEYWORD", "RETURN"); }
-"break"                 { printToken(yytext, "KEYWORD", "BREAK"); }
-"continue"              { printToken(yytext, "KEYWORD", "CONTINUE"); }
-"and"                   { printToken(yytext, "KEYWORD", "AND"); }
-"not"                   { printToken(yytext, "KEYWORD", "NOT"); }
-"or"                    { printToken(yytext, "KEYWORD", "OR"); }
-"local"                 { printToken(yytext, "KEYWORD", "LOCAL"); }
-"true"                  { printToken(yytext, "KEYWORD", "TRUE"); }
-"false"                 { printToken(yytext, "KEYWORD", "FALSE"); }
-"nil"                   { printToken(yytext, "KEYWORD", "NIL"); }
+"if"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "IF", "enumerated"); }
+"else"                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "ELSE", "enumerated"); }
+"while"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "WHILE", "enumerated"); }
+"for"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FOR", "enumerated"); }
+"function"              { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FUNCTION", "enumerated"); }
+"return"                { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "RETURN", "enumerated"); }
+"break"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "BREAK", "enumerated"); }
+"continue"              { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "CONTINUE", "enumerated"); }
+"and"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "AND", "enumerated"); }
+"not"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NOT", "enumerated"); }
+"or"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "OR", "enumerated"); }
+"local"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "LOCAL", "enumerated"); }
+"true"                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "TRUE", "enumerated"); }
+"false"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FALSE", "enumerated"); }
+"nil"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NIL", "enumerated"); }
+
 
 
 
@@ -210,7 +212,7 @@ int main(int argc, char** argv) {
 
     yylex(); 
     std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
-    print(head_token);
+    print(tokens_list);
 
     return 0;
 }

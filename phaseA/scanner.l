@@ -173,6 +173,7 @@ WHITESPACE         [ \t\n\r]+
                                 }
                             }else{
                                 std::cerr << "???" << std::endl;
+                                return -1;
                             }
                         }
 
@@ -180,7 +181,8 @@ WHITESPACE         [ \t\n\r]+
 <BLOCK_COMMENT>\n     {}
 <BLOCK_COMMENT><<EOF>>  {
                             std::string msg = "Comment block is open.";
-                            cout<<msg<<endl; 
+                            cout<<msg<<endl;
+                            return -1;
                         }
 
 "//"            {
@@ -207,9 +209,9 @@ int main(int argc, char** argv) {
     } else {
         yyin = stdin;
     }
-
-    yylex(); 
+    
     std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
+    yylex(); 
     print(tokens_list);
 
     return 0;

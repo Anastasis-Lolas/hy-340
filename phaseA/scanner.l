@@ -160,8 +160,8 @@ WHITESPACE         [ \t\n\r]+
 <BLOCK_COMMENT>"*/"     { 
                             if(!coms.empty())
                             {
-                                int line = coms.front();
-                                coms.erase(coms.begin());
+                                int line = coms.back();
+                                coms.pop_back();
                                 std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
                                 if(coms.empty())
                                 {
@@ -189,7 +189,7 @@ WHITESPACE         [ \t\n\r]+
 
 <LINE_COMMENT_COND>.  {}
 <LINE_COMMENT_COND>\n   {
-                            head_token = insert_token(head_token, yylineno - 1, mylineno++, "","COMMENT", "LINE_COMMENT", "enumerated");
+                            head_token = insert_token(head_token, yylineno-1, mylineno++, "","COMMENT", "LINE_COMMENT", "enumerated");
                             BEGIN(INITIAL);
                         }
 
@@ -209,6 +209,7 @@ int main(int argc, char** argv) {
     }
 
     yylex(); 
+    std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
     print(head_token);
 
     return 0;

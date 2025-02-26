@@ -4,7 +4,7 @@
 #define YY_DECL int yylex()
 int mylineno = 1;  // keep track of lines
 
-list_token_t *head_token = new list_token_t;
+list_token_t *head_token = nullptr;
 vector<int> coms;
 
 enum TokenTypes {
@@ -180,7 +180,7 @@ WHITESPACE         [ \t\n\r]+
 <BLOCK_COMMENT>\n     {}
 <BLOCK_COMMENT><<EOF>>  {
                             std::string msg = "Comment block is open.";
-                            cout<<msd<<endl; 
+                            cout<<msg<<endl; 
                         }
 
 "//"            {

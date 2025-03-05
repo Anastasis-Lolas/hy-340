@@ -213,6 +213,7 @@ WHITESPACE          [ \t\n\r\v]+
                 case '"':  processedStr += '\"'; break;
                 default:   
                     std::cerr << "Warning: Invalid escape sequence \\" << str[i + 1] << " at line " << yylineno << std::endl;
+                    processedStr += '\\';
                     processedStr += str[i + 1];  
                     break;
             }

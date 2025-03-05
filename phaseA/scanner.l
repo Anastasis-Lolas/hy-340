@@ -234,9 +234,8 @@ WHITESPACE          [ \t\n\r\v]+
 <<EOF>>                 {return 0;}                       
 
 <*>.                    {
-                            ins_token(tokens_list, yylineno, mylineno++, yytext, "not acceptable", "character", "null");
+                            ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");
                         }
-
 %%
 
 int main(int argc, char** argv) {

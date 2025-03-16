@@ -47,7 +47,6 @@ void print(vector<list_token_t *> print_tokens) {
     cout << endl;
 }
 
-
 void print_token(list_token_t *node) {
     cout << node->numline << ": #" << node->numToken << " \"" << node->content
          << "\"  ";

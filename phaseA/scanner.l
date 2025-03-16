@@ -84,7 +84,6 @@ DOT                 "."
 NAMESPACE           "::"
 COLON               ":"
 LINE_COMMENT        "//".*
-START_BLOCK         "/*"
 COMMENT_START       "/*"
 COMMENT_END         "*/"
 STRING              \"(\\.|[^"\\])*\"  
@@ -94,149 +93,149 @@ WHITESPACE          [ \t\n\r\v]+
 %%
 
 
-\n                      {}
-"if"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "IF", "enumerated"); }
-"else"                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "ELSE", "enumerated"); }
-"while"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "WHILE", "enumerated"); }
-"for"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FOR", "enumerated"); }
-"function"              { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FUNCTION", "enumerated"); }
-"return"                { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "RETURN", "enumerated"); }
-"break"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "BREAK", "enumerated"); }
-"continue"              { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "CONTINUE", "enumerated"); }
-"and"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "AND", "enumerated"); }
-"not"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NOT", "enumerated"); }
-"or"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "OR", "enumerated"); }
-"local"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "LOCAL", "enumerated"); }
-"true"                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "TRUE", "enumerated"); }
-"false"                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FALSE", "enumerated"); }
-"nil"                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NIL", "enumerated"); }
+\n                            {}
+{IF}                          { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "IF", "enumerated"); }
+{ELSE}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "ELSE", "enumerated"); }
+{WHILE}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "WHILE", "enumerated"); }
+{FOR}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FOR", "enumerated"); }
+{FUNCTION}                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FUNCTION", "enumerated"); }
+{RETURN}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "RETURN", "enumerated"); }
+{BREAK}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "BREAK", "enumerated"); }
+{CONTINUE}                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "CONTINUE", "enumerated"); }
+{AND}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "AND", "enumerated"); }
+{NOT}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NOT", "enumerated"); }
+{OR}                          { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "OR", "enumerated"); }
+{LOCAL}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "LOCAL", "enumerated"); }
+{TRUE}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "TRUE", "enumerated"); }
+{FALSE}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "FALSE", "enumerated"); }
+{NIL}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "KEYWORD", "NIL", "enumerated"); }
 
 
 
 
-{INTCONST}              {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int");} 
-{REALCONST}             {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real");}
-{IDENT}                 {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*");}
+{INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int");} 
+{REALCONST}                   {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real");}
+{IDENT}                       {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*");}
 
-"="                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); } 
-"+"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); }
-"-"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS", "enumerated"); }
-"*"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MULT", "enumerated"); }
-"/"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "DIV", "enumerated"); }
-"%"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MOD", "enumerated"); }
-"=="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "EQUAL", "enumerated"); }
-"!="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "NOT_EQUALS", "enumerated"); }
-"++"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS_PLUS", "enumerated"); }
-"--"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS_MINUS", "enumerated"); }
-">"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER", "enumerated"); }
-"<"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS", "enumerated"); }
-">="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER_EQUAL", "enumerated"); }
-"<="                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS_EQUAL", "enumerated"); }
+{ASSIGN}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); } 
+{PLUS}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); }
+{MINUS}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS", "enumerated"); }
+{MULT}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MULT", "enumerated"); }
+{DIV}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "DIV", "enumerated"); }
+{MOD}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MOD", "enumerated"); }
+{EQUAL}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "EQUAL", "enumerated"); }
+{NOT_EQUALS}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "NOT_EQUALS", "enumerated"); }
+{PLUS_PLUS}                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS_PLUS", "enumerated"); }
+{MINUS_MINUS}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS_MINUS", "enumerated"); }
+{GREATER}                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER", "enumerated"); }
+{LESS}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS", "enumerated"); }
+{GREATER_EQUAL}               { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER_EQUAL", "enumerated"); }
+{LESS_EQUAL}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS_EQUAL", "enumerated"); }
 
-"{"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACE", "enumerated"); }
-"}"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACE", "enumerated"); }
-"["                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACKET", "enumerated"); }
-"]"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACKET", "enumerated"); }
-"("                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_PARENTHESIS", "enumerated"); }
-")"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_PARENTHESIS", "enumerated"); }
-";"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); }
-","                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); }
-".."                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); }
-"."                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); }
-"::"                    { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
-":"                     { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
+{LEFT_BRACE}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACE", "enumerated"); }
+{RIGHT_BRACE}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACE", "enumerated"); }
+{LEFT_BRACKET}                { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACKET", "enumerated"); }
+{RIGHT_BRACKET}               { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACKET", "enumerated"); }
+{LEFT_PARENTHESIS}            { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_PARENTHESIS", "enumerated"); }
+{RIGHT_PARENTHESIS}           { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_PARENTHESIS", "enumerated"); }
+{SEMICOLON}                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); }
+{COMMA}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); }
+{DOUBLE_DOT}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); }
+{DOT}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); }
+{NAMESPACE}                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
+{COLON}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
 
-"/*"                    {
-                            coms.push_back(yylineno);
-                            BEGIN(BLOCK_COMMENT);
-                        }
-<BLOCK_COMMENT>"/*"     {
-                            coms.push_back(yylineno);
-                        }
-<BLOCK_COMMENT>"*/"     { 
-                            if(!coms.empty())
-                            {
-                                int line = coms.back();
-                                coms.pop_back();
-                                std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
-                                if(coms.empty())
-                                {
-                                    ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "BLOCK_COMMENT", "enumerated");
-                                    BEGIN(INITIAL);
-                                }else{
-                                    // NESTED_COMMENT
-                                    ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "NESTED_COMMENT", "enumerated");
+{COMMENT_START}                 {
+                                    coms.push_back(yylineno);
+                                    BEGIN(BLOCK_COMMENT);
                                 }
-                            }else{
-                                std::cerr << "???" << std::endl;
-                                return -1;
-                            }
-                        }
+<BLOCK_COMMENT>{COMMENT_START}  {
+                                    coms.push_back(yylineno);
+                                }
+<BLOCK_COMMENT>{COMMENT_END}      { 
+                                    if(!coms.empty())
+                                    {
+                                        int line = coms.back();
+                                        coms.pop_back();
+                                        std::string content = std::to_string(line) + " - " + std::to_string(yylineno);
+                                        if(coms.empty())
+                                        {
+                                            ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "BLOCK_COMMENT", "enumerated");
+                                            BEGIN(INITIAL);
+                                        }else{
+                                            // NESTED_COMMENT
+                                            ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "NESTED_COMMENT", "enumerated");
+                                        }
+                                    }else{
+                                        std::cerr << "???" << std::endl;
+                                        return -1;
+                                    }
+                                }
 
-<BLOCK_COMMENT>.        {}
-<BLOCK_COMMENT>\n       {}
-<BLOCK_COMMENT><<EOF>>  {
-                            std::string msg = "Comment block is open.";
-                            cout<<msg<<endl;
-                            return -1;
-                        }
+<BLOCK_COMMENT>.                {}
+<BLOCK_COMMENT>\n               {}
+<BLOCK_COMMENT><<EOF>>          {
+                                    std::string msg = "Comment block is open.";
+                                    cout<<msg<<endl;
+                                    return -1;
+                                }
 
-"//"                    {
-                            BEGIN(LINE_COMMENT_COND);
-                        }
+{LINE_COMMENT}                  {
+                                    BEGIN(LINE_COMMENT_COND);
+                                }
 
-<LINE_COMMENT_COND>.    {}
-<LINE_COMMENT_COND>\n   {
-                            ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
-                            BEGIN(INITIAL);
-                        }
+<LINE_COMMENT_COND>.            {}
+<LINE_COMMENT_COND>\n           {
+                                    ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
+                                    BEGIN(INITIAL);
+                                }
 
 
-{STRING} {
+{STRING}                        {
 
-    std::string str = yytext;
-    str = str.substr(1, str.length() - 2);
+                                        std::string str = yytext;
+                                        str = str.substr(1, str.length() - 2);
 
-   
-    std::string processedStr;
-    for (size_t i = 0; i < str.length(); ++i) {
-        if (str[i] == '\\' && i + 1 < str.length()) {
-            switch (str[i + 1]) {
-                case 'a':  processedStr += '\a'; break;
-                case 'n':  processedStr += '\n'; break;
-                case 't':  processedStr += '\t'; break;
-                case 'r':  processedStr += '\r'; break;
-                case 'v':  processedStr += '\v'; break;
-                case 'f':  processedStr += '\f'; break;
-                case '\\': processedStr += '\\'; break;
-                case '\'': processedStr += '\''; break;
-                case '"':  processedStr += '\"'; break;
-                default:   
-                    std::cerr << "Warning: Invalid escape sequence \\" << str[i + 1] << " at line " << yylineno << std::endl;
-                    processedStr += '\\';
-                    processedStr += str[i + 1];  
-                    break;
-            }
-            ++i;  
-        } else {
-            processedStr += str[i];
-        }
-    }
-    ins_token(tokens_list, yylineno, mylineno++, processedStr, "", "STRING", "string");
-}
+                                    
+                                        std::string processedStr;
+                                        for (size_t i = 0; i < str.length(); ++i) {
+                                            if (str[i] == '\\' && i + 1 < str.length()) {
+                                                switch (str[i + 1]) {
+                                                    case 'a':  processedStr += '\a'; break;
+                                                    case 'n':  processedStr += '\n'; break;
+                                                    case 't':  processedStr += '\t'; break;
+                                                    case 'r':  processedStr += '\r'; break;
+                                                    case 'v':  processedStr += '\v'; break;
+                                                    case 'f':  processedStr += '\f'; break;
+                                                    case '\\': processedStr += '\\'; break;
+                                                    case '\'': processedStr += '\''; break;
+                                                    case '"':  processedStr += '\"'; break;
+                                                    default:   
+                                                        std::cerr << "Warning: Invalid escape sequence \\" << str[i + 1] << " at line " << yylineno << std::endl;
+                                                        processedStr += '\\';
+                                                        processedStr += str[i + 1];  
+                                                        break;
+                                                }
+                                                ++i;  
+                                            } else {
+                                                processedStr += str[i];
+                                            }
+                                        }
+                                        ins_token(tokens_list, yylineno, mylineno++, processedStr, "", "STRING", "string");
+                                    }
 
-\"[^\"]* {
-    std::cerr << "Error: Unterminated string at line " << yylineno << std::endl;
-    return -1;  
-}
+                                    \"[^\"]* {
+                                        std::cerr << "Error: Unterminated string at line " << yylineno << std::endl;
+                                        return -1;  
+                                }
 
-{WHITESPACE}            {}
+{WHITESPACE}                    {}
 
-<<EOF>>                 {return 0;}                       
+<<EOF>>                         {return 0;}                       
 
-<*>.                    {
-                            ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");
-                        }
+<*>.                            {
+                                    ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");
+                                }
 %%
 
 int main(int argc, char** argv) {

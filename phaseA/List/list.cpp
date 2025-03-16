@@ -7,6 +7,20 @@ void print(vector<list_token_t *> print_tokens) {
     cout << endl;
 }
 
+void print_token(list_token_t *node) {
+    cout << node->numline << ": #" << node->numToken << " \"" << node->content
+         << "\"  ";
+
+    if (node->type != "IDENT") {
+        cout << node->type << " " << node->upper_content << " " << node->arrow
+             << endl;
+    } else {
+        cout << node->type << " \"" << node->content << "\" " << node->arrow
+             << endl;
+    }
+}
+
+
 void ins_token(vector<list_token_t *> &tokenList, int nline, int nToken,
                const string content, const string type,
                const string upper_content, const string arrow) {

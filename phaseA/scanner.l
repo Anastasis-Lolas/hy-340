@@ -1,7 +1,7 @@
 %{
 #include "List/list.h"
 #include <vector>
-#define YY_DECL int yylex()
+#define YY_DECL int alpha_yylex(void * ylval)
 int mylineno = 1;  // keep track of lines
 
 vector<int> coms;
@@ -87,7 +87,8 @@ LINE_COMMENT        "//".*
 START_BLOCK         "/*"
 COMMENT_START       "/*"
 COMMENT_END         "*/"
-WHITESPACE         [ \t\n\r\v]+              
+STRING              \"(\\.|[^"\\])*\"  
+WHITESPACE          [ \t\n\r\v]+              
 
 
 %%
@@ -189,14 +190,53 @@ WHITESPACE         [ \t\n\r\v]+
                             ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
                             BEGIN(INITIAL);
                         }
+
+
+{STRING} {
+
+    std::string str = yytext;
+    str = str.substr(1, str.length() - 2);
+
+   
+    std::string processedStr;
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '\\' && i + 1 < str.length()) {
+            switch (str[i + 1]) {
+                case 'a':  processedStr += '\a'; break;
+                case 'n':  processedStr += '\n'; break;
+                case 't':  processedStr += '\t'; break;
+                case 'r':  processedStr += '\r'; break;
+                case 'v':  processedStr += '\v'; break;
+                case 'f':  processedStr += '\f'; break;
+                case '\\': processedStr += '\\'; break;
+                case '\'': processedStr += '\''; break;
+                case '"':  processedStr += '\"'; break;
+                default:   
+                    std::cerr << "Warning: Invalid escape sequence \\" << str[i + 1] << " at line " << yylineno << std::endl;
+                    processedStr += '\\';
+                    processedStr += str[i + 1];  
+                    break;
+            }
+            ++i;  
+        } else {
+            processedStr += str[i];
+        }
+    }
+    ins_token(tokens_list, yylineno, mylineno++, processedStr, "", "STRING", "string");
+}
+
+\"[^\"]* {
+    std::cerr << "Error: Unterminated string at line " << yylineno << std::endl;
+    return -1;  
+}
+
 {WHITESPACE}            {}
 
 <<EOF>>                 {return 0;}                       
 
 <*>.                    {
-                            ins_token(tokens_list, yylineno, mylineno++, yytext, "not acceptable", "character", "null");
+                            ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");
                         }
-
 %%
 
 int main(int argc, char** argv) {
@@ -212,7 +252,7 @@ int main(int argc, char** argv) {
     }
     
     std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
-    yylex(); 
+    alpha_yylex(nullptr); 
     print(tokens_list);
 
     return 0;

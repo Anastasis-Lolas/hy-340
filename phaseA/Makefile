@@ -9,7 +9,7 @@ EXEC = scanner
 TESTS_DIR = tests
 BUILD_DIR = .
 # yacc files
-SRC_FILES := $(shell find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.l" \))
+SRC_FILES := $(shell find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" \))
 
 all: $(EXEC)
 

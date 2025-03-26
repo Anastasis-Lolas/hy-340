@@ -1,10 +1,16 @@
 CC = g++
 FLEX = flex
+BISON = bison
 
 SCANNER_L = scanner.l
 LIST_CPP = List/list.cpp
 SCANNER_CPP = scanner.cpp
+PARSER_Y = parser.y
+PARSER_CPP = parser.cpp
+PARSER_H = parser.h
+
 EXEC = scanner
+
 
 TESTS_DIR = tests
 BUILD_DIR = .
@@ -15,6 +21,12 @@ all: $(EXEC)
 
 $(SCANNER_CPP): $(SCANNER_L)
 	$(FLEX) -o $@ $<
+
+# $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
+# 	# $(BISON) --defines=$(PARSER_H) --output=$(PARSER_CPP) $<
+# 	$(BISON) -d -o $(PARSER_CPP) $<
+$(PARSER_CPP): $(PARSER_Y)
+	$(BISON) --defines --output=$(PARSER_CPP) $(PARSER_Y)$<
 
 $(EXEC): $(LIST_CPP) $(SCANNER_CPP)
 	$(CC) $^ -o $@
@@ -36,4 +48,4 @@ memcheck: $(BUILD_DIR)/scanner
 
 
 clean:
-	rm -f $(SCANNER_CPP) $(EXEC)
+	rm -f $(SCANNER_CPP) $(PARSER_CPP) $(PARSER_H) $(EXEC)

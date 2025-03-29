@@ -117,9 +117,9 @@ WHITESPACE          [ \t\n\r\v]+
 
 
 
-{INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int"); yylval = atoi(yytext); return INTEGER; } 
+{INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int"); yylval.intValue  = atoi(yytext); return INTEGER;}
 {REALCONST}                   {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real"); return REALCONST;}
-{IDENT}                       {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*"); return IDENT;}
+{IDENT}                       {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*"); yylval.stringValue = new std::string(yytext); return IDENT;}
 
 {ASSIGN}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); return ASSIGN;} 
 {PLUS}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); return PLUS; }
@@ -240,7 +240,7 @@ WHITESPACE          [ \t\n\r\v]+
 
 {WHITESPACE}                    {}
 
-<<EOF>>                         {return 0;}                       
+<<EOF>>                         {return EOF; return 0;}
 
 <*>.                            {
                                     ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");

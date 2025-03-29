@@ -166,10 +166,12 @@ WHITESPACE          [ \t\n\r\v]+
                                         if(coms.empty())
                                         {
                                             ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "BLOCK_COMMENT", "enumerated");
+                                            return BLOCK_COMMENT;
                                             BEGIN(INITIAL);
                                         }else{
                                             // NESTED_COMMENT
                                             ins_token(tokens_list, yylineno, mylineno++, content, "COMMENT", "NESTED_COMMENT", "enumerated");
+                                            return NESTED_COMMENT;
                                         }
                                     }else{
                                         std::cerr << "???" << std::endl;
@@ -192,6 +194,7 @@ WHITESPACE          [ \t\n\r\v]+
 <LINE_COMMENT_COND>.            {}
 <LINE_COMMENT_COND>\n           {
                                     ins_token(tokens_list, yylineno-1, mylineno++, "", "COMMENT", "LINE_COMMENT", "enumerated");
+                                    return LINE_COMMENT;
                                     BEGIN(INITIAL);
                                 }
 
@@ -227,6 +230,7 @@ WHITESPACE          [ \t\n\r\v]+
                                             }
                                         }
                                         ins_token(tokens_list, yylineno, mylineno++, processedStr, "", "STRING", "string");
+                                        return STRING;
                                     }
 
                                     \"[^\"]* {
@@ -240,6 +244,7 @@ WHITESPACE          [ \t\n\r\v]+
 
 <*>.                            {
                                     ins_token(tokens_list, yylineno, mylineno++, yytext, "UNDEFINED", "CHARACTER", "null");
+                                    return UNDEFINED;
                                 }
 %%
 

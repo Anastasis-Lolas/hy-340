@@ -1,7 +1,9 @@
 %{
 #include "List/list.h"
 #include <vector>
-#define YY_DECL int alpha_yylex(void * ylval)
+#include "parser.hpp"
+#include <cstdio>
+
 int mylineno = 1;  // keep track of lines
 
 vector<int> coms;
@@ -22,6 +24,8 @@ enum EscapeChar {
 
 void printToken(const string& text, const string& type, const string& name) {
     cout << yylineno << ": #" << mylineno++ << "  \"" << text << "\"\t" << type << "  " << name << "  <-enumerated" << endl;}
+
+void yyerror(const char *s);
 %}
 
 /* Flex options */
@@ -113,12 +117,12 @@ WHITESPACE          [ \t\n\r\v]+
 
 
 
-{INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int");} 
+{INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int"); yylval = atoi(yytext); return INTEGER; } 
 {REALCONST}                   {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real");}
 {IDENT}                       {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*");}
 
 {ASSIGN}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); } 
-{PLUS}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); }
+{PLUS}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "PLUS", "enumerated"); return PLUS; }
 {MINUS}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MINUS", "enumerated"); }
 {MULT}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "MULT", "enumerated"); }
 {DIV}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "DIV", "enumerated"); }
@@ -141,7 +145,7 @@ WHITESPACE          [ \t\n\r\v]+
 {SEMICOLON}                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); }
 {COMMA}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); }
 {DOUBLE_DOT}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); }
-{DOT}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); }
+{DOT}                         { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); return yytext[0];}
 {NAMESPACE}                   { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); }
 {COLON}                       { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); }
 
@@ -238,21 +242,3 @@ WHITESPACE          [ \t\n\r\v]+
                                 }
 %%
 
-int main(int argc, char** argv) {
-
-    if (argc > 1) {
-        yyin = fopen(argv[1], "r");
-        if (!yyin) {
-            std::cerr << "Cannot open file: " << argv[1] << std::endl;
-            return 1;
-        }
-    } else {
-        yyin = stdin;
-    }
-    
-    std::cout<< "------------------- Lexical Analysis --------------------"<<endl;
-    alpha_yylex(nullptr); 
-    print(tokens_list);
-
-    return 0;
-}

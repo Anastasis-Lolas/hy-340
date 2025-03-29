@@ -7,7 +7,7 @@ LIST_CPP = List/list.cpp
 SCANNER_CPP = scanner.cpp
 PARSER_Y = parser.y
 PARSER_CPP = parser.cpp
-PARSER_H = parser.h
+PARSER_H = parser.hpp
 
 EXEC = scanner
 
@@ -19,16 +19,13 @@ SRC_FILES := $(shell find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.
 
 all: $(EXEC)
 
-$(SCANNER_CPP): $(SCANNER_L)
+$(SCANNER_CPP): $(SCANNER_L) $(PARSER_H)
 	$(FLEX) -o $@ $<
 
-# $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
-# 	# $(BISON) --defines=$(PARSER_H) --output=$(PARSER_CPP) $<
-# 	$(BISON) -d -o $(PARSER_CPP) $<
-$(PARSER_CPP): $(PARSER_Y)
-	$(BISON) --defines --output=$(PARSER_CPP) $(PARSER_Y)$<
+$(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
+	$(BISON) -d -o $(PARSER_CPP) $<
 
-$(EXEC): $(LIST_CPP) $(SCANNER_CPP)
+$(EXEC): $(LIST_CPP) $(SCANNER_CPP) $(PARSER_CPP)
 	$(CC) $^ -o $@
 
 test: $(EXEC)

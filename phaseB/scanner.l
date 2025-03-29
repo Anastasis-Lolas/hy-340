@@ -136,18 +136,18 @@ WHITESPACE          [ \t\n\r\v]+
 {GREATER_EQUAL}               { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "GREATER_EQUAL", "enumerated"); return GREATER_EQUAL; }
 {LESS_EQUAL}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "LESS_EQUAL", "enumerated");  return LESS_EQUAL;}
 
-{LEFT_BRACE}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACE", "enumerated"); return "LEFT_BRACE"; }
-{RIGHT_BRACE}                { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACE", "enumerated"); return "RIGHT_BRACE"; }
-{LEFT_BRACKET}               { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACKET", "enumerated"); return "LEFT_BRACKET"; }
-{RIGHT_BRACKET}              { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACKET", "enumerated"); return "RIGHT_BRACKET"; }
-{LEFT_PARENTHESIS}           { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_PARENTHESIS", "enumerated"); return "LEFT_PARENTHESIS"; }
-{RIGHT_PARENTHESIS}          { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_PARENTHESIS", "enumerated"); return "RIGHT_PARENTHESIS"; }
-{SEMICOLON}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); return "SEMICOLON"; }
-{COMMA}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); return "COMMA"; }
-{DOUBLE_DOT}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); return "DOUBLE_DOT"; }
+{LEFT_BRACE}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACE", "enumerated"); return LEFT_BRACE; }
+{RIGHT_BRACE}                { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACE", "enumerated"); return RIGHT_BRACE; }
+{LEFT_BRACKET}               { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_BRACKET", "enumerated"); return LEFT_BRACKET; }
+{RIGHT_BRACKET}              { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_BRACKET", "enumerated"); return RIGHT_BRACKET; }
+{LEFT_PARENTHESIS}           { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "LEFT_PARENTHESIS", "enumerated"); return LEFT_PARENTHESIS; }
+{RIGHT_PARENTHESIS}          { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "RIGHT_PARENTHESIS", "enumerated"); return RIGHT_PARENTHESIS; }
+{SEMICOLON}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); return SEMICOLON; }
+{COMMA}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); return COMMA; }
+{DOUBLE_DOT}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); return DOUBLE_DOT; }
 {DOT}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); return yytext[0]; }
-{NAMESPACE}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); return "NAMESPACE"; }
-{COLON}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); return "COLON"; }
+{NAMESPACE}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); return NAMESPACE; }
+{COLON}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); return COLON; }
 
 
 {COMMENT_START}                 {

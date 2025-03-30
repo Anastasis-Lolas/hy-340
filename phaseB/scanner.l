@@ -145,7 +145,7 @@ WHITESPACE          [ \t\n\r\v]+
 {SEMICOLON}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "SEMICOLON", "enumerated"); return SEMICOLON; }
 {COMMA}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COMMA", "enumerated"); return COMMA; }
 {DOUBLE_DOT}                 { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOUBLE_DOT", "enumerated"); return DOUBLE_DOT; }
-{DOT}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); return yytext[0]; }
+{DOT}                        { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "DOT", "enumerated"); return DOT;}
 {NAMESPACE}                  { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "NAMESPACE", "enumerated"); return NAMESPACE; }
 {COLON}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "PUNCTUATION", "COLON", "enumerated"); return COLON; }
 

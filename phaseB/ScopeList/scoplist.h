@@ -13,9 +13,10 @@ typedef struct Function {
     std::vector<void *> args;
     unsigned int scope;
     unsigned int line;
+    unsigned int offset;
 } Function;
 
-enum SymbolType { GLOBAL, LOCAL, FORMAL, USERFUNC, LIBFUNC } SymbolType;
+enum SymbolType { GLOBAL, LOCAL, FORMAL, USERFUNC, LIBFUNC } SymbolType_t;
 typedef struct SymbolTableEntry {
     bool isActive;
     union {

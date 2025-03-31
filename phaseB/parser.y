@@ -201,7 +201,7 @@ indexedelem:
     ;
 
 block:
-      LEFT_BRACKET stmt_list RIGHT_BRACKET { DEBUG_REDUCE("block -> {stmt_list}"); }
+      LEFT_BRACE stmt_list RIGHT_BRACE { DEBUG_REDUCE("block -> {stmt_list}"); }
   ;
     
 

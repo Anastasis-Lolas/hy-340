@@ -10,6 +10,8 @@ extern int yylex(void);
 extern char* yytext;
 extern int yylex(void);
 
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 
@@ -25,55 +27,29 @@ extern int yylex(void);
 %token <stringValue> IDENT 
 
 
-%token IF
-%token ELSE
-%token WHILE
-%token FOR
-%token FUNCTION
-%token RETURN
-%token BREAK
-%token CONTINUE
-%token AND
-%token NOT
-%token OR
-%token LOCAL
-%token TRUE
-%token FALSE
-%token NIL
-%token REALCONST
-%token ASSIGN
-%token PLUS
-%token MINUS
-%token MULT
-%token DIV
-%token MOD
-%token EQUAL
-%token NOT_EQUALS
-%token PLUS_PLUS
-%token MINUS_MINUS
-%token GREATER
-%token LESS
-%token GREATER_EQUAL
-%token LESS_EQUAL
-%token LEFT_BRACE
-%token RIGHT_BRACE
-%token LEFT_BRACKET
-%token RIGHT_BRACKET
-%token SEMICOLON
-%token LEFT_PARENTHESIS
-%token RIGHT_PARENTHESIS
-%token COMMA
-%token DOUBLE_DOT
-%token DOT
-%token NAMESPACE
-%token COLON
+%token IF ELSE WHILE FUNCTION FOR RETURN BREAK CONTINUE AND NOT OR NIL
+
+%token REALCONST TRUE FALSE LOCAL
+
+%token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUALS PLUS_PLUS MINUS_MINUS
+
+%token GREATER LESS GREATER_EQUAL LESS_EQUAL 
+
+%token LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+%token SEMICOLON COMMA DOUBLE_DOT DOT NAMESPACE COLON 
+
+
 %token BLOCK_COMMENT
 %token NESTED_COMMENT
 %token LINE_COMMENT
+
 %token STRING
 %token UNDEFINED
 
 %type <intValue> expr
+
+
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -91,143 +67,191 @@ extern int yylex(void);
 
 %%
 
-program : stmt_list 
-        | /*empty rule */
-        ;
+program:
+      stmt_list     { DEBUG_REDUCE("program -> stmt_list"); }
+   
+    ;
 
-stmt_list : stmt_list stmt {} 
+stmt_list : stmt_list stmt { DEBUG_REDUCE("stmt -> expr ;"); }
+            | { DEBUG_REDUCE("stmt list  -> empty ;"); }
           ;
 
-stmt : expr SEMICOLON {}
-     | ifstmt {}
-     | whilestmt {}
-     | forstmt {} 
-     | returnstmt {}
-     | BREAK SEMICOLON {}
-     | CONTINUE SEMICOLON {}
-     | block {}
-     | funcdef {}
-     | SEMICOLON {}
-
-expr : assignexpr {}
-     | expr op expr {}
-     | term {}
-     ;
-
-op : PLUS {}
-   | MINUS {}
-   | MULT {}
-   | DIV {}
-   | MOD {}
-   | GREATER {}
-   | GREATER_EQUAL {}
-   | LESS {}
-   | LESS_EQUAL {}
-   | EQUALS_EQUALS {}
-   | NOT_EQUALS {}
-   | AND {}
-   | OR {} 
-   ;
-
-term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {}
-     | MINUS expr {}
-     | NOT expr {}
-     | PLUS_PLUS lvalue {}
-     | lvalue PLUS_PLUS {}
-     | MINUS_MINUS lvalue {}
-     | DIV lvalue MINUS_MINUS {}
-     | DIV primary
-     ;
+stmt:
+      expr SEMICOLON      { DEBUG_REDUCE("stmt -> expr ;"); }
+    | ifstmt              { DEBUG_REDUCE("stmt -> ifstmt"); }
+    | whilestmt           { DEBUG_REDUCE("stmt -> whilestmt"); }
+    | forstmt             { DEBUG_REDUCE("stmt -> forstmt"); }
+    | returnstmt          { DEBUG_REDUCE("stmt -> returnstmt"); }
+    | BREAK SEMICOLON     { DEBUG_REDUCE("stmt -> break ;"); }
+    | CONTINUE SEMICOLON  { DEBUG_REDUCE("stmt -> continue ;"); }
+    | block               { DEBUG_REDUCE("stmt -> block"); }
+    | funcdef             { DEBUG_REDUCE("stmt -> funcdef"); }
+    | SEMICOLON           { DEBUG_REDUCE("stmt -> ;"); }
+    ;
 
 
-assignexpr : lvalue EQUALS expr {}
-           ;
+expr:
+      assignexpr          { DEBUG_REDUCE("expr -> assignexpr"); }
+    | expr op expr        { DEBUG_REDUCE("expr -> expr op expr"); }
+    | term                { DEBUG_REDUCE("expr -> term"); }
+    ;
+ 
+op :  PLUS           { DEBUG_REDUCE("op -> +"); }
+    | MINUS          { DEBUG_REDUCE("op -> -"); }
+    | MULT           { DEBUG_REDUCE("op -> *"); }
+    | DIV            { DEBUG_REDUCE("op -> /"); }
+    | MOD            { DEBUG_REDUCE("op -> %"); }
+    | GREATER        { DEBUG_REDUCE("op -> >"); }
+    | GREATER_EQUAL  { DEBUG_REDUCE("op -> >="); }
+    | LESS           { DEBUG_REDUCE("op -> <"); }
+    | LESS_EQUAL     { DEBUG_REDUCE("op -> <="); }
+    | EQUALS_EQUALS  { DEBUG_REDUCE("op -> =="); }
+    | NOT_EQUALS     { DEBUG_REDUCE("op -> !="); }
+    | AND            { DEBUG_REDUCE("op -> and"); }
+    | OR             { DEBUG_REDUCE("op -> or"); }
+    ;
 
-primary : lvalue {}
-        | call {}
-        | DIV LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {}
-        | DIV objectdef {} 
-        | const {}
-        ;
+term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+        { DEBUG_REDUCE("term -> (expr)"); }
+    | MINUS expr
+        { DEBUG_REDUCE("term -> -expr"); }
+    | NOT expr
+        { DEBUG_REDUCE("term -> not expr"); }
+    | PLUS_PLUS lvalue
+        { DEBUG_REDUCE("term -> ++lvalue"); }
+    | lvalue PLUS_PLUS
+        { DEBUG_REDUCE("term -> lvalue++"); }
+    | MINUS_MINUS lvalue
+        { DEBUG_REDUCE("term -> --lvalue"); }
+    | lvalue MINUS_MINUS
+        { DEBUG_REDUCE("term -> lvalue--"); }
+    | primary
+        { DEBUG_REDUCE("term -> primary"); }
+    ;
 
-lvalue : IDENT {}
-       | LOCAL IDENT {}
-       | NAMESPACE IDENT {}
-       | member {}
-       ;
+assignexpr:
+      lvalue ASSIGN expr
+        { DEBUG_REDUCE("assignexpr -> lvalue = expr"); }
+    ;
 
-member : lvalue DOT IDENT {}
-       | lvalue LEFT_BRACE expr RIGHT_BRACE {}
-       | call DOT IDENT {}
-       | call LEFT_BRACE expr RIGHT_BRACE {}
-       ;
+primary:
+      lvalue                                { DEBUG_REDUCE("primary -> lvalue"); }
+    | call                                  { DEBUG_REDUCE("primary -> call"); }
+    | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+                                           { DEBUG_REDUCE("primary -> (funcdef)"); }
+    | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
+    | const                                 { DEBUG_REDUCE("primary -> const"); }
+    ;
 
-call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {}
-     | lvalue callsuffix {}
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {}
-     ;
+lvalue:
+      IDENT                                 { DEBUG_REDUCE("lvalue -> IDENT"); }
+    | LOCAL IDENT                           { DEBUG_REDUCE("lvalue -> local IDENT"); }
+    | NAMESPACE IDENT                       { DEBUG_REDUCE("lvalue -> ::IDENT"); }
+    | member                                { DEBUG_REDUCE("lvalue -> member"); }
+    ;
 
-callsuffix : normcall {}
-           | methodcall {}
-           ;
+member:
+      lvalue DOT IDENT                      { DEBUG_REDUCE("member -> lvalue . IDENT"); }
+    | lvalue LEFT_BRACE expr RIGHT_BRACE    { DEBUG_REDUCE("member -> lvalue [expr]"); }
+    | call DOT IDENT                        { DEBUG_REDUCE("member -> call . IDENT"); }
+    | call LEFT_BRACE expr RIGHT_BRACE      { DEBUG_REDUCE("member -> call [expr]"); }
+    ;
 
-normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {}
-         ;
+call:
+        lvalue callsuffix { DEBUG_REDUCE("call -> lvalue callsuffix"); }
+    | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
+    | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+                                           { DEBUG_REDUCE("call -> (funcdef)(elist)"); }
+    ;
 
-methodcall : IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {}
-           ;
+callsuffix:
+      normcall                              { DEBUG_REDUCE("callsuffix -> normcall"); }
+    | methodcall                            { DEBUG_REDUCE("callsuffix -> methodcall"); }
+    ;
 
-elist : elist expr_list {}
-      ;
+normcall:
+      LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+                                           { DEBUG_REDUCE("normcall -> (elist)"); }
+    ;
 
-expr_list : expr COMMA expr {}
-          ;
+methodcall:
+      NAMESPACE IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+                                           { DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
+    ;
 
-objectdef : LEFT_BRACE elist DIV indexed RIGHT_BRACE {}
-          ;
+elist:
+      /* empty */                           { DEBUG_REDUCE("elist -> empty"); }
+    | expr                                  { DEBUG_REDUCE("elist -> expr"); }
+    | elist COMMA expr                      { DEBUG_REDUCE("elist -> elist , expr"); }
+    ;
 
-indexed : indexed list_indexedelem {}
-        ;
+objectdef:
+      LEFT_BRACKET elist RIGHT_BRACKET         { DEBUG_REDUCE("objectdef -> {elist}"); }
+      | LEFT_BRACKET indexed RIGHT_BRACKET         { DEBUG_REDUCE("objectdef -> indexed "); }
+    ;
 
-list_indexedelem : indexedelem COMMA indexedelem {}
-                 ;
+indexed:
+      indexedelem                           { DEBUG_REDUCE("indexed -> indexedelem"); }
+    | indexed COMMA indexedelem            { DEBUG_REDUCE("indexed -> indexed , indexedelem"); }
+    ;
 
-indexedelem : LEFT_BRACKET expr COLON expr RIGHT_BRACKET {}
-            ;
+indexedelem:
+      LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+                                           { DEBUG_REDUCE("indexedelem -> [expr : expr]"); }
+    ;
 
-block : LEFT_BRACKET stmt_list RIGHT_BRACKET {}
-      | LEFT_BRACKET RIGHT_BRACKET {}
-      ;
+block:
+      LEFT_BRACKET stmt_list RIGHT_BRACKET { DEBUG_REDUCE("block -> {stmt_list}"); }
+  ;
+    
 
-funcdef : FUNCTION IDENT LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
-        ;
+funcdef:
+      FUNCTION  { DEBUG_REDUCE("funcdef -> function(idlist) block"); } 
+      
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+                                          
+    | FUNCTION  { DEBUG_REDUCE("funcdef -> function(idlist) block"); } 
+            IDENT LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+                                           { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+    ;
 
-const  : INTEGER {}
-       | STRING {}
-       | NIL {}
-       | TRUE {}
-       | FALSE {} 
-       ;
+const:
+      INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
+    | STRING      { DEBUG_REDUCE("const -> STRING"); }
+    | NIL         { DEBUG_REDUCE("const -> NIL"); }
+    | TRUE        { DEBUG_REDUCE("const -> TRUE"); }
+    | FALSE       { DEBUG_REDUCE("const -> FALSE"); }
+    ;
 
-idlist : idlist identlist {}
-       ;
+idlist:
+      IDENT                      { DEBUG_REDUCE("idlist -> IDENT"); }
+    | idlist COMMA IDENT         { DEBUG_REDUCE("idlist -> idlist , IDENT"); }
+    ;
 
-identlist : IDENT COMMA IDENT {}
-          ;
+ifstmt:
+      IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+        { DEBUG_REDUCE("ifstmt -> if (expr) stmt"); }
+    | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
+        { DEBUG_REDUCE("ifstmt -> if (expr) stmt else stmt"); }
+    ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {}
-       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {}
-       ;
+whilestmt:
+      WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+        { DEBUG_REDUCE("whilestmt -> while (expr) stmt"); }
+    ;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {}
-          ;
+    
+forstmt:
+      FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
+        { DEBUG_REDUCE("forstmt -> for (elist; expr; elist) stmt"); }
+    ;
 
-forstmt: FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt {}
-       ;
-
-returnstmt : RETURN SEMICOLON  {}
-           | RETURN expr SEMICOLON {}
-           ;
+returnstmt:
+      RETURN SEMICOLON
+        { DEBUG_REDUCE("returnstmt -> return ;"); }
+    | RETURN expr SEMICOLON
+        { DEBUG_REDUCE("returnstmt -> return expr ;"); }
+    ;
 %%
 
 int main() {
@@ -237,5 +261,5 @@ int main() {
 }
 
 void yyerror(const char *s) {
-    cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token : " <<  yytext<< endl;
+    cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token : " <<  yytext << endl;
 }

@@ -26,3 +26,5 @@ void SymTable_map(SymTable_T oSymTable,
                   void (*pfApply)(const std::string &pcKey, void *pvValue,
                                   void *pvExtra),
                   void *pvExtra);
+
+void *SymTable_lookup(SymTable_T oSymTable, const std::string &pcKey);

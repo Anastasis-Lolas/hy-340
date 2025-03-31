@@ -1,8 +1,5 @@
 #include "scopelist.h"
 
-#include <cassert>
-
-
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry) {
     assert(entry);
 

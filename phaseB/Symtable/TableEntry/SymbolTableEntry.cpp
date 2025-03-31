@@ -6,7 +6,7 @@
 #include "SymbolTableEntry.h"
 
 
-/* Creates a new scope list */
+/*Creates a new entry for the Symbol Table */
 SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
                                      unsigned int scope, unsigned int line,
                                      int offset, std::vector<void *> args) {
@@ -39,4 +39,15 @@ SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
     }
 
     return entry;
+}
+
+/*Frees the memory used by the Symbol Table Entry */
+void SymTableEntry_free(SymbolTableEntry_T entry) {
+    assert(entry);
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        delete entry->value.funcVal;
+    } else {
+        delete entry->value.varVal;
+    }
+    delete entry;
 }

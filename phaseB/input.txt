@@ -1,2 +1,19 @@
-5 + 3
+
+local result = a + b;
+  return result;
+
+
+x = 3;
+y = 4;
+z = foo(x, y);
+
+if (z > 5) {
+    return z;
+} else {
+    return 0;
+}
+
+while (x < 10) {
+    x = x + 1;
+}
 

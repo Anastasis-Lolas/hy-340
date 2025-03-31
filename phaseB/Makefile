@@ -23,7 +23,7 @@ $(SCANNER_CPP): $(SCANNER_L) $(PARSER_H)
 	$(FLEX) -o $@ $<
 
 $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
-	$(BISON) -d -o $(PARSER_CPP) $<
+	$(BISON) -d -v -o $(PARSER_CPP) $<
 
 $(EXEC): $(LIST_CPP) $(SCANNER_CPP) $(PARSER_CPP)
 	$(CC) $^ -o $@

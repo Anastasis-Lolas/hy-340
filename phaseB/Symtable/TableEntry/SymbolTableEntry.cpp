@@ -17,18 +17,6 @@ SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
     }
     entry->isActive = true;
     entry->type = type;
-    entry->value.varVal = new Variable;
-    if (entry->value.varVal == NULL) {
-        printf("error-out of memory\n");
-        exit(-1);
-    }
-    entry->value.varVal->name = name;
-    entry->value.varVal->scope = scope;
-    entry->value.varVal->line = line;
-
-    // Or I will find it manually
-    entry->value.varVal->offset = offset;
-
     if (type == USERFUNC || type == LIBFUNC) {
         entry->value.funcVal = new Function;
         if (entry->value.funcVal == NULL) {
@@ -36,7 +24,24 @@ SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
             exit(-1);
         }
         entry->value.funcVal->args = args;
+        entry->value.funcVal->name = name;
+        entry->value.funcVal->scope = scope;
+        entry->value.funcVal->line = line;
+        // Or I will find it manually
+        entry->value.funcVal->offset = offset;
+    } else {
+        entry->value.varVal = new Variable;
+        if (entry->value.varVal == NULL) {
+            printf("error-out of memory\n");
+            exit(-1);
+        }
+        entry->value.varVal->name = name;
+        entry->value.varVal->scope = scope;
+        entry->value.varVal->line = line;
+        // Or I will find it manually
+        entry->value.varVal->offset = offset;
     }
+
 
     return entry;
 }

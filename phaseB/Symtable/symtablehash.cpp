@@ -3,8 +3,8 @@
 // #include <string>
 #include <vector>
 
-#include "SymTable.h"
 #include "TableEntry/SymbolTableEntry.h"
+#include "symtable.h"
 
 
 #define HASH_MULTIPLIER 65599
@@ -245,6 +245,24 @@ void *SymTable_lookup(SymTable_T oSymTable, const std::string &pcKey) {
         symbolEntry = static_cast<SymbolTableEntry_T>(entry->value);
 
         if (entry->key == pcKey && symbolEntry && symbolEntry->isActive) {
+            return entry->value;
+        }
+        entry = entry->next;
+    }
+    return nullptr;
+}
+
+void *SymTable_general_lookup(SymTable_T oSymTable, const std::string &pcKey) {
+    // hashing to get the index of the table
+    int index = SymTable_hash(pcKey) % (oSymTable->size);
+
+    hash_t entry = oSymTable->buckets[index];
+    SymbolTableEntry_T symbolEntry;
+
+    while (entry) {
+        symbolEntry = static_cast<SymbolTableEntry_T>(entry->value);
+
+        if (entry->key == pcKey && symbolEntry) {
             return entry->value;
         }
         entry = entry->next;

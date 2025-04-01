@@ -28,3 +28,5 @@ void SymTable_map(SymTable_T oSymTable,
                   void *pvExtra);
 
 void *SymTable_lookup(SymTable_T oSymTable, const std::string &pcKey);
+
+void *SymTable_general_lookup(SymTable_T oSymTable, const std::string &pcKey);

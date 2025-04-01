@@ -12,6 +12,7 @@ extern FILE* yyout;
 extern int yylex(void);
 extern char* yytext;
 extern int yylex(void);
+extern unsigned int scope;
 
 #define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
 //#define DEBUG_REDUCE(msg)

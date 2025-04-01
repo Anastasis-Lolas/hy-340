@@ -4,13 +4,14 @@ BISON = bison
 
 SCANNER_L = scanner.l
 LIST_CPP = List/list.cpp
+SYMTABLE_CPP = Symtable/symtablehash.cpp 
+SYM_ENTRY_CPP = Symtable/TableEntry/SymbolTableEntry.cpp
 SCANNER_CPP = scanner.cpp
 PARSER_Y = parser.y
 PARSER_CPP = parser.cpp
 PARSER_H = parser.hpp
 
 EXEC = scanner
-
 
 TESTS_DIR = tests
 BUILD_DIR = .
@@ -25,7 +26,7 @@ $(SCANNER_CPP): $(SCANNER_L) $(PARSER_H)
 $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
 	$(BISON) -d -v -o $(PARSER_CPP) $<
 
-$(EXEC): $(LIST_CPP) $(SCANNER_CPP) $(PARSER_CPP)
+$(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  # Added SYMTABLE_CPP
 	$(CC) $^ -o $@
 
 test: $(EXEC)
@@ -42,7 +43,6 @@ memcheck: $(BUILD_DIR)/scanner
 	         --log-file=memcheck.out \
 	         $(BUILD_DIR)/scanner $(TESTS_DIR)/operator1.in > /dev/null
 	@printf "\n-> Valgrind memcheck log file (memcheck.out) generated\n\n"
-
 
 clean:
 	rm -f $(SCANNER_CPP) $(PARSER_CPP) $(PARSER_H) $(EXEC)

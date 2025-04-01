@@ -62,6 +62,7 @@ extern int yylex(void);
 %left AND
 %left OR 
 %right EQUALS
+%right ASSIGN
 
 
 
@@ -90,26 +91,26 @@ stmt:
     ;
 
 
+
+
 expr:
-      assignexpr          { DEBUG_REDUCE("expr -> assignexpr"); }
-    | expr op expr        { DEBUG_REDUCE("expr -> expr op expr"); }
-    | term                { DEBUG_REDUCE("expr -> term"); }
+      assignexpr                              { DEBUG_REDUCE("expr -> assignexpr"); }
+    | expr PLUS expr                          { DEBUG_REDUCE("expr -> expr + expr"); }
+    | expr MINUS expr                         { DEBUG_REDUCE("expr -> expr - expr"); }
+    | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr"); }
+    | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr"); }
+    | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr"); }
+    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr"); }
+    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr"); }
+    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr"); }
+    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr"); }
+    | expr EQUALS_EQUALS expr                 { DEBUG_REDUCE("expr -> expr == expr"); }
+    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr"); }
+    | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); }
+    | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr"); }
+    | term                                    { DEBUG_REDUCE("expr -> term"); }
     ;
- 
-op :  PLUS           { DEBUG_REDUCE("op -> +"); }
-    | MINUS          { DEBUG_REDUCE("op -> -"); }
-    | MULT           { DEBUG_REDUCE("op -> *"); }
-    | DIV            { DEBUG_REDUCE("op -> /"); }
-    | MOD            { DEBUG_REDUCE("op -> %"); }
-    | GREATER        { DEBUG_REDUCE("op -> >"); }
-    | GREATER_EQUAL  { DEBUG_REDUCE("op -> >="); }
-    | LESS           { DEBUG_REDUCE("op -> <"); }
-    | LESS_EQUAL     { DEBUG_REDUCE("op -> <="); }
-    | EQUALS_EQUALS  { DEBUG_REDUCE("op -> =="); }
-    | NOT_EQUALS     { DEBUG_REDUCE("op -> !="); }
-    | AND            { DEBUG_REDUCE("op -> and"); }
-    | OR             { DEBUG_REDUCE("op -> or"); }
-    ;
+
 
 term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         { DEBUG_REDUCE("term -> (expr)"); }

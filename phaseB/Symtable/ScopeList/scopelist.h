@@ -33,3 +33,7 @@ void delete_scopelist(ScopeList_T& scopeList, int scope);
 ScopeList_T get_active_vector(ScopeList_T& scopeList);
 
 int find_offset(const ScopeList_T& scopeList, int scope);
+
+void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable);
+
+int search_LIBS_FUNC(std::string& name);

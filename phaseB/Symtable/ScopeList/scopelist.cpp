@@ -68,12 +68,17 @@ int search_LIBS_FUNC(std::string& name) {
     }
     return 1;  // Not found
 }
-int search_LIBS_FUNC(std::string& name) {
-    for (int i = 0; i < LIBS_FUNC.size(); i++) {
-        if (name == LIBS_FUNC[i]) {
-            return 0;
-        }
+
+
+int find_offset(const ScopeList_T& scopeList, int scope) {
+    if (scope < 0 || scope >= scopeList.size()) {
+        return -1;
     }
 
-    return 1;  // if not found
+    const auto& entries = scopeList[scope];
+    if (entries.empty()) {
+        return -1;
+    }
+
+    return entries.back()->value.varVal->offset;
 }

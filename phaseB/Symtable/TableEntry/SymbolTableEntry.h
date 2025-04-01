@@ -17,7 +17,7 @@ typedef struct Function {
     unsigned int offset;
 } Function;
 
-enum SymbolType { GLOBAL, LOCAL, FORMAL, USERFUNC, LIBFUNC } SymbolType_t;
+enum SymbolType { GLOBAL, LLOCAL, FORMAL, USERFUNC, LIBFUNC };
 
 typedef struct SymbolTableEntry {
     bool isActive;

@@ -26,7 +26,7 @@ void delete_scopelist(ScopeList_T& scopeList, int scope) {
     return;
 }
 
-ScopeList_T& get_active_vector(ScopeList_T& scopeList) {
+ScopeList_T get_active_vector(ScopeList_T& scopeList) {
     ScopeList_T activeVector;
     activeVector.resize(scopeList.size());
 
@@ -41,9 +41,9 @@ ScopeList_T& get_active_vector(ScopeList_T& scopeList) {
 }
 
 void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable) {
-    const size_t libFuncSize = sizeof(LIBS_FUNC) / sizeof(LIBS_FUNC[0]);
-    for (int i = 0; i < libFuncSize; i++) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
         Function* new_lib_func = new Function;
+
         new_lib_func->name = LIBS_FUNC[i];
         new_lib_func->scope = 0;
         new_lib_func->line = 0;
@@ -55,17 +55,27 @@ void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable) {
         entry->type = LIBFUNC;
 
         SymTable_put(oSymTable, LIBS_FUNC[i], entry);
-        add_entry(scopeList, entry);  // Fixed scopelist to scopeList
+        add_entry(scopelist, entry);
     }
 }
 
 int search_LIBS_FUNC(std::string& name) {
-    const size_t libFuncSize = sizeof(LIBS_FUNC) / sizeof(LIBS_FUNC[0]);
-    for (int i = 0; i < libFuncSize; i++) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
         if (name == LIBS_FUNC[i]) {
             return 0;
         }
     }
-    return 1;  // Not found
+
+    return 1;  // if not found
 }
- 
+
+
+int search_LIBS_FUNC(std::string& name) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
+        if (name == LIBS_FUNC[i]) {
+            return 0;
+        }
+    }
+
+    return 1;  // if not found
+}

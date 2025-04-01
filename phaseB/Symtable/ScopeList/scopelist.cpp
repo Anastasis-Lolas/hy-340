@@ -40,16 +40,31 @@ ScopeList_T get_active_vector(ScopeList_T& scopeList) {
     return activeVector;
 }
 
+void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
+        Function* new_lib_func = new Function;
 
-int find_offset(const ScopeList_T& scopeList, int scope) {
-    if (scope < 0 || scope >= scopeList.size()) {
-        return -1;
+        new_lib_func->name = LIBS_FUNC[i];
+        new_lib_func->scope = 0;
+        new_lib_func->line = 0;
+        new_lib_func->offset = 0;
+
+        SymbolTableEntry_T entry = new SymbolTableEntry;
+        entry->isActive = true;
+        entry->value.funcVal = new_lib_func;
+        entry->type = LIBFUNC;
+
+        SymTable_put(oSymTable, LIBS_FUNC[i], entry);
+        add_entry(scopelist, entry);
+    }
+}
+
+int search_LIBS_FUNC(std::string& name) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
+        if (name == LIBS_FUNC[i]) {
+            return 0;
+        }
     }
 
-    const auto& entries = scopeList[scope];
-    if (entries.empty()) {
-        return -1;
-    }
-
-    return entries.back()->value.varVal->offset;
+    return 1;  // if not found
 }

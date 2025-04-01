@@ -269,3 +269,85 @@ void *SymTable_general_lookup(SymTable_T oSymTable, const std::string &pcKey) {
     }
     return nullptr;
 }
+
+
+void SymTable_print(SymTable_T oSymTable) {
+    if (!oSymTable) {
+        printf("Symbol Table is NULL\n");
+        return;
+    }
+
+    printf("========================================================\n");
+    printf("                     SYMBOL TABLE\n");
+    printf("========================================================\n");
+
+    for (size_t i = 0; i < oSymTable->size; i++) {
+        hash_t entry = oSymTable->buckets[i];
+
+        while (entry) {
+            SymbolTableEntry_T symbolEntry =
+                static_cast<SymbolTableEntry_T>(entry->value);
+
+            if (symbolEntry) {
+                printf(
+                    "Bucket[%zu]: Name: %s | Scope: %u | Line: %u | Type: ", i,
+                    (symbolEntry->type == USERFUNC ||
+                     symbolEntry->type == LIBFUNC)
+                        ? symbolEntry->value.funcVal->name.c_str()
+                        : symbolEntry->value.varVal->name.c_str(),
+                    (symbolEntry->type == USERFUNC ||
+                     symbolEntry->type == LIBFUNC)
+                        ? symbolEntry->value.funcVal->scope
+                        : symbolEntry->value.varVal->scope,
+                    (symbolEntry->type == USERFUNC ||
+                     symbolEntry->type == LIBFUNC)
+                        ? symbolEntry->value.funcVal->line
+                        : symbolEntry->value.varVal->line);
+
+                // Εκτύπωση τύπου
+                switch (symbolEntry->type) {
+                    case GLOBAL:
+                        printf("GLOBAL");
+                        break;
+                    case LLOCAL:
+                        printf("LLOCAL");
+                        break;
+                    case FORMAL:
+                        printf("FORMAL");
+                        break;
+                    case USERFUNC:
+                        printf("USERFUNC");
+                        break;
+                    case LIBFUNC:
+                        printf("LIBFUNC");
+                        break;
+                    default:
+                        printf("UNKNOWN");
+                        break;
+                }
+
+                printf(" | Active: %s |", symbolEntry->isActive ? "Yes" : "No");
+
+                // Αν είναι συνάρτηση, εκτύπωσε και τα arguments
+                if (symbolEntry->type == USERFUNC ||
+                    symbolEntry->type == LIBFUNC) {
+                    printf("      Args: [");
+                    for (size_t j = 0;
+                         j < symbolEntry->value.funcVal->args.size(); j++) {
+                        printf("arg%zu", j);
+                        if (j < symbolEntry->value.funcVal->args.size() - 1)
+                            printf(", ");
+                    }
+                    printf("]\n");
+                }
+            } else {
+                printf("Bucket[%zu]: INVALID ENTRY\n", i);
+            }
+
+            entry =
+                entry->next;  // Προχώρα στο επόμενο entry στη συνδεδεμένη λίστα
+        }
+    }
+
+    printf("========================================================\n");
+}

@@ -1,3 +1,6 @@
+#ifndef SYMTABLE_HEADER
+#define SYMTABLE_HEADER
+
 /*Struct for symbol Table*/
 typedef struct SymTable *SymTable_T;
 
@@ -30,3 +33,6 @@ void SymTable_map(SymTable_T oSymTable,
 void *SymTable_lookup(SymTable_T oSymTable, const std::string &pcKey);
 
 void *SymTable_general_lookup(SymTable_T oSymTable, const std::string &pcKey);
+
+void SymTable_print(SymTable_T oSymTable);
+#endif

@@ -1,3 +1,6 @@
+#ifndef SCOPELIST_HEADER
+#define SCOPELIST_HEADER
+
 #include <cassert>
 #include <iostream>
 #include <list>
@@ -37,3 +40,5 @@ void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable);
 int search_LIBS_FUNC(std::string& name);
 
 int find_offset(const ScopeList_T& scopeList, int scope);
+
+#endif

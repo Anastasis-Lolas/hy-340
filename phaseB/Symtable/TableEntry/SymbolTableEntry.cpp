@@ -1,9 +1,8 @@
+#include "SymbolTableEntry.h"
+
 #include <cassert>
 #include <iostream>
-// #include <string>
 #include <vector>
-
-#include "SymbolTableEntry.h"
 
 
 /*Creates a new entry for the Symbol Table */
@@ -42,7 +41,7 @@ SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
         entry->value.varVal->offset = offset;
     }
 
-
+    std::cout << "SymboleEntry_new: " << entry->value.varVal->name << std::endl;
     return entry;
 }
 

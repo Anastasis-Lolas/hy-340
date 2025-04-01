@@ -7,6 +7,7 @@ LIST_CPP = List/list.cpp
 SYMTABLE_CPP = Symtable/symtablehash.cpp 
 SYM_ENTRY_CPP = Symtable/TableEntry/SymbolTableEntry.cpp
 SCANNER_CPP = scanner.cpp
+SCOPE_CPP = Symtable/ScopeList/scopelist.cpp
 PARSER_Y = parser.y
 PARSER_CPP = parser.cpp
 PARSER_H = parser.hpp
@@ -26,7 +27,7 @@ $(SCANNER_CPP): $(SCANNER_L) $(PARSER_H)
 $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
 	$(BISON) -d -v -o $(PARSER_CPP) $<
 
-$(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  # Added SYMTABLE_CPP
+$(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  # Added SYMTABLE_CPP
 	$(CC) $^ -o $@
 
 test: $(EXEC)

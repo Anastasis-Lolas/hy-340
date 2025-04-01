@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../TableEntry/SymbolTableEntry.h"
+#include "../symtable.h"
 
 
 // ScopeList_T is a vector of lists cointaining all entries for each scope

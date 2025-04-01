@@ -68,3 +68,14 @@ int search_LIBS_FUNC(std::string& name) {
 
     return 1;  // if not found
 }
+
+
+int search_LIBS_FUNC(std::string& name) {
+    for (int i = 0; i < LIBS_FUNC.size(); i++) {
+        if (name == LIBS_FUNC[i]) {
+            return 0;
+        }
+    }
+
+    return 1;  // if not found
+}

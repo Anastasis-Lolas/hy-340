@@ -1,6 +1,9 @@
 %{
 #include <iostream>
 #include <string>
+#include "Symtable/symtable.h"
+#include "Symtable/TableEntry/SymbolTableEntry.h"
+
 using namespace std;
 
 void yyerror (const char* yaccProvidedMessage);

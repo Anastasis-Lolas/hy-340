@@ -107,13 +107,11 @@ int SymTable_put(SymTable_T oSymTable, const std::string &pcKey,
     }
 
     index = SymTable_hash(pcKey) % (oSymTable->size);
-    for (hash_t node = oSymTable->buckets[index]; node; node = node->next) {
-        if (node->key == pcKey) return 0;
-    }
     access = New_node();
     /*+1 for \0, the end of string*/
     access->key = pcKey;
     access->value = pvValue;
+    access->next = oSymTable->buckets[index];
     oSymTable->buckets[index] = access;
 
     return 1;
@@ -283,28 +281,28 @@ void SymTable_print(SymTable_T oSymTable) {
 
     for (size_t i = 0; i < oSymTable->size; i++) {
         hash_t entry = oSymTable->buckets[i];
-
+        if (entry) {
+            printf("Bucket[%zu]: ", i);
+        }
         while (entry) {
             SymbolTableEntry_T symbolEntry =
                 static_cast<SymbolTableEntry_T>(entry->value);
 
             if (symbolEntry) {
-                printf(
-                    "Bucket[%zu]: Name: %s | Scope: %u | Line: %u | Type: ", i,
-                    (symbolEntry->type == USERFUNC ||
-                     symbolEntry->type == LIBFUNC)
-                        ? symbolEntry->value.funcVal->name.c_str()
-                        : symbolEntry->value.varVal->name.c_str(),
-                    (symbolEntry->type == USERFUNC ||
-                     symbolEntry->type == LIBFUNC)
-                        ? symbolEntry->value.funcVal->scope
-                        : symbolEntry->value.varVal->scope,
-                    (symbolEntry->type == USERFUNC ||
-                     symbolEntry->type == LIBFUNC)
-                        ? symbolEntry->value.funcVal->line
-                        : symbolEntry->value.varVal->line);
+                printf(" Name: %s | Scope: %u | Line: %u | Type: ",
+                       (symbolEntry->type == USERFUNC ||
+                        symbolEntry->type == LIBFUNC)
+                           ? symbolEntry->value.funcVal->name.c_str()
+                           : symbolEntry->value.varVal->name.c_str(),
+                       (symbolEntry->type == USERFUNC ||
+                        symbolEntry->type == LIBFUNC)
+                           ? symbolEntry->value.funcVal->scope
+                           : symbolEntry->value.varVal->scope,
+                       (symbolEntry->type == USERFUNC ||
+                        symbolEntry->type == LIBFUNC)
+                           ? symbolEntry->value.funcVal->line
+                           : symbolEntry->value.varVal->line);
 
-                // Εκτύπωση τύπου
                 switch (symbolEntry->type) {
                     case GLOBAL:
                         printf("GLOBAL");
@@ -328,7 +326,7 @@ void SymTable_print(SymTable_T oSymTable) {
 
                 printf(" | Active: %s |", symbolEntry->isActive ? "Yes" : "No");
 
-                // Αν είναι συνάρτηση, εκτύπωσε και τα arguments
+
                 if (symbolEntry->type == USERFUNC ||
                     symbolEntry->type == LIBFUNC) {
                     printf("      Args: [");
@@ -339,13 +337,16 @@ void SymTable_print(SymTable_T oSymTable) {
                             printf(", ");
                     }
                     printf("]\n");
-                }
+                } else
+                    printf("\n");
             } else {
                 printf("Bucket[%zu]: INVALID ENTRY\n", i);
             }
 
-            entry =
-                entry->next;  // Προχώρα στο επόμενο entry στη συνδεδεμένη λίστα
+            entry = entry->next;
+            if (entry) {
+                printf("\t\t");
+            }
         }
     }
 

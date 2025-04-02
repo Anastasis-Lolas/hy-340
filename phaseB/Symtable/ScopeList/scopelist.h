@@ -31,10 +31,19 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope);
 
 void deactivate_scope(ScopeList_T& scopeList, int scope);
 
+void reactivate_scope(ScopeList_T& scopeList, int scope);
+
 void delete_scopelist(ScopeList_T& scopeList, int scope);
 
 SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
                                        const std::string& id, int scope);
+
+SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
+                                       const std::string& id, int scope,
+                                       bool isActive);
+
+SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
+                                 const std::string& id, int scope);
 
 ScopeList_T get_active_vector(ScopeList_T& scopeList);
 

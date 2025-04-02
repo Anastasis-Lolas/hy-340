@@ -17,7 +17,13 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
     }
     return;
 }
-
+void reactivate_scope(ScopeList_T& scopeList, int scope) {
+    assert(scope >= 0 && scope < scopeList.size());
+    for (auto& entry : scopeList[scope]) {
+        entry->isActive = true;
+    }
+    return;
+}
 void delete_scopelist(ScopeList_T& scopeList, int scope) {
     assert(scope >= 0 && scope < scopeList.size());
     scopeList[scope].clear();
@@ -84,19 +90,57 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
 
 SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
                                        const std::string& id, int scope) {
-    if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
+    if (scope < 0) {
         std::cout << "Error: Invalid scope " << scope << std::endl;
+        return nullptr;
+    } else if (scope >= static_cast<int>(scopeList.size())) {
         return nullptr;
     }
 
     for (const auto& entry : scopeList[scope]) {
-        if (entry->isActive &&
-            ((entry->type == USERFUNC || entry->type == LIBFUNC)
-                 ? entry->value.funcVal->name == id
-                 : entry->value.varVal->name == id)) {
+        if ((entry->type == USERFUNC || entry->type == LIBFUNC)
+                ? entry->value.funcVal->name == id
+                : entry->value.varVal->name == id) {
             return entry;
         }
     }
+    return nullptr;
+}
+
+SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
+                                       const std::string& id, int scope,
+                                       bool active) {
+    if (scope < 0) {
+        std::cout << "Error: Invalid scope " << scope << std::endl;
+        return nullptr;
+    } else if (scope >= static_cast<int>(scopeList.size())) {
+        return nullptr;
+    }
+    for (const auto& entry : scopeList[scope]) {
+        if (entry->isActive == active) {
+            if ((entry->type == USERFUNC || entry->type == LIBFUNC)
+                    ? entry->value.funcVal->name == id
+                    : entry->value.varVal->name == id) {
+                return entry;
+            }
+        }
+    }
+    return nullptr;
+}
+
+SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
+                                 const std::string& id, int scope) {
+    if (scope < 0) {
+        std::cout << "Error: Invalid scope " << scope << std::endl;
+        return nullptr;
+    }
+
+    for (int i = scope; i >= 0; i--) {
+        SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i, true);
+        << std::endl;
+        if (entry) return entry;
+    }
+    std::cout << "VGIKA\n";
     return nullptr;
 }
 

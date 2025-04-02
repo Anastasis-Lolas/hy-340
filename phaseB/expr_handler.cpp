@@ -1,8 +1,8 @@
 #ifndef HANDLER_HEADER
 #define HANDLER_HEADER
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
 
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
@@ -22,7 +22,10 @@ void init_tables() {
 
 std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
-
+void exit_block() {
+    scope--;
+    reactivate_scope(scopeList, scope);
+}
 void add_function(std::string name, std::vector<void*> args) {
     SymbolTableEntry_T entry = nullptr;
     int offset;
@@ -142,16 +145,14 @@ void handle_namespace_dent(std::string name) {
 }
 
 
-
 void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op) {
     if (entry->type == USERFUNC || entry->type == LIBFUNC) {
         std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-            ? entry->value.funcVal->name
-            : entry->value.varVal->name;
+                               ? entry->value.funcVal->name
+                               : entry->value.varVal->name;
 
-        std::cerr << "Error: cannot apply operator '" << op
-                  << "' to function '" << name
-                  << "' at line " << yylineno << std::endl;
+        std::cerr << "Error: cannot apply operator '" << op << "' to function '"
+                  << name << "' at line " << yylineno << std::endl;
     }
 }
 
@@ -160,12 +161,12 @@ void check_assignable(SymbolTableEntry_T entry) {
 
     if (entry->type == USERFUNC || entry->type == LIBFUNC) {
         std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-            ? entry->value.funcVal->name
-            : entry->value.varVal->name;
+                               ? entry->value.funcVal->name
+                               : entry->value.varVal->name;
 
         std::cerr << "Error: function '" << name
-                  << "' cannot be used as lvalue at line "
-                  << yylineno << std::endl;
+                  << "' cannot be used as lvalue at line " << yylineno
+                  << std::endl;
     }
 }
 
@@ -176,11 +177,13 @@ void printFullSymTable(SymTable_T table) {
     for (size_t i = 0; i < table->size; ++i) {
         hash_t node = table->buckets[i];
         while (node) {
-            SymbolTableEntry_T entry = static_cast<SymbolTableEntry_T>(node->value);
+            SymbolTableEntry_T entry =
+                static_cast<SymbolTableEntry_T>(node->value);
             if (entry && entry->isActive) {
-                unsigned int scope = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                                     ? entry->value.funcVal->scope
-                                     : entry->value.varVal->scope;
+                unsigned int scope =
+                    (entry->type == USERFUNC || entry->type == LIBFUNC)
+                        ? entry->value.funcVal->scope
+                        : entry->value.varVal->scope;
                 scopedEntries[scope].push_back(entry);
             }
             node = node->next;
@@ -198,24 +201,36 @@ void printFullSymTable(SymTable_T table) {
             unsigned int line;
 
             switch (entry->type) {
-                case GLOBAL:   label = "[global variable]"; break;
-                case LLOCAL:   label = "[local variable]"; break;
-                case FORMAL:   label = "[formal argument]"; break;
-                case USERFUNC: label = "[user function]"; break;
-                case LIBFUNC:  label = "[library function]"; break;
-                default:       label = "[unknown]"; break;
+                case GLOBAL:
+                    label = "[global variable]";
+                    break;
+                case LLOCAL:
+                    label = "[local variable]";
+                    break;
+                case FORMAL:
+                    label = "[formal argument]";
+                    break;
+                case USERFUNC:
+                    label = "[user function]";
+                    break;
+                case LIBFUNC:
+                    label = "[library function]";
+                    break;
+                default:
+                    label = "[unknown]";
+                    break;
             }
 
             name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                   ? entry->value.funcVal->name
-                   : entry->value.varVal->name;
+                       ? entry->value.funcVal->name
+                       : entry->value.varVal->name;
 
             line = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                   ? entry->value.funcVal->line
-                   : entry->value.varVal->line;
+                       ? entry->value.funcVal->line
+                       : entry->value.varVal->line;
 
-            std::cout << "\"" << name << "\" " << label
-                      << " (line " << line << ")"
+            std::cout << "\"" << name << "\" " << label << " (line " << line
+                      << ")"
                       << " (scope " << scope << ")\n";
         }
     }
@@ -246,7 +261,8 @@ void printFullSymTable(SymTable_T table) {
 //     std::cout << "================LOOK UP FOR X==============\n";
 
 //     // entry = lookup_active(scopeList, "x", scope);
-//     // std::cout << "Found entry: " << entry->value.varVal->name << " in scope "
+//     // std::cout << "Found entry: " << entry->value.varVal->name << " in
+//     scope "
 //     //           << entry->value.varVal->scope << std::endl;
 //     // scope--;
 //     reactivate_scope(scopeList, scope - 1);
@@ -264,7 +280,6 @@ void printFullSymTable(SymTable_T table) {
 //     // print_scopeList(scopeList);
 
 
-
 //     std::cout << "\n================INCREMENT TEST================\n";
 
 //     // Simulate valid ++x
@@ -275,7 +290,7 @@ void printFullSymTable(SymTable_T table) {
 //         std::cout << "PASS: ++x is allowed (variable)\n";
 //     }
 
-   
+
 //     scope = 0; // functions declared at global scope
 //     std::vector<void*> emptyArgs;
 //     add_function("myFunc", emptyArgs);
@@ -288,7 +303,7 @@ void printFullSymTable(SymTable_T table) {
 //         std::cout << "FAIL: ++myFunc should not be allowed\n";
 //     }
 
-    
+
 //     std::cout << "\n================ASSIGNMENT TEST================\n";
 
 //     // Simulate x = 5;
@@ -299,14 +314,14 @@ void printFullSymTable(SymTable_T table) {
 //         std::cout << "PASS: x = 5 is allowed (variable)\n";
 //     }
 
-//     // Simulate myFunc = 10; 
+//     // Simulate myFunc = 10;
 //     entry = lookup_active(scopeList, "myFunc", scope);
 //     if (entry) {
 //         std::cout << "Testing myFunc = 10 (should fail)...\n";
 //         check_assignable(entry); // error
 //         std::cout << "FAIL: myFunc = 10 should not be allowed\n";
 //     }
-    
+
 //     return 0;
 // }
 

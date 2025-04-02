@@ -1,6 +1,6 @@
 #include "scopelist.h"
-#include "../symtable.h"
 
+#include "../symtable.h"
 
 
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
@@ -203,26 +203,4 @@ void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
         scopeList.resize(scope + 1);
     }
     scopeList[scope].clear();
-}
-
-void restore_all_scope_nodes(ScopeList_T& scopeList,SymTable_T oSymTable,int scope){
-     
-    assert(oSymTable);
-
-    for(size_t i = 0 ; i < SymTable_getLength(oSymTable)){
-        hash_t entr = oSymTable->buckets[i];
-
-        while(entr){
-            SymbolTableEntry_T symbolEntry = static_cast<SymbolTableEntry_T>(entr->value);
-
-            if(symbolEntry && 
-              (symbolEntry->value.funcVal && symbolEntry->value.funcVal->scope == scope) ||
-              (symbolEntry->value.varVal && symbolEntry->value.varVal->scope == scope)){
-                scopeList[scope].push_back(symbolEntry);
-            }
-
-            entr = entr->next;
-        }
-    }
-
 }

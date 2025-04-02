@@ -33,6 +33,9 @@ void deactivate_scope(ScopeList_T& scopeList, int scope);
 
 void delete_scopelist(ScopeList_T& scopeList, int scope);
 
+SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
+                                       const std::string& id, int scope);
+
 ScopeList_T get_active_vector(ScopeList_T& scopeList);
 
 void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable);

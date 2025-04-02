@@ -82,6 +82,24 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
     return entries.back()->value.varVal->offset;
 }
 
+SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
+                                       const std::string& id, int scope) {
+    if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
+        std::cout << "Error: Invalid scope " << scope << std::endl;
+        return nullptr;
+    }
+
+    for (const auto& entry : scopeList[scope]) {
+        if (entry->isActive &&
+            ((entry->type == USERFUNC || entry->type == LIBFUNC)
+                 ? entry->value.funcVal->name == id
+                 : entry->value.varVal->name == id)) {
+            return entry;
+        }
+    }
+    return nullptr;
+}
+
 
 void print_scopeList(ScopeList_T& scopeList) {
     std::cout << "========================================================\n";

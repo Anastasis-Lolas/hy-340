@@ -1,5 +1,6 @@
 #ifndef SYMTABLE_HEADER
 #define SYMTABLE_HEADER
+#include <vector>
 
 
 /*Struct for symbol Table*/

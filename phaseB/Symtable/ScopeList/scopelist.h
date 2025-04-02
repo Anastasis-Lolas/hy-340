@@ -11,7 +11,7 @@
 
 
 // ScopeList_T is a vector of lists cointaining all entries for each scope
-using ScopeList_T = std::vector<std::list<SymbolTableEntry_T>>;
+using ScopeList_T = std::vector<std::list<SymbolTableEntry_T> >;
 
 const std::string LIBS_FUNC[] = {"print",
                                  "input",

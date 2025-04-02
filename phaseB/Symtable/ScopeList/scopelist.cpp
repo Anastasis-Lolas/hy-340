@@ -137,10 +137,8 @@ SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
 
     for (int i = scope; i >= 0; i--) {
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i, true);
-        << std::endl;
         if (entry) return entry;
     }
-    std::cout << "VGIKA\n";
     return nullptr;
 }
 

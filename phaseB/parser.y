@@ -3,9 +3,11 @@
 #include <string>
 #include "Symtable/symtable.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
+#include "expr_handler.h"
+
 
 using namespace std;
-
+extern FILE* yyin;
 void yyerror (const char* yaccProvidedMessage);
 extern int yylineno;
 extern FILE* yyout;
@@ -18,17 +20,21 @@ extern unsigned int scope;
 //#define DEBUG_REDUCE(msg)
 
 %}
+%code requires {
+    #include "Symtable/TableEntry/SymbolTableEntry.h"
+}
 
 %start program
 
 %union { 
 	std::string *stringValue;
 	int intValue ;
+    SymbolTableEntry_T symEntry;
 }
 
 
 %token <intValue> INTEGER
-%token <stringValue> IDENT 
+%token IDENT 
 
 
 %token IF ELSE WHILE FUNCTION FOR RETURN BREAK CONTINUE AND NOT OR NIL
@@ -52,7 +58,8 @@ extern unsigned int scope;
 %token UNDEFINED
 
 %type <intValue> expr
-
+%type <symEntry> lvalue
+%type <stringValue> IDENT
 
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
@@ -259,10 +266,22 @@ returnstmt:
     ;
 %%
 
-int main() {
-   yyout = stdout; 
-   yyparse();
-   return 0;
+int main(int argc, char** argv) {
+    if (argc > 1) {
+        FILE* inputFile = fopen(argv[1], "r");
+        if (!inputFile) {
+            perror("Failed to open file");
+            return 1;
+        }
+        yyin = inputFile;
+    }
+    init_tables();
+    yyout = stdout;
+    yyparse();
+
+    printFullSymTable(oSymTable); 
+
+    return 0;
 }
 
 void yyerror(const char *s) {

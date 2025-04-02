@@ -23,6 +23,7 @@ void init_tables() {
 std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
 void exit_block() {
+    scope_nodes_remove(scopeList, scope);
     scope--;
     reactivate_scope(scopeList, scope);
 }
@@ -72,6 +73,12 @@ void add_ident(std::string name) {
     void* result;
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
+    if (search_LIBS_FUNC(name) == 0) {
+        // print error message shadows lib function
+        std::cout << "Error: function " << name
+                  << " shadows lib function at line " << yylineno << std::endl;
+        return;
+    }
     entry = lookup_active(scopeList, name, scope);
     if (entry) {
         /* Found something (var or function) that we have access to it, so the

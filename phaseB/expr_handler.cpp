@@ -2,6 +2,7 @@
 #define HANDLER_HEADER
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
@@ -10,7 +11,7 @@
 unsigned int scope = 0;
 unsigned int func_num = 0;
 SymTable_T oSymTable;
-int yylineno;
+extern int yylineno;
 ScopeList_T scopeList;
 
 
@@ -169,93 +170,145 @@ void check_assignable(SymbolTableEntry_T entry) {
 }
 
 
+void printFullSymTable(SymTable_T table) {
+    std::map<unsigned int, std::vector<SymbolTableEntry_T>> scopedEntries;
 
-int main() {
-    int arg1 = 42;
-    std::string arg2 = "Hello";
-    std::vector<void*> args = {&arg1, &arg2};
-    SymbolTableEntry_T entry = nullptr;
-    init_tables();
-
-    add_ident("x");
-    add_ident("y");
-    scope++;
-    add_ident("x");
-    add_ident("error");
-    scope++;
-    deactivate_scope(scopeList, scope - 1);
-    add_ident("error");
-    print_scopeList(scopeList);
-    // std::cout << "\n";
-    // SymTable_print(oSymTable);
-    // std::cout << "\n";
-
-    std::cout << "================LOOK UP FOR X==============\n";
-
-    // entry = lookup_active(scopeList, "x", scope);
-    // std::cout << "Found entry: " << entry->value.varVal->name << " in scope "
-    //           << entry->value.varVal->scope << std::endl;
-    // scope--;
-    reactivate_scope(scopeList, scope - 1);
-    scope--;
-    std::cout << "scope value is :" << scope << std::endl;
-    entry = lookup_active(scopeList, "error", scope);
-    if (entry) {
-        std::cout << "ENTRY NOT NULL???\n";
-        std::cout << "Found entry: " << entry->value.varVal->name
-                  << " in scope " << entry->value.varVal->scope << std::endl;
-    } else
-        std::cout << "Entry not found var" << std::endl;
-    // std::cout <<
-    // "========================================================\n";
-    // print_scopeList(scopeList);
-
-
-
-    std::cout << "\n================INCREMENT TEST================\n";
-
-    // Simulate valid ++x
-    entry = lookup_active(scopeList, "x", scope);
-    if (entry) {
-        std::cout << "Testing ++x\n";
-        check_mutable_lvalue(entry, "++");
-        std::cout << "PASS: ++x is allowed (variable)\n";
+    for (size_t i = 0; i < table->size; ++i) {
+        hash_t node = table->buckets[i];
+        while (node) {
+            SymbolTableEntry_T entry = static_cast<SymbolTableEntry_T>(node->value);
+            if (entry && entry->isActive) {
+                unsigned int scope = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                                     ? entry->value.funcVal->scope
+                                     : entry->value.varVal->scope;
+                scopedEntries[scope].push_back(entry);
+            }
+            node = node->next;
+        }
     }
+
+    for (const auto& [scope, entries] : scopedEntries) {
+        if (entries.empty()) continue;
+
+        std::cout << "------------   Scope #" << scope << "   ------------\n";
+
+        for (const auto& entry : entries) {
+            std::string name;
+            std::string label;
+            unsigned int line;
+
+            switch (entry->type) {
+                case GLOBAL:   label = "[global variable]"; break;
+                case LLOCAL:   label = "[local variable]"; break;
+                case FORMAL:   label = "[formal argument]"; break;
+                case USERFUNC: label = "[user function]"; break;
+                case LIBFUNC:  label = "[library function]"; break;
+                default:       label = "[unknown]"; break;
+            }
+
+            name = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                   ? entry->value.funcVal->name
+                   : entry->value.varVal->name;
+
+            line = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                   ? entry->value.funcVal->line
+                   : entry->value.varVal->line;
+
+            std::cout << "\"" << name << "\" " << label
+                      << " (line " << line << ")"
+                      << " (scope " << scope << ")\n";
+        }
+    }
+
+    std::cout << "--------------------------------------------------\n";
+}
+
+// int main() {
+//     int arg1 = 42;
+//     std::string arg2 = "Hello";
+//     std::vector<void*> args = {&arg1, &arg2};
+//     SymbolTableEntry_T entry = nullptr;
+//     init_tables();
+
+//     add_ident("x");
+//     add_ident("y");
+//     scope++;
+//     add_ident("x");
+//     add_ident("error");
+//     scope++;
+//     deactivate_scope(scopeList, scope - 1);
+//     add_ident("error");
+//     print_scopeList(scopeList);
+//     // std::cout << "\n";
+//     // SymTable_print(oSymTable);
+//     // std::cout << "\n";
+
+//     std::cout << "================LOOK UP FOR X==============\n";
+
+//     // entry = lookup_active(scopeList, "x", scope);
+//     // std::cout << "Found entry: " << entry->value.varVal->name << " in scope "
+//     //           << entry->value.varVal->scope << std::endl;
+//     // scope--;
+//     reactivate_scope(scopeList, scope - 1);
+//     scope--;
+//     std::cout << "scope value is :" << scope << std::endl;
+//     entry = lookup_active(scopeList, "error", scope);
+//     if (entry) {
+//         std::cout << "ENTRY NOT NULL???\n";
+//         std::cout << "Found entry: " << entry->value.varVal->name
+//                   << " in scope " << entry->value.varVal->scope << std::endl;
+//     } else
+//         std::cout << "Entry not found var" << std::endl;
+//     // std::cout <<
+//     // "========================================================\n";
+//     // print_scopeList(scopeList);
+
+
+
+//     std::cout << "\n================INCREMENT TEST================\n";
+
+//     // Simulate valid ++x
+//     entry = lookup_active(scopeList, "x", scope);
+//     if (entry) {
+//         std::cout << "Testing ++x\n";
+//         check_mutable_lvalue(entry, "++");
+//         std::cout << "PASS: ++x is allowed (variable)\n";
+//     }
 
    
-    scope = 0; // functions declared at global scope
-    std::vector<void*> emptyArgs;
-    add_function("myFunc", emptyArgs);
+//     scope = 0; // functions declared at global scope
+//     std::vector<void*> emptyArgs;
+//     add_function("myFunc", emptyArgs);
 
-    // Lookup function and test ++
-    entry = lookup_active(scopeList, "myFunc", scope);
-    if (entry) {
-        std::cout << "Testing ++myFunc (should fail)...\n";
-        check_mutable_lvalue(entry, "++");  // errorrr
-        std::cout << "FAIL: ++myFunc should not be allowed\n";
-    }
+//     // Lookup function and test ++
+//     entry = lookup_active(scopeList, "myFunc", scope);
+//     if (entry) {
+//         std::cout << "Testing ++myFunc (should fail)...\n";
+//         check_mutable_lvalue(entry, "++");  // errorrr
+//         std::cout << "FAIL: ++myFunc should not be allowed\n";
+//     }
 
     
-    std::cout << "\n================ASSIGNMENT TEST================\n";
+//     std::cout << "\n================ASSIGNMENT TEST================\n";
 
-    // Simulate x = 5;
-    entry = lookup_active(scopeList, "x", scope);
-    if (entry) {
-        std::cout << "Testing x = 5\n";
-        check_assignable(entry);
-        std::cout << "PASS: x = 5 is allowed (variable)\n";
-    }
+//     // Simulate x = 5;
+//     entry = lookup_active(scopeList, "x", scope);
+//     if (entry) {
+//         std::cout << "Testing x = 5\n";
+//         check_assignable(entry);
+//         std::cout << "PASS: x = 5 is allowed (variable)\n";
+//     }
 
-    // Simulate myFunc = 10; 
-    entry = lookup_active(scopeList, "myFunc", scope);
-    if (entry) {
-        std::cout << "Testing myFunc = 10 (should fail)...\n";
-        check_assignable(entry); // error
-        std::cout << "FAIL: myFunc = 10 should not be allowed\n";
-    }
+//     // Simulate myFunc = 10; 
+//     entry = lookup_active(scopeList, "myFunc", scope);
+//     if (entry) {
+//         std::cout << "Testing myFunc = 10 (should fail)...\n";
+//         check_assignable(entry); // error
+//         std::cout << "FAIL: myFunc = 10 should not be allowed\n";
+//     }
     
-    return 0;
-}
+//     return 0;
+// }
 
 
 #endif

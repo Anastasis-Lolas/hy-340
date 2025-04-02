@@ -82,7 +82,7 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
 
     const auto& entries = scopeList[scope];
     if (entries.empty()) {
-        return -1;
+        return 0;
     }
 
     return entries.back()->value.varVal->offset;

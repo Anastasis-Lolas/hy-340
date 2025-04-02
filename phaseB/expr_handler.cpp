@@ -140,6 +140,21 @@ void handle_namespace_dent(std::string name) {
     return;
 }
 
+
+
+void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op) {
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
+            ? entry->value.funcVal->name
+            : entry->value.varVal->name;
+
+        std::cerr << "Error: cannot apply operator '" << op
+                  << "' to function '" << name
+                  << "' at line " << yylineno << std::endl;
+    }
+}
+
+
 int main() {
     int arg1 = 42;
     std::string arg2 = "Hello";
@@ -179,6 +194,31 @@ int main() {
     // std::cout <<
     // "========================================================\n";
     // print_scopeList(scopeList);
+
+
+
+    std::cout << "\n================INCREMENT TEST================\n";
+
+    // Simulate valid ++x
+    entry = lookup_active(scopeList, "x", scope);
+    if (entry) {
+        std::cout << "Testing ++x\n";
+        check_mutable_lvalue(entry, "++");
+        std::cout << "PASS: ++x is allowed (variable)\n";
+    }
+
+   
+    scope = 0; // functions declared at global scope
+    std::vector<void*> emptyArgs;
+    add_function("myFunc", emptyArgs);
+
+    // Lookup function and test ++
+    entry = lookup_active(scopeList, "myFunc", scope);
+    if (entry) {
+        std::cout << "Testing ++myFunc (should fail)...\n";
+        check_mutable_lvalue(entry, "++");  // errorrr
+        std::cout << "FAIL: ++myFunc should not be allowed\n";
+    }
     return 0;
 }
 

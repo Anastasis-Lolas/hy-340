@@ -55,4 +55,8 @@ int find_offset(const ScopeList_T& scopeList, int scope);
 
 void print_scopeList(ScopeList_T& scopeList);
 
+
+void scope_nodes_remove(ScopeList_T& scopeList, int scope);
+
+void restore_all_scope_nodes(ScopeList_T& scopeList,SymTable_T oSymTable,int scope);
 #endif

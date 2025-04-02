@@ -1,4 +1,7 @@
 #include "scopelist.h"
+#include "../symtable.h"
+
+
 
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
     assert(entry);
@@ -82,7 +85,7 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
 
     const auto& entries = scopeList[scope];
     if (entries.empty()) {
-        return 0;
+        return -1;
     }
 
     return entries.back()->value.varVal->offset;
@@ -191,4 +194,35 @@ void print_scopeList(ScopeList_T& scopeList) {
     }
 
     std::cout << "========================================================\n";
+}
+
+
+void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
+    assert(scope >= 0);
+    if (static_cast<size_t>(scope) >= scopeList.size()) {
+        scopeList.resize(scope + 1);
+    }
+    scopeList[scope].clear();
+}
+
+void restore_all_scope_nodes(ScopeList_T& scopeList,SymTable_T oSymTable,int scope){
+     
+    assert(oSymTable);
+
+    for(size_t i = 0 ; i < SymTable_getLength(oSymTable)){
+        hash_t entr = oSymTable->buckets[i];
+
+        while(entr){
+            SymbolTableEntry_T symbolEntry = static_cast<SymbolTableEntry_T>(entr->value);
+
+            if(symbolEntry && 
+              (symbolEntry->value.funcVal && symbolEntry->value.funcVal->scope == scope) ||
+              (symbolEntry->value.varVal && symbolEntry->value.varVal->scope == scope)){
+                scopeList[scope].push_back(symbolEntry);
+            }
+
+            entr = entr->next;
+        }
+    }
+
 }

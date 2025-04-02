@@ -1,8 +1,10 @@
 #ifndef SYMTABLE_HEADER
 #define SYMTABLE_HEADER
 
+
 /*Struct for symbol Table*/
 typedef struct SymTable *SymTable_T;
+
 typedef struct hashNode {
     std::string key;
     void *value;
@@ -18,6 +20,8 @@ struct SymTable {
     size_t size;
     std::vector<hashNode *> buckets;
 };
+
+
 SymTable_T SymTable_new(void);
 
 /* Frees the memory used by the symbol table */

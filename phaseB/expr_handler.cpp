@@ -16,6 +16,7 @@ ScopeList_T scopeList;
 
 
 void init_tables() {
+    scope_nodes_remove(scopeList, scope);
     oSymTable = SymTable_new();
     init_LIBS_FUNC(scopeList, oSymTable);
 }

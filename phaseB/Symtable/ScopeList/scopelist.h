@@ -27,7 +27,7 @@ const std::string LIBS_FUNC[] = {"print",
                                  "sin"};
 // std::vector<std::list<SymbolTableEntry_T>> scopeList;
 
-void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry);
+void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope);
 
 void deactivate_scope(ScopeList_T& scopeList, int scope);
 
@@ -40,5 +40,7 @@ void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable);
 int search_LIBS_FUNC(std::string& name);
 
 int find_offset(const ScopeList_T& scopeList, int scope);
+
+void print_scopeList(ScopeList_T& scopeList);
 
 #endif

@@ -1,9 +1,8 @@
 #include "scopelist.h"
 
-void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry) {
+void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
     assert(entry);
 
-    int scope = entry->value.varVal->scope;
     if (scopeList.size() <= scope) {
         scopeList.resize(scope + 1);
     }
@@ -55,7 +54,7 @@ void init_LIBS_FUNC(ScopeList_T& scopeList, SymTable_T oSymTable) {
         entry->type = LIBFUNC;
 
         SymTable_put(oSymTable, LIBS_FUNC[i], entry);
-        add_entry(scopeList, entry);  // Fixed scopelist to scopeList
+        add_entry(scopeList, entry, 0);  // Fixed scopelist to scopeList
     }
 }
 
@@ -81,4 +80,55 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
     }
 
     return entries.back()->value.varVal->offset;
+}
+
+
+void print_scopeList(ScopeList_T& scopeList) {
+    std::cout << "========================================================\n";
+    std::cout << "                     SCOPE LIST\n";
+    std::cout << "========================================================\n";
+
+    for (size_t scope = 0; scope < scopeList.size(); scope++) {
+        if (scopeList[scope].empty()) continue;
+
+        std::cout << "Scope " << scope << ":\n";
+
+        for (const auto& entry : scopeList[scope]) {
+            std::cout << "  Name: "
+                      << ((entry->type == USERFUNC || entry->type == LIBFUNC)
+                              ? entry->value.funcVal->name
+                              : entry->value.varVal->name)
+                      << " | Line: "
+                      << ((entry->type == USERFUNC || entry->type == LIBFUNC)
+                              ? entry->value.funcVal->line
+                              : entry->value.varVal->line)
+                      << " | Type: ";
+
+            switch (entry->type) {
+                case GLOBAL:
+                    std::cout << "GLOBAL";
+                    break;
+                case LLOCAL:
+                    std::cout << "LLOCAL";
+                    break;
+                case FORMAL:
+                    std::cout << "FORMAL";
+                    break;
+                case USERFUNC:
+                    std::cout << "USERFUNC";
+                    break;
+                case LIBFUNC:
+                    std::cout << "LIBFUNC";
+                    break;
+                default:
+                    std::cout << "UNKNOWN";
+                    break;
+            }
+
+            std::cout << " | Active: " << (entry->isActive ? "Yes" : "No")
+                      << "\n";
+        }
+    }
+
+    std::cout << "========================================================\n";
 }

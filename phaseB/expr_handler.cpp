@@ -9,9 +9,15 @@
 
 unsigned int scope = 0;
 unsigned int func_num = 0;
-SymTable_T oSymTable = SymTable_new();
+SymTable_T oSymTable;
 int yylineno;
 ScopeList_T scopeList;
+
+
+void init_tables() {
+    oSymTable = SymTable_new();
+    init_LIBS_FUNC(scopeList, oSymTable);
+}
 
 std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
@@ -50,19 +56,34 @@ void add_function(std::string name, std::vector<void*> args) {
     offset = find_offset(scopeList, scope);
 
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
+    add_entry(scopeList, entry, scope);
 
     SymTable_put(oSymTable, name, entry);
 }
+
 int main() {
     int arg1 = 42;
     std::string arg2 = "Hello";
     std::vector<void*> args = {&arg1, &arg2};
+    init_tables();
 
     add_function("Function1", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    add_function("", args);
+    scope++;
     add_function("Function1", {});
     add_function("Function2", {});
-    SymTable_print(oSymTable);
-
+    // SymTable_print(oSymTable);
+    print_scopeList(scopeList);
     return 0;
 }
 

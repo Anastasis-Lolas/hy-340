@@ -1,4 +1,5 @@
 CC = g++
+CXXFLAGS = -std=c++11
 FLEX = flex
 BISON = bison
 
@@ -30,10 +31,10 @@ $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
 	$(BISON) -d -v -o $(PARSER_CPP) $<
 
 $(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  # Added SYMTABLE_CPP
-	$(CC) $^ -o $@
+	$(CC) $(CXXFLAGS) $^ -o $@
 
 handler: $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_LIST_CPP) $(SYM_ENTRY_CPP) $(HANDLER_CPP)
-	$(CC) $^ -o $@
+	$(CC) $(CXXFLAGS) $^ -o $@
 test: $(EXEC)
 	cd tests && python3 checker.py ../scanner $(FILE).in $(FILE).out
 

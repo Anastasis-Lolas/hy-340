@@ -156,8 +156,8 @@ primary:
     ;
 
 lvalue:
-      IDENT                                 {add_ident($1); DEBUG_REDUCE("lvalue -> IDENT"); }
-    | LOCAL IDENT                           {add_local_dent($2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
+      IDENT                                 {add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
+    | LOCAL IDENT                           {add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
     | NAMESPACE IDENT                       { DEBUG_REDUCE("lvalue -> ::IDENT"); }
     | member                                { DEBUG_REDUCE("lvalue -> member"); }
     ;

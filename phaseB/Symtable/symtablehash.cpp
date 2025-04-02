@@ -11,21 +11,6 @@
 #define LOWER_BOUND 509
 #define UPPER_BOUND 65521
 
-typedef struct hashNode {
-    std::string key;
-    void *value;
-    struct hashNode *next;
-} *hash_t;
-
-/*
-Hash Table struct
-size_t size is the number of buckets
-hash_t *buckets, an array of pointers
-*/
-struct SymTable {
-    size_t size;
-    std::vector<hashNode *> buckets;
-};
 
 /*Creates New node for the hash table*/
 hash_t New_node(void) {

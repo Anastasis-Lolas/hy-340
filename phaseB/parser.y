@@ -16,8 +16,8 @@ extern char* yytext;
 extern int yylex(void);
 extern unsigned int scope;
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -213,7 +213,7 @@ indexedelem:
     ;
 
 block:
-      LEFT_BRACE stmt_list RIGHT_BRACE { DEBUG_REDUCE("block -> {stmt_list}"); }
+      LEFT_BRACE { scope++; } stmt_list RIGHT_BRACE { exit_block(); DEBUG_REDUCE("block -> {stmt_list}"); }
   ;
     
 

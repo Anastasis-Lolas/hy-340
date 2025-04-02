@@ -23,5 +23,6 @@ void handle_namespace_dent(std::string name);
 void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op);
 void check_assignable(SymbolTableEntry_T entry);
 void printFullSymTable(SymTable_T table);
+void exit_block();
 
 #endif

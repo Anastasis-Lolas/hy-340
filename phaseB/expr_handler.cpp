@@ -154,6 +154,21 @@ void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op) {
     }
 }
 
+void check_assignable(SymbolTableEntry_T entry) {
+    if (!entry) return;
+
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
+            ? entry->value.funcVal->name
+            : entry->value.varVal->name;
+
+        std::cerr << "Error: function '" << name
+                  << "' cannot be used as lvalue at line "
+                  << yylineno << std::endl;
+    }
+}
+
+
 
 int main() {
     int arg1 = 42;
@@ -219,6 +234,26 @@ int main() {
         check_mutable_lvalue(entry, "++");  // errorrr
         std::cout << "FAIL: ++myFunc should not be allowed\n";
     }
+
+    
+    std::cout << "\n================ASSIGNMENT TEST================\n";
+
+    // Simulate x = 5;
+    entry = lookup_active(scopeList, "x", scope);
+    if (entry) {
+        std::cout << "Testing x = 5\n";
+        check_assignable(entry);
+        std::cout << "PASS: x = 5 is allowed (variable)\n";
+    }
+
+    // Simulate myFunc = 10; 
+    entry = lookup_active(scopeList, "myFunc", scope);
+    if (entry) {
+        std::cout << "Testing myFunc = 10 (should fail)...\n";
+        check_assignable(entry); // error
+        std::cout << "FAIL: myFunc = 10 should not be allowed\n";
+    }
+    
     return 0;
 }
 

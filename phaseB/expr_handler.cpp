@@ -36,7 +36,7 @@ void add_function(std::string name, std::vector<void*> args) {
     } else {
         if (search_LIBS_FUNC(name) == 0) {
             // print error message shadows lib function
-            std::cout << "Error: function " << name
+            std::cerr << "Error: function " << name
                       << " shadows lib function at line " << yylineno
                       << std::endl;
             return;
@@ -47,13 +47,13 @@ void add_function(std::string name, std::vector<void*> args) {
                 if (entry->type == USERFUNC) {
                     // print error message function already declared in the same
                     // scope
-                    std::cout << "Error: function " << name
+                    std::cerr << "Error: function " << name
                               << " already declared in line "
                               << entry->value.funcVal->line << std::endl;
                     return;
                 } else {
                     // print error message function-same name as variable
-                    std::cout << "Error: function " << name
+                    std::cerr << "Error: function " << name
                               << " same name as variable in line "
                               << entry->value.varVal->line << std::endl;
                 }
@@ -76,40 +76,40 @@ SymbolTableEntry_T add_ident(std::string name) {
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     if (search_LIBS_FUNC(name) == 0) {
         // print error message shadows lib function
-        std::cout << "Error: var with name: " << name
+        std::cerr << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return nullptr;
     }
     entry = lookup_active(scopeList, name, scope);
-    if (entry) {
-        /* Found something (var or function) that we have access to it, so the
-         * var refers to it */
-        std::cout << "Found something (var or function) with name: " << name
-                  << " that we have access to "
-                     "it, so the var refers to it\n";
-    } else {
-        /* result = SymTable_general_lookup(oSymTable, name);
-        entry = static_cast<SymbolTableEntry_T>(result);
-        if (entry) {
-            if (entry->type == USERFUNC) {
-                // Collision with library function
-                std::cout << "Error: Cannot access function :" << name
-                          << " with scope: " << entry->value.funcVal->scope
-                          << std::endl;
-            } else {
-                // print error message function-same name as variable
-                std::cout << "Error: Cannot access variable with name: " << name
-                          << " and scope: " << entry->value.varVal->scope
-                          << std::endl;
-            }
-            return;
-        } else {*/
+    // if (entry) {
+    //     /* Found something (var or function) that we have access to it, so the
+    //      * var refers to it */
+    //     std::cout << "Found something (var or function) with name: " << name
+    //               << " that we have access to "
+    //                  "it, so the var refers to it\n";
+    // } else {
+    //     /* result = SymTable_general_lookup(oSymTable, name);
+    //     entry = static_cast<SymbolTableEntry_T>(result);
+    //     if (entry) {
+    //         if (entry->type == USERFUNC) {
+    //             // Collision with library function
+    //             std::cout << "Error: Cannot access function :" << name
+    //                       << " with scope: " << entry->value.funcVal->scope
+    //                       << std::endl;
+    //         } else {
+    //             // print error message function-same name as variable
+    //             std::cout << "Error: Cannot access variable with name: " << name
+    //                       << " and scope: " << entry->value.varVal->scope
+    //                       << std::endl;
+    //         }
+    //         return;
+    //     } else {*/
         offset = find_offset(scopeList, scope);
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
         // }
-    }
+    
     return entry;
 }
 
@@ -119,22 +119,17 @@ SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     if (search_LIBS_FUNC(name) == 0 && symtype == LLOCAL) {
         // print error message shadows lib function
-        std::cout << "Error: var with name: " << name
+        std::cerr << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return nullptr;
     }
     entry = lookup_within_scope(scopeList, name, scope);
-    if (entry) {
-        // ref to the same var
-        std::cout << "Found something (var or function) with name: " << name
-                  << " that we have access to "
-                     "it, so the var refers to it\n";
-    } else {
+
         offset = find_offset(scopeList, scope);
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
-    }
+    
     return entry;
 }
 
@@ -142,21 +137,16 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     entry = lookup_within_scope(scopeList, name, 0, true);
     if (!entry) {
-        std::cout << "No global var of function with name: " << name
+        std::cerr << "No global var of function with name: " << name
                   << std::endl;
-    } else {
-        // action for global var or function
-        std::cout << "Found something (var or function) with name: " << name
-                  << " that we have access to "
-                     "it, so the var refers to it\n";
-    }
+    } 
     return entry;
 }
 
 
 void null_entry(SymbolTableEntry_T entry, std::string message) {
     if (!entry) {
-        std::cout << "Error: '" << message
+        std::cerr << "Error: '" << message
                   << "' was not declared in this scope (Line: " << yylineno
                   << ", Scope: " << scope << ")." << std::endl;
     }
@@ -166,7 +156,7 @@ void assign_error(SymbolTableEntry_T entry) {
     null_entry(entry, "lvalue for assignment ");
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cout << "Error: assigning value to a function'"
+            std::cerr << "Error: assigning value to a function'"
                       << " in this scope (Line: " << yylineno
                       << ", Scope: " << scope << ")." << std::endl;
         }
@@ -177,7 +167,7 @@ void member_error(SymbolTableEntry_T entry, std::string memrule) {
     null_entry(entry, "lvalue ");
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cout << "Error: using function name as lvalue '" << memrule
+            std::cerr << "Error: using function name as lvalue '" << memrule
                       << " in this scope (Line: " << yylineno
                       << ", Scope: " << scope << ")." << std::endl;
         }
@@ -185,10 +175,10 @@ void member_error(SymbolTableEntry_T entry, std::string memrule) {
 }
 void print_entry(SymbolTableEntry_T entry) {
     if (!entry) {
-        std::cout << "Entry is null" << std::endl;
+        std::cerr << "Entry is null" << std::endl;
         return;
     }
-    std::cout << "Entry type: " << entry->type
+    std::cerr << "Entry type: " << entry->type
               << " isActive: " << entry->isActive << std::endl;
 
     if (entry->type == USERFUNC || entry->type == LIBFUNC) {
@@ -207,7 +197,7 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
 
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cout << "Error: Cannot apply operator '" << op
+            std::cerr << "Error: Cannot apply operator '" << op
                       << "' to a function '"
                       << "' (Line: " << yylineno << ", Scope: " << scope << ")."
                       << " Functions are constants and cannot be modified."
@@ -222,7 +212,7 @@ std::vector<void *> handle_func_args(std::vector<void *> args,std::string name){
     // take the ident an check for duplicate in libs first
     if (search_LIBS_FUNC(name) == 0) {
         // print error message shadows lib function
-        std::cout << "Error: var with name: " << name
+        std::cerr << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return {};
     }
@@ -280,7 +270,7 @@ void printFullSymTable(SymTable_T table) {
     for (const auto& [scope, entries] : scopedEntries) {
         if (entries.empty()) continue;
 
-        std::cout << "------------   Scope #" << scope << "   ------------\n";
+        std::cout << "\n------------   Scope #" << scope << "   ------------\n";
 
 
         std::vector<SymbolTableEntry_T> sortedEntries = entries;
@@ -336,7 +326,7 @@ void printFullSymTable(SymTable_T table) {
         }
     }
 
-    std::cout << "--------------------------------------------------\n";
+    std::cout << "\n--------------------------------------------------\n";
 }
 
 

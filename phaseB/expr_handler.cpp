@@ -24,19 +24,13 @@ void init_tables() {
 std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
 void exit_block() {
-    std::cout << "f1" << std::endl;
     scope_nodes_remove(scopeList, scope);
-    std::cout << "f2" << std::endl;
     scope--;
-    std::cout << "f3" << std::endl;
     reactivate_scope(scopeList, scope);
-    std::cout << "f4" << std::endl;
 }
 void enter_func() {
-    std::cout << "f5" << std::endl;
     scope++;
     deactivate_scope(scopeList, scope);
-    std::cout << "f6" << std::endl;
 }
 void add_function(std::string name, std::vector<void*> args) {
     SymbolTableEntry_T entry = nullptr;

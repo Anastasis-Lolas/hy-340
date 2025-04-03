@@ -216,11 +216,11 @@ block:
     
 
 funcdef:
-      FUNCTION {scope++;}
+      FUNCTION {enter_func();}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_function("", args);}
             block { DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
-    | FUNCTION IDENT {scope++;}
+    | FUNCTION IDENT {enter_func();}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
             {scope--; add_function(*$2, args);}
             block

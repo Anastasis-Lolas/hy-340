@@ -14,16 +14,19 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 }
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
-    assert(scope >= 0 && scope < scopeList.size());
-    for (auto& entry : scopeList[scope]) {
-        entry->isActive = false;
+    for (int i = 1; i <= scope; i++) {
+        std::cout << "Deactivating scope " << i << std::endl;
+        for (auto& entry : scopeList[i]) {
+            entry->isActive = false;
+        }
     }
     return;
 }
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
-    assert(scope >= 0 && scope < scopeList.size());
-    for (auto& entry : scopeList[scope]) {
-        entry->isActive = true;
+    for (int i = 1; i <= scope; i++) {
+        for (auto& entry : scopeList[i]) {
+            entry->isActive = true;
+        }
     }
     return;
 }
@@ -99,8 +102,11 @@ SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
     } else if (scope >= static_cast<int>(scopeList.size())) {
         return nullptr;
     }
-
+    std::string name;
     for (const auto& entry : scopeList[scope]) {
+        (entry->type == USERFUNC || entry->type == LIBFUNC)
+            ? name = entry->value.funcVal->name
+            : name = entry->value.varVal->name;
         if ((entry->type == USERFUNC || entry->type == LIBFUNC)
                 ? entry->value.funcVal->name == id
                 : entry->value.varVal->name == id) {
@@ -145,17 +151,19 @@ SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
     return nullptr;
 }
 
-SymbolTableEntry_T lookup_in_list(const ScopeList_T& scopeList,
-                                  const std::string& id, int scope) {
+SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
+                                  int scope) {
     if (scope < 0) {
         std::cerr << "Error: Invalid scope " << scope << std::endl;
         return nullptr;
     }
-
+    print_scopeList(scopeList);
+    std::cout << "\n\n---------For id[" << id << "]\n";
     for (int i = scope; i >= 0; i--) {
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
+    print_scopeList(scopeList);
     return nullptr;
 }
 

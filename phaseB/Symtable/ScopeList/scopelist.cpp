@@ -15,7 +15,6 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
     for (int i = 1; i < scope; i++) {
-        std::cout << "Deactivating scope " << i << std::endl;
         for (auto& entry : scopeList[i]) {
             entry->isActive = false;
         }
@@ -163,7 +162,6 @@ SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
-    print_scopeList(scopeList);
     return nullptr;
 }
 

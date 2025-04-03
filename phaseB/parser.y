@@ -146,12 +146,13 @@ assignexpr:
     ;
 
 primary:
-      lvalue                                { DEBUG_REDUCE("primary -> lvalue"); }
-    | call                                  { DEBUG_REDUCE("primary -> call"); }
-    | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("primary -> (funcdef)"); }
+      lvalue                                { DEBUG_REDUCE("primary -> lvalue");    }
+    | call                                  { DEBUG_REDUCE("primary -> call");      }
     | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
-    | const                                 { DEBUG_REDUCE("primary -> const"); }
+    | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+                                            { DEBUG_REDUCE("primary -> (funcdef)"); }
+    | funcdef                               { DEBUG_REDUCE("primary -> funcdef");   }                                      
+    | const                                 { DEBUG_REDUCE("primary -> const");     }
     ;
 
 lvalue:
@@ -296,5 +297,5 @@ int main(int argc, char** argv) {
 }
 
 void yyerror(const char *s) {
-    cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token : " <<  yytext << endl;
+    cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token: " <<  yytext << endl;
 }

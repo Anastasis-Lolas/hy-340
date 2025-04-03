@@ -219,21 +219,16 @@ block:
     
 
 funcdef:
-    FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
-        scope++;
-        add_function("", *$3);     // $3 = idlist
-        DEBUG_REDUCE("funcdef -> function(idlist) block");
-        scope--;
-    }
-
-  | FUNCTION IDENT LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
-        scope++;
-        add_function(*$2, *$4);    // $2 = IDENT, $4 = idlist
-        DEBUG_REDUCE("funcdef -> function IDENT(idlist) block");
-        delete $2;
-        scope--;
-    }
-;
+      FUNCTION {scope++;}
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
+            block {add_function("", {}); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+                                          
+    | FUNCTION IDENT {scope++;}
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
+            {scope--; add_function(*$2, {});}
+            block
+            { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+    ;
 
 
 const:

@@ -28,5 +28,7 @@ void temrs_error(SymbolTableEntry_T entry, std::string op);
 void member_error(SymbolTableEntry_T entry, std::string memrule);
 void assign_error(SymbolTableEntry_T entry);
 void null_entry(SymbolTableEntry_T entry, std::string message);
+// debug
+void print_entry(SymbolTableEntry_T entry);
 
 #endif

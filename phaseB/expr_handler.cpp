@@ -300,7 +300,24 @@ void printFullSymTable(SymTable_T table) {
 
     std::cout << "--------------------------------------------------\n";
 }
+void print_entry(SymbolTableEntry_T entry) {
+    if (!entry) {
+        std::cout << "Entry is null" << std::endl;
+        return;
+    }
+    std::cout << "Entry type: " << entry->type
+              << " isActive: " << entry->isActive << std::endl;
 
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        std::cout << "Function name: " << entry->value.funcVal->name
+                  << ", Scope: " << entry->value.funcVal->scope
+                  << ", Line: " << entry->value.funcVal->line << std::endl;
+    } else {
+        std::cout << "Variable name: " << entry->value.varVal->name
+                  << ", Scope: " << entry->value.varVal->scope
+                  << ", Line: " << entry->value.varVal->line << std::endl;
+    }
+}
 // int main() {
 //     int arg1 = 42;
 //     std::string arg2 = "Hello";

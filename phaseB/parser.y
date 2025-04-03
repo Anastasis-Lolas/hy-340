@@ -242,11 +242,11 @@ const:
 
 idlist:
     IDENT {
-        handle_func_args(args,*$1);
+        args=handle_func_args(args,*$1);
         DEBUG_REDUCE("idlist -> IDENT");
     }
   | idlist COMMA IDENT {
-        handle_func_args(args,*$3);
+        args = handle_func_args(args,*$3);
         DEBUG_REDUCE("idlist -> idlist , IDENT");
     }
   | {}
@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
     yyout = stdout;
     yyparse();
 
+    //print_args(args);
     printFullSymTable(oSymTable); 
 
     return 0;

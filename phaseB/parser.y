@@ -30,6 +30,7 @@ extern unsigned int scope;
 	std::string *stringValue;
 	int intValue ;
     SymbolTableEntry_T symEntry;
+    std::vector<void *>* idList;
 }
 
 
@@ -218,16 +219,15 @@ block:
     
 
 funcdef:
-      FUNCTION  { DEBUG_REDUCE("funcdef -> function(idlist) block"); } 
-      
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+      FUNCTION {scope++;}
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
+            block {add_function("", *$4); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
-    | FUNCTION  { DEBUG_REDUCE("funcdef -> function(idlist) block"); } 
-            IDENT { foo(); scope++; }
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;}
-            {add_function(*$2, *$4);}
-             block
-                { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+    | FUNCTION IDENT {scope++;}
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
+            {scope--; add_function(*$2, *$4);}
+            block
+            { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
 const:
       INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }

@@ -25,9 +25,8 @@ std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
 void exit_block() {
     scope_nodes_remove(scopeList, scope);
-    scope--; 
+    scope--;
     reactivate_scope(scopeList, scope);
-   
 }
 void enter_func() {
     scope++;
@@ -161,7 +160,6 @@ void null_entry(SymbolTableEntry_T entry, std::string message) {
 }
 
 void assign_error(SymbolTableEntry_T entry) {
-    null_entry(entry, "lvalue for assignment ");
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
             std::cerr << "Error: assigning value to a function'"
@@ -214,15 +212,15 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
     }
 }
 
-int find_line(std::string name){
-
-    for(size_t  i = 0 ; i < oSymTable->size; i++){
+int find_line(std::string name) {
+    for (size_t i = 0; i < oSymTable->size; i++) {
         hash_t node = oSymTable->buckets[i];
         while (node) {
+            SymbolTableEntry_T entry =
+                static_cast<SymbolTableEntry_T>(node->value);
 
-            SymbolTableEntry_T entry = static_cast<SymbolTableEntry_T>(node->value);
-
-            if(entry && entry->type == FORMAL && entry->value.varVal->name == name){
+            if (entry && entry->type == FORMAL &&
+                entry->value.varVal->name == name) {
                 return entry->value.varVal->line;
             }
 
@@ -245,7 +243,7 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     for (void* arg : args) {
         int different_line = find_line(name);
         std::string* cur_arg = static_cast<std::string*>(arg);
-        if (*cur_arg == name && different_line == yylineno ) {
+        if (*cur_arg == name && different_line == yylineno) {
             std::cerr << "Error: duplicate argument '" << name
                       << "' in function at line " << yylineno << std::endl;
             return {};
@@ -257,7 +255,8 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
 
     // Add to symbol table
     int offset = find_offset(scopeList, scope);
-    SymbolTableEntry_T formal_arg = SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
+    SymbolTableEntry_T formal_arg =
+        SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
     add_entry(scopeList, formal_arg, scope);
     SymTable_put(oSymTable, name, formal_arg);
 

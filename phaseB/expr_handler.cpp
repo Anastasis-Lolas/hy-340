@@ -242,6 +242,41 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
     }
 }
 
+
+void handle_func_args(std::vector<void *> args,std::string name){
+
+    // take the ident an check for duplicate in libs first
+    if (search_LIBS_FUNC(name) == 0) {
+        // print error message shadows lib function
+        std::cout << "Error: var with name: " << name
+                  << " shadows lib function at line " << yylineno << std::endl;
+        return;
+    }
+
+    // take the ident and check in the list for duplicates
+    for(auto& arg : args){
+        std::string * cur_arg = static_cast<std::string *>(arg );
+
+        if(*cur_arg == name ){
+            std::cout << "Error: duplicate argument '" << cur_arg
+            << "' in function '" << name 
+            << "' at line " << yylineno << std::endl;
+             return;
+        }
+    }
+
+    args.push_back(static_cast<void*>(&name));
+
+    std::cout << "New Entry in args vector : "<<name<<std::endl;
+
+    int offset = find_offset(scopeList, scope);
+
+    SymbolTableEntry_T formal_arg = SymTableEntry_new(FORMAL,name,scope,yylineno,offset,{});
+
+    add_entry(scopeList, formal_arg, scope);
+    SymTable_put(oSymTable, name, formal_arg);
+}
+
 void printFullSymTable(SymTable_T table) {
     std::map<unsigned int, std::vector<SymbolTableEntry_T>> scopedEntries;
 

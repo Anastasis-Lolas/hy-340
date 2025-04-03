@@ -15,6 +15,7 @@ extern int yylex(void);
 extern char* yytext;
 extern int yylex(void);
 extern unsigned int scope;
+std::vector<void *> args;
 
 //#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
 #define DEBUG_REDUCE(msg)
@@ -221,11 +222,11 @@ block:
 funcdef:
       FUNCTION {scope++;}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            block {add_function("", {}); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            block {scope--;add_function("", args); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT {scope++;}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            {scope--; add_function(*$2, {});}
+            {scope--; add_function(*$2, args);}
             block
             { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
@@ -241,13 +242,11 @@ const:
 
 idlist:
     IDENT {
-        $$ = new std::vector<void*>();
-        $$->push_back(static_cast<void*>($1));
+        handle_func_args(args,*$1);
         DEBUG_REDUCE("idlist -> IDENT");
     }
   | idlist COMMA IDENT {
-        $1->push_back(static_cast<void*>($3));
-        $$ = $1;
+        handle_func_args(args,*$3);
         DEBUG_REDUCE("idlist -> idlist , IDENT");
     }
   | {}

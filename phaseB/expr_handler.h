@@ -30,5 +30,5 @@ void assign_error(SymbolTableEntry_T entry);
 void null_entry(SymbolTableEntry_T entry, std::string message);
 // debug
 void print_entry(SymbolTableEntry_T entry);
-
+void handle_func_args(std::vector<void *> args,std::string name);
 #endif

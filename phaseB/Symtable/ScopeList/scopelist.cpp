@@ -14,14 +14,22 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 }
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
-    for (int i = 1; i < scope; i++) {
-        std::cout << "Deactivating scope " << i << std::endl;
+
+    if (scopeList.empty()) {
+        std::cout << "Error: scopeList is empty" << std::endl;
+        return;
+    }
+    
+    for (int i = 0; i < scope && i < scopeList.size(); i++) {
+        
         for (auto& entry : scopeList[i]) {
             entry->isActive = false;
         }
     }
     return;
 }
+
+
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
     for (int i = 1; i < scope; i++) {
         for (auto& entry : scopeList[i]) {
@@ -157,13 +165,11 @@ SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
         std::cerr << "Error: Invalid scope " << scope << std::endl;
         return nullptr;
     }
-    print_scopeList(scopeList);
-    std::cout << "\n\n---------For id[" << id << "]\n";
     for (int i = scope; i >= 0; i--) {
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
-    print_scopeList(scopeList);
+
     return nullptr;
 }
 
@@ -218,10 +224,18 @@ void print_scopeList(ScopeList_T& scopeList) {
 }
 
 
+// void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
+//     assert(scope >= 0);
+//     if (static_cast<size_t>(scope) >= scopeList.size()) {
+//         scopeList.resize(scope + 1);
+//     }
+//     scopeList[scope].clear();
+// }
+
 void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
-    assert(scope >= 0);
-    if (static_cast<size_t>(scope) >= scopeList.size()) {
-        scopeList.resize(scope + 1);
+    if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
+        std::cerr << "Error: Invalid scope " << scope << std::endl;
+        return;
     }
     scopeList[scope].clear();
 }

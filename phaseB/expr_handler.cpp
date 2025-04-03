@@ -25,8 +25,9 @@ std::string create_func_name(void) { return "_f" + std::to_string(func_num++); }
 
 void exit_block() {
     scope_nodes_remove(scopeList, scope);
-    scope--;
+    scope--; 
     reactivate_scope(scopeList, scope);
+   
 }
 void enter_func() {
     scope++;
@@ -279,7 +280,7 @@ void printFullSymTable(SymTable_T table) {
         while (node) {
             SymbolTableEntry_T entry =
                 static_cast<SymbolTableEntry_T>(node->value);
-            if (entry && entry->isActive) {
+            if (entry) {
                 unsigned int scope =
                     (entry->type == USERFUNC || entry->type == LIBFUNC)
                         ? entry->value.funcVal->scope

@@ -15,13 +15,25 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
     if (scopeList.empty()) {
-        std::cout << "Error: scopeList is empty" << std::endl;
         return;
     }
 
-    for (int i = 1; i < scope; i++) {
+    size_t maxIndex;
+
+    if (scope < 0) {
+        std::cout << "Error: scope is negative (" << scope << ")" << std::endl;
+        return;  // No iteration for negative scope
+    } else if (scope > static_cast<int>(scopeList.size())) {
+        maxIndex = scopeList.size();  // Cap at size if scope is too large
+    } else {
+        maxIndex = static_cast<size_t>(scope);  // Use scope if within bounds
+    }
+    
+    for (size_t i = 0; i < maxIndex; i++) {
         for (auto& entry : scopeList[i]) {
-            entry->isActive = false;
+            if (entry) {  // Check for null pointers
+                entry->isActive = false;
+            }
         }
     }
     return;
@@ -29,7 +41,23 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
 
 
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
-    for (int i = 1; i < scope; i++) {
+
+    if (scopeList.empty()) {
+        return;
+    }
+
+    size_t maxIndex;
+
+    if (scope < 0) {
+        std::cout << "Error: scope is negative (" << scope << ")" << std::endl;
+        return;  // No iteration for negative scope
+    } else if (scope > static_cast<int>(scopeList.size())) {
+        maxIndex = scopeList.size();  // Cap at size if scope is too large
+    } else {
+        maxIndex = static_cast<size_t>(scope);  // Use scope if within bounds
+    }
+
+    for (int i = 1; i < maxIndex; i++) {
         for (auto& entry : scopeList[i]) {
             entry->isActive = true;
         }
@@ -234,11 +262,9 @@ void print_scopeList(ScopeList_T& scopeList) {
 // }
 
 void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
-    if (scope < 0 || scope > static_cast<int>(scopeList.size())) {
+    if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
         std::cerr << "Error: Invalid scope " << scope << std::endl;
         return;
     }
-    if (scopeList.empty()) {
-        scopeList[scope].clear();
-    }
+    scopeList[scope].clear();
 }

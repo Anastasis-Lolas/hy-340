@@ -16,8 +16,8 @@ extern int yylex(void);
 extern unsigned int scope;
 std::vector<void *> args;
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -162,9 +162,9 @@ lvalue:
 
 member:
       lvalue DOT IDENT                      {member_error($1, "ident"); DEBUG_REDUCE("member -> lvalue . IDENT"); }
-    | lvalue LEFT_BRACE expr RIGHT_BRACE    {member_error($1, "expt"); DEBUG_REDUCE("member -> lvalue [expr]"); }
+    | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {member_error($1, "expr"); DEBUG_REDUCE("member -> lvalue [expr]"); }
     | call DOT IDENT                        { DEBUG_REDUCE("member -> call . IDENT"); }
-    | call LEFT_BRACE expr RIGHT_BRACE      { DEBUG_REDUCE("member -> call [expr]"); }
+    | call LEFT_BRACKET expr RIGHT_BRACKET      { DEBUG_REDUCE("member -> call [expr]"); }
     ;
 
 call:
@@ -206,13 +206,13 @@ indexed:
     ;
 
 indexedelem:
-      LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+      LEFT_BRACE expr COLON expr RIGHT_BRACE
                                            { DEBUG_REDUCE("indexedelem -> [expr : expr]"); }
     ;
 
 block:
       LEFT_BRACE { scope++; } stmt_list RIGHT_BRACE { exit_block(); DEBUG_REDUCE("block -> {stmt_list}"); }
-  ;
+    ;
     
 
 funcdef:

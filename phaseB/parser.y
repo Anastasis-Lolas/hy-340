@@ -30,7 +30,7 @@ extern unsigned int scope;
 	std::string *stringValue;
 	int intValue ;
     SymbolTableEntry_T symEntry;
-    std::vector<void *>* idList;
+    std::vector<void *>* idlist;
 }
 
 

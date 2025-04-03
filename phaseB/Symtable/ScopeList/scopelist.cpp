@@ -14,7 +14,7 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 }
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
-    for (int i = 1; i <= scope; i++) {
+    for (int i = 1; i < scope; i++) {
         std::cout << "Deactivating scope " << i << std::endl;
         for (auto& entry : scopeList[i]) {
             entry->isActive = false;
@@ -23,7 +23,7 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
     return;
 }
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
-    for (int i = 1; i <= scope; i++) {
+    for (int i = 1; i < scope; i++) {
         for (auto& entry : scopeList[i]) {
             entry->isActive = true;
         }

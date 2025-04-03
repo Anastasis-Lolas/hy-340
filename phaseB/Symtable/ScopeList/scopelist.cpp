@@ -94,7 +94,7 @@ int find_offset(const ScopeList_T& scopeList, int scope) {
 SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
                                        const std::string& id, int scope) {
     if (scope < 0) {
-        std::cout << "Error: Invalid scope " << scope << std::endl;
+        std::cerr << "Error: Invalid scope " << scope << std::endl;
         return nullptr;
     } else if (scope >= static_cast<int>(scopeList.size())) {
         return nullptr;
@@ -114,7 +114,7 @@ SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
                                        const std::string& id, int scope,
                                        bool active) {
     if (scope < 0) {
-        std::cout << "Error: Invalid scope " << scope << std::endl;
+        std::cerr << "Error: Invalid scope " << scope << std::endl;
         return nullptr;
     } else if (scope >= static_cast<int>(scopeList.size())) {
         return nullptr;
@@ -134,7 +134,7 @@ SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
 SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
                                  const std::string& id, int scope) {
     if (scope < 0) {
-        std::cout << "Error: Invalid scope " << scope << std::endl;
+        std::cerr << "Error: Invalid scope " << scope << std::endl;
         return nullptr;
     }
 

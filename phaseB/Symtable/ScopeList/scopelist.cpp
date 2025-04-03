@@ -234,9 +234,11 @@ void print_scopeList(ScopeList_T& scopeList) {
 // }
 
 void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
-    if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
+    if (scope < 0 || scope > static_cast<int>(scopeList.size())) {
         std::cerr << "Error: Invalid scope " << scope << std::endl;
         return;
     }
-    scopeList[scope].clear();
+    if (scopeList.empty()) {
+        scopeList[scope].clear();
+    }
 }

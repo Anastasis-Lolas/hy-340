@@ -1,0 +1,25 @@
+Semantic error at line 1: Parameter 'input' collides with library function
+Semantic error at line 1: Parameter 'print' collides with library function
+Semantic error at line 5: Cannot redefine library function 'print'
+Semantic error at line 5: Variable 'print' already defined
+Semantic error at line 5: Cannot redefine library function 'print'
+Semantic error at line 10: Cannot redefine library function 'print' as local variable
+Semantic error at line 10: Cannot redefine library function 'print'
+-----------      Scope #0      -----------
+"print" [library function] (line 0) (scope 0)
+"input" [library function] (line 0) (scope 0)
+"objectmemberkeys" [library function] (line 0) (scope 0)
+"objecttotalmembers" [library function] (line 0) (scope 0)
+"objectcopy" [library function] (line 0) (scope 0)
+"totalarguments" [library function] (line 0) (scope 0)
+"argument" [library function] (line 0) (scope 0)
+"typeof" [library function] (line 0) (scope 0)
+"strtonum" [library function] (line 0) (scope 0)
+"sqrt" [library function] (line 0) (scope 0)
+"cos" [library function] (line 0) (scope 0)
+"sin" [library function] (line 0) (scope 0)
+"foo" [user function] (line 1) (scope 0)
+"F" [user function] (line 9) (scope 0)
+-----------      Scope #1      -----------
+"geia" [local variable] (line 2) (scope 1)
+-----------        END         -----------

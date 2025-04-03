@@ -28,6 +28,10 @@ void exit_block() {
     scope--;
     reactivate_scope(scopeList, scope);
 }
+void enter_func() {
+    scope++;
+    deactivate_scope(scopeList, scope);
+}
 void add_function(std::string name, std::vector<void*> args) {
     SymbolTableEntry_T entry = nullptr;
     int offset;

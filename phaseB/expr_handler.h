@@ -30,4 +30,6 @@ void null_entry(SymbolTableEntry_T entry, std::string message);
 void print_entry(SymbolTableEntry_T entry);
 std::vector<void *> handle_func_args(std::vector<void *> args,std::string name);
 void print_args(std::vector<void *> args);
+
+int find_line(std::string name);
 #endif

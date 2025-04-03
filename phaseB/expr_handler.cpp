@@ -209,6 +209,24 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
     }
 }
 
+int find_line(std::string name){
+
+    for(size_t  i = 0 ; i < oSymTable->size; i++){
+        hash_t node = oSymTable->buckets[i];
+        while (node) {
+
+            SymbolTableEntry_T entry = static_cast<SymbolTableEntry_T>(node->value);
+
+            if(entry && entry->type == FORMAL && entry->value.varVal->name == name){
+                return entry->value.varVal->line;
+            }
+
+            node = node->next;
+        }
+    }
+
+    return 0;
+}
 
 std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     // take the ident an check for duplicate in libs first
@@ -220,8 +238,9 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     }
 
     for (void* arg : args) {
+        int different_line = find_line(name);
         std::string* cur_arg = static_cast<std::string*>(arg);
-        if (*cur_arg == name) {
+        if (*cur_arg == name && different_line == yylineno ) {
             std::cerr << "Error: duplicate argument '" << name
                       << "' in function at line " << yylineno << std::endl;
             return {};
@@ -233,8 +252,7 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
 
     // Add to symbol table
     int offset = find_offset(scopeList, scope);
-    SymbolTableEntry_T formal_arg =
-        SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
+    SymbolTableEntry_T formal_arg = SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
     add_entry(scopeList, formal_arg, scope);
     SymTable_put(oSymTable, name, formal_arg);
 

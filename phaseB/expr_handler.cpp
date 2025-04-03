@@ -71,44 +71,22 @@ void add_function(std::string name, std::vector<void*> args) {
 
 SymbolTableEntry_T add_ident(std::string name) {
     SymbolTableEntry_T entry = nullptr;
-    void* result;
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
+    
     if (search_LIBS_FUNC(name) == 0) {
-        // print error message shadows lib function
         std::cerr << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return nullptr;
     }
+    
     entry = lookup_active(scopeList, name, scope);
-    // if (entry) {
-    //     /* Found something (var or function) that we have access to it, so the
-    //      * var refers to it */
-    //     std::cout << "Found something (var or function) with name: " << name
-    //               << " that we have access to "
-    //                  "it, so the var refers to it\n";
-    // } else {
-    //     /* result = SymTable_general_lookup(oSymTable, name);
-    //     entry = static_cast<SymbolTableEntry_T>(result);
-    //     if (entry) {
-    //         if (entry->type == USERFUNC) {
-    //             // Collision with library function
-    //             std::cout << "Error: Cannot access function :" << name
-    //                       << " with scope: " << entry->value.funcVal->scope
-    //                       << std::endl;
-    //         } else {
-    //             // print error message function-same name as variable
-    //             std::cout << "Error: Cannot access variable with name: " << name
-    //                       << " and scope: " << entry->value.varVal->scope
-    //                       << std::endl;
-    //         }
-    //         return;
-    //     } else {*/
+    if (!entry) {
         offset = find_offset(scopeList, scope);
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
-        // }
+    }
     
     return entry;
 }

@@ -41,7 +41,7 @@ SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
         entry->value.varVal->offset = offset;
     }
 
-    std::cout << "SymboleEntry_new: " << entry->value.varVal->name << std::endl;
+    //std::cout << "SymboleEntry_new: " << entry->value.varVal->name << std::endl;
     return entry;
 }
 

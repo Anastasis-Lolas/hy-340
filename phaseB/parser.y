@@ -157,9 +157,9 @@ primary:
     ;
 
 lvalue:
-      IDENT                                 {add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
-    | LOCAL IDENT                           {add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
-    | NAMESPACE IDENT                       { handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
+      IDENT                                 {$$ = add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
+    | LOCAL IDENT                           {$$ = add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
+    | NAMESPACE IDENT                       {$$ =handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
     | member                                { DEBUG_REDUCE("lvalue -> member"); }
     ;
 
@@ -250,6 +250,7 @@ idlist:
         $$ = $1;
         DEBUG_REDUCE("idlist -> idlist , IDENT");
     }
+  | {}
 ;
 
 

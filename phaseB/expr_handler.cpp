@@ -69,7 +69,7 @@ void add_function(std::string name, std::vector<void*> args) {
     SymTable_put(oSymTable, name, entry);
 }
 
-void add_ident(std::string name) {
+SymbolTableEntry_T add_ident(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     void* result;
     int offset;
@@ -78,7 +78,7 @@ void add_ident(std::string name) {
         // print error message shadows lib function
         std::cout << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
-        return;
+        return nullptr;
     }
     entry = lookup_active(scopeList, name, scope);
     if (entry) {
@@ -110,9 +110,10 @@ void add_ident(std::string name) {
         SymTable_put(oSymTable, name, entry);
         // }
     }
+    return entry;
 }
 
-void add_local_dent(std::string name) {
+SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
@@ -120,7 +121,7 @@ void add_local_dent(std::string name) {
         // print error message shadows lib function
         std::cout << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
-        return;
+        return nullptr;
     }
     entry = lookup_within_scope(scopeList, name, scope);
     if (entry) {
@@ -134,9 +135,10 @@ void add_local_dent(std::string name) {
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
     }
+    return entry;
 }
 
-void handle_namespace_dent(std::string name) {
+SymbolTableEntry_T handle_namespace_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     entry = lookup_within_scope(scopeList, name, 0, true);
     if (!entry) {
@@ -148,7 +150,7 @@ void handle_namespace_dent(std::string name) {
                   << " that we have access to "
                      "it, so the var refers to it\n";
     }
-    return;
+    return entry;
 }
 
 

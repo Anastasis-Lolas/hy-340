@@ -16,7 +16,6 @@ ScopeList_T scopeList;
 
 
 void init_tables() {
-    scope_nodes_remove(scopeList, scope);
     oSymTable = SymTable_new();
     init_LIBS_FUNC(scopeList, oSymTable);
 }
@@ -76,7 +75,7 @@ void add_ident(std::string name) {
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     if (search_LIBS_FUNC(name) == 0) {
         // print error message shadows lib function
-        std::cout << "Error: function " << name
+        std::cout << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return;
     }
@@ -88,7 +87,7 @@ void add_ident(std::string name) {
                   << " that we have access to "
                      "it, so the var refers to it\n";
     } else {
-        result = SymTable_general_lookup(oSymTable, name);
+        /* result = SymTable_general_lookup(oSymTable, name);
         entry = static_cast<SymbolTableEntry_T>(result);
         if (entry) {
             if (entry->type == USERFUNC) {
@@ -103,13 +102,12 @@ void add_ident(std::string name) {
                           << std::endl;
             }
             return;
-        } else {
-            offset = find_offset(scopeList, scope);
-            entry =
-                SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
-            add_entry(scopeList, entry, scope);
-            SymTable_put(oSymTable, name, entry);
-        }
+        } else {*/
+        offset = find_offset(scopeList, scope);
+        entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
+        add_entry(scopeList, entry, scope);
+        SymTable_put(oSymTable, name, entry);
+        // }
     }
 }
 
@@ -139,7 +137,7 @@ void add_local_dent(std::string name) {
 
 void handle_namespace_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
-    entry = lookup_within_scope(scopeList, name, scope, true);
+    entry = lookup_within_scope(scopeList, name, 0, true);
     if (!entry) {
         std::cout << "No global var of function with name: " << name
                   << std::endl;

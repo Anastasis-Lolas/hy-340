@@ -158,7 +158,7 @@ primary:
 lvalue:
       IDENT                                 {add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
     | LOCAL IDENT                           {add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
-    | NAMESPACE IDENT                       { DEBUG_REDUCE("lvalue -> ::IDENT"); }
+    | NAMESPACE IDENT                       { handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
     | member                                { DEBUG_REDUCE("lvalue -> member"); }
     ;
 
@@ -223,10 +223,12 @@ funcdef:
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
                                           
     | FUNCTION  { DEBUG_REDUCE("funcdef -> function(idlist) block"); } 
-            IDENT LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
-                                           { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+            IDENT { foo(); scope++; }
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;}
+            {add_function(*$2, *$4);}
+             block
+                { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
-
 const:
       INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
     | STRING      { DEBUG_REDUCE("const -> STRING"); }

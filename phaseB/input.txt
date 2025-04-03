@@ -1,19 +1,10 @@
+z=4;
 
-local result = a + b;
-  return result;
-
-
-x = 3;
-y = 4;
-z = foo(x, y);
-
-if (z > 5) {
-    return z;
-} else {
-    return 0;
+{
+     z=5;
+    x=5;
+    y=2;
 }
 
-while (x < 10) {
-    x = x + 1;
-}
-
+x=3;
+y=3;

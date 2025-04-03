@@ -30,7 +30,7 @@ extern unsigned int scope;
 	std::string *stringValue;
 	int intValue ;
     SymbolTableEntry_T symEntry;
-    std::vector<void *>* idlist;
+    std::vector<void *>* idList;
 }
 
 
@@ -61,7 +61,7 @@ extern unsigned int scope;
 %type <intValue> expr
 %type <symEntry> lvalue
 %type <stringValue> IDENT
-
+%type <idList> idlist
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -219,16 +219,23 @@ block:
     
 
 funcdef:
-      FUNCTION {scope++;}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            block {add_function("", *$4); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
-                                          
-    | FUNCTION IDENT {scope++;}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            {scope--; add_function(*$2, *$4);}
-            block
-            { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
-    ;
+    FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+        scope++;
+        add_function("", *$3);     // $3 = idlist
+        DEBUG_REDUCE("funcdef -> function(idlist) block");
+        scope--;
+    }
+
+  | FUNCTION IDENT LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+        scope++;
+        add_function(*$2, *$4);    // $2 = IDENT, $4 = idlist
+        DEBUG_REDUCE("funcdef -> function IDENT(idlist) block");
+        delete $2;
+        scope--;
+    }
+;
+
+
 const:
       INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
     | STRING      { DEBUG_REDUCE("const -> STRING"); }
@@ -238,9 +245,18 @@ const:
     ;
 
 idlist:
-      IDENT                      { DEBUG_REDUCE("idlist -> IDENT"); }
-    | idlist COMMA IDENT         { DEBUG_REDUCE("idlist -> idlist , IDENT"); }
-    ;
+    IDENT {
+        $$ = new std::vector<void*>();
+        $$->push_back(static_cast<void*>($1));
+        DEBUG_REDUCE("idlist -> IDENT");
+    }
+  | idlist COMMA IDENT {
+        $1->push_back(static_cast<void*>($3));
+        $$ = $1;
+        DEBUG_REDUCE("idlist -> idlist , IDENT");
+    }
+;
+
 
 ifstmt:
       IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt

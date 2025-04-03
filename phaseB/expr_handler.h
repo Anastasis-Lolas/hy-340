@@ -20,8 +20,6 @@ void add_function(std::string name, std::vector<void*> args);
 SymbolTableEntry_T add_ident(std::string name);
 SymbolTableEntry_T add_local_dent(std::string name);
 SymbolTableEntry_T handle_namespace_dent(std::string name);
-void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op);
-void check_assignable(SymbolTableEntry_T entry);
 void printFullSymTable(SymTable_T table);
 void exit_block();
 void temrs_error(SymbolTableEntry_T entry, std::string op);

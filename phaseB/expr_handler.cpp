@@ -154,31 +154,6 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
 }
 
 
-void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op) {
-    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-        std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                               ? entry->value.funcVal->name
-                               : entry->value.varVal->name;
-
-        std::cerr << "Error: cannot apply operator '" << op << "' to function '"
-                  << name << "' at line " << yylineno << std::endl;
-    }
-}
-
-void check_assignable(SymbolTableEntry_T entry) {
-    if (!entry) return;
-
-    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-        std::string name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                               ? entry->value.funcVal->name
-                               : entry->value.varVal->name;
-
-        std::cerr << "Error: function '" << name
-                  << "' cannot be used as lvalue at line " << yylineno
-                  << std::endl;
-    }
-}
-
 void null_entry(SymbolTableEntry_T entry, std::string message) {
     if (!entry) {
         std::cout << "Error: '" << message
@@ -229,8 +204,7 @@ void print_entry(SymbolTableEntry_T entry) {
 
 void temrs_error(SymbolTableEntry_T entry, std::string op) {
     null_entry(entry, "lvalue ");
-    std::cout << " Error checking for terms...\n";
-    print_entry(entry);
+
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
             std::cout << "Error: Cannot apply operator '" << op
@@ -364,92 +338,7 @@ void printFullSymTable(SymTable_T table) {
 
     std::cout << "--------------------------------------------------\n";
 }
-// int main() {
-//     int arg1 = 42;
-//     std::string arg2 = "Hello";
-//     std::vector<void*> args = {&arg1, &arg2};
-//     SymbolTableEntry_T entry = nullptr;
-//     init_tables();
 
-//     add_ident("x");
-//     add_ident("y");
-//     scope++;
-//     add_ident("x");
-//     add_ident("error");
-//     scope++;
-//     deactivate_scope(scopeList, scope - 1);
-//     add_ident("error");
-//     print_scopeList(scopeList);
-//     // std::cout << "\n";
-//     // SymTable_print(oSymTable);
-//     // std::cout << "\n";
-
-//     std::cout << "================LOOK UP FOR X==============\n";
-
-//     // entry = lookup_active(scopeList, "x", scope);
-//     // std::cout << "Found entry: " << entry->value.varVal->name << " in
-//     scope "
-//     //           << entry->value.varVal->scope << std::endl;
-//     // scope--;
-//     reactivate_scope(scopeList, scope - 1);
-//     scope--;
-//     std::cout << "scope value is :" << scope << std::endl;
-//     entry = lookup_active(scopeList, "error", scope);
-//     if (entry) {
-//         std::cout << "ENTRY NOT NULL???\n";
-//         std::cout << "Found entry: " << entry->value.varVal->name
-//                   << " in scope " << entry->value.varVal->scope << std::endl;
-//     } else
-//         std::cout << "Entry not found var" << std::endl;
-//     // std::cout <<
-//     // "========================================================\n";
-//     // print_scopeList(scopeList);
-
-
-//     std::cout << "\n================INCREMENT TEST================\n";
-
-//     // Simulate valid ++x
-//     entry = lookup_active(scopeList, "x", scope);
-//     if (entry) {
-//         std::cout << "Testing ++x\n";
-//         check_mutable_lvalue(entry, "++");
-//         std::cout << "PASS: ++x is allowed (variable)\n";
-//     }
-
-
-//     scope = 0; // functions declared at global scope
-//     std::vector<void*> emptyArgs;
-//     add_function("myFunc", emptyArgs);
-
-//     // Lookup function and test ++
-//     entry = lookup_active(scopeList, "myFunc", scope);
-//     if (entry) {
-//         std::cout << "Testing ++myFunc (should fail)...\n";
-//         check_mutable_lvalue(entry, "++");  // errorrr
-//         std::cout << "FAIL: ++myFunc should not be allowed\n";
-//     }
-
-
-//     std::cout << "\n================ASSIGNMENT TEST================\n";
-
-//     // Simulate x = 5;
-//     entry = lookup_active(scopeList, "x", scope);
-//     if (entry) {
-//         std::cout << "Testing x = 5\n";
-//         check_assignable(entry);
-//         std::cout << "PASS: x = 5 is allowed (variable)\n";
-//     }
-
-//     // Simulate myFunc = 10;
-//     entry = lookup_active(scopeList, "myFunc", scope);
-//     if (entry) {
-//         std::cout << "Testing myFunc = 10 (should fail)...\n";
-//         check_assignable(entry); // error
-//         std::cout << "FAIL: myFunc = 10 should not be allowed\n";
-//     }
-
-//     return 0;
-// }
 
 
 #endif

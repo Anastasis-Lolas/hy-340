@@ -24,5 +24,9 @@ void check_mutable_lvalue(SymbolTableEntry_T entry, const std::string& op);
 void check_assignable(SymbolTableEntry_T entry);
 void printFullSymTable(SymTable_T table);
 void exit_block();
+void temrs_error(SymbolTableEntry_T entry, std::string op);
+void member_error(SymbolTableEntry_T entry, std::string memrule);
+void assign_error(SymbolTableEntry_T entry);
+void null_entry(SymbolTableEntry_T entry, std::string message);
 
 #endif

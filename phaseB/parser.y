@@ -131,20 +131,20 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
     | NOT expr
         { DEBUG_REDUCE("term -> not expr"); }
     | PLUS_PLUS lvalue
-        { DEBUG_REDUCE("term -> ++lvalue"); }
+        {temrs_error($2,"++"); DEBUG_REDUCE("term -> ++lvalue"); }
     | lvalue PLUS_PLUS
-        { DEBUG_REDUCE("term -> lvalue++"); }
+        {temrs_error($1,"++"); DEBUG_REDUCE("term -> lvalue++"); }
     | MINUS_MINUS lvalue
-        { DEBUG_REDUCE("term -> --lvalue"); }
+        {temrs_error($2,"--"); DEBUG_REDUCE("term -> --lvalue"); }
     | lvalue MINUS_MINUS
-        { DEBUG_REDUCE("term -> lvalue--"); }
+        {temrs_error($1,"--"); DEBUG_REDUCE("term -> lvalue--"); }
     | primary
         { DEBUG_REDUCE("term -> primary"); }
     ;
 
 assignexpr:
       lvalue ASSIGN expr
-        { DEBUG_REDUCE("assignexpr -> lvalue = expr"); }
+        {assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr"); }
     ;
 
 primary:
@@ -164,14 +164,14 @@ lvalue:
     ;
 
 member:
-      lvalue DOT IDENT                      { DEBUG_REDUCE("member -> lvalue . IDENT"); }
-    | lvalue LEFT_BRACE expr RIGHT_BRACE    { DEBUG_REDUCE("member -> lvalue [expr]"); }
+      lvalue DOT IDENT                      {member_error($1, "ident"); DEBUG_REDUCE("member -> lvalue . IDENT"); }
+    | lvalue LEFT_BRACE expr RIGHT_BRACE    {member_error($1, "expt"); DEBUG_REDUCE("member -> lvalue [expr]"); }
     | call DOT IDENT                        { DEBUG_REDUCE("member -> call . IDENT"); }
     | call LEFT_BRACE expr RIGHT_BRACE      { DEBUG_REDUCE("member -> call [expr]"); }
     ;
 
 call:
-        lvalue callsuffix { DEBUG_REDUCE("call -> lvalue callsuffix"); }
+        lvalue callsuffix {null_entry($1, "function"); DEBUG_REDUCE("call -> lvalue callsuffix"); }
     | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
                                            { DEBUG_REDUCE("call -> (funcdef)(elist)"); }

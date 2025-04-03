@@ -168,10 +168,6 @@ SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/main
     return nullptr;
 }
 

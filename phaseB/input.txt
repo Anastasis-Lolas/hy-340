@@ -8,3 +8,17 @@ z=4;
 
 x=3;
 y=3;
+
+function(a, b) {
+    return a + b;
+};
+
+function myfunc(x, y, z) {
+    print(x);
+    function DOoo(a,s){}
+    return y + z;
+}
+
+function(print, e) {
+    print("Hello");
+}

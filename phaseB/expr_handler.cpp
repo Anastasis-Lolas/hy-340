@@ -73,24 +73,49 @@ SymbolTableEntry_T add_ident(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
-    
+
     if (search_LIBS_FUNC(name) == 0) {
         std::cerr << "Error: var with name: " << name
                   << " shadows lib function at line " << yylineno << std::endl;
         return nullptr;
     }
-    
+
     entry = lookup_active(scopeList, name, scope);
-    if (!entry) {
-        offset = find_offset(scopeList, scope);
-        entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
-        add_entry(scopeList, entry, scope);
-        SymTable_put(oSymTable, name, entry);
+    if (entry) {
+        /* Found something (var or function) that we have access to it, so
+        the
+         * var refers to it
+        std::cout << "Found something (var or function) with name: " << name
+                  << " that we have access to "
+                     "it, so the var refers to it\n";*/
+        return entry;
+
+    } else {
+        entry = lookup_in_list(scopeList, name, scope);
+        if (entry) {
+            if (entry->type == USERFUNC) {
+                // Collision with library function
+                std::cout << "Error: Cannot access function :" << name
+                          << " with scope: " << entry->value.funcVal->scope
+                          << " inside scope: " << scope << std::endl;
+            } else {
+                // print error message function-same name as variable
+                std::cout << "Error: Cannot access variable with name: " << name
+                          << " and scope: " << entry->value.varVal->scope
+                          << " inside scope: " << scope << std::endl;
+            }
+            return nullptr;
+        } else {
+            offset = find_offset(scopeList, scope);
+            entry =
+                SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
+            add_entry(scopeList, entry, scope);
+            SymTable_put(oSymTable, name, entry);
+        }
     }
-    
+
     return entry;
 }
-
 SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     int offset;
@@ -103,11 +128,11 @@ SymbolTableEntry_T add_local_dent(std::string name) {
     }
     entry = lookup_within_scope(scopeList, name, scope);
 
-        offset = find_offset(scopeList, scope);
-        entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
-        add_entry(scopeList, entry, scope);
-        SymTable_put(oSymTable, name, entry);
-    
+    offset = find_offset(scopeList, scope);
+    entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
+    add_entry(scopeList, entry, scope);
+    SymTable_put(oSymTable, name, entry);
+
     return entry;
 }
 
@@ -117,7 +142,7 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
     if (!entry) {
         std::cerr << "No global var of function with name: " << name
                   << std::endl;
-    } 
+    }
     return entry;
 }
 
@@ -185,8 +210,7 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
 }
 
 
-std::vector<void *> handle_func_args(std::vector<void *> args,std::string name){
-
+std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     // take the ident an check for duplicate in libs first
     if (search_LIBS_FUNC(name) == 0) {
         // print error message shadows lib function
@@ -198,28 +222,27 @@ std::vector<void *> handle_func_args(std::vector<void *> args,std::string name){
     for (void* arg : args) {
         std::string* cur_arg = static_cast<std::string*>(arg);
         if (*cur_arg == name) {
-            std::cerr << "Error: duplicate argument '" << name 
+            std::cerr << "Error: duplicate argument '" << name
                       << "' in function at line " << yylineno << std::endl;
             return {};
         }
     }
-    
+
     std::string* name_copy = new std::string(name);
     args.push_back(static_cast<void*>(name_copy));
 
     // Add to symbol table
     int offset = find_offset(scopeList, scope);
-    SymbolTableEntry_T formal_arg = SymTableEntry_new(
-        FORMAL, name, scope, yylineno, offset, {}
-    );
+    SymbolTableEntry_T formal_arg =
+        SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
     add_entry(scopeList, formal_arg, scope);
     SymTable_put(oSymTable, name, formal_arg);
 
     return args;
 }
 
-void print_args(std::vector<void *> args){
-      for (void* ptr : args) {
+void print_args(std::vector<void*> args) {
+    for (void* ptr : args) {
         std::string* str = static_cast<std::string*>(ptr);
         std::cout << *str << " ";
     }
@@ -306,7 +329,6 @@ void printFullSymTable(SymTable_T table) {
 
     std::cout << "\n--------------------------------------------------\n";
 }
-
 
 
 #endif

@@ -44,6 +44,8 @@ SymbolTableEntry_T lookup_within_scope(const ScopeList_T& scopeList,
 
 SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
                                  const std::string& id, int scope);
+SymbolTableEntry_T lookup_in_list(const ScopeList_T& scopeList,
+                                  const std::string& id, int scope);
 
 ScopeList_T get_active_vector(ScopeList_T& scopeList);
 
@@ -58,5 +60,4 @@ void print_scopeList(ScopeList_T& scopeList);
 
 void scope_nodes_remove(ScopeList_T& scopeList, int scope);
 
-void restore_all_scope_nodes(ScopeList_T& scopeList,SymTable_T oSymTable,int scope);
 #endif

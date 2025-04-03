@@ -145,6 +145,19 @@ SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
     return nullptr;
 }
 
+SymbolTableEntry_T lookup_in_list(const ScopeList_T& scopeList,
+                                  const std::string& id, int scope) {
+    if (scope < 0) {
+        std::cerr << "Error: Invalid scope " << scope << std::endl;
+        return nullptr;
+    }
+
+    for (int i = scope; i >= 0; i--) {
+        SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
+        if (entry) return entry;
+    }
+    return nullptr;
+}
 
 void print_scopeList(ScopeList_T& scopeList) {
     std::cout << "========================================================\n";

@@ -52,9 +52,6 @@ std::vector<void *> args;
 %token SEMICOLON COMMA DOUBLE_DOT DOT NAMESPACE COLON 
 
 
-%token BLOCK_COMMENT
-%token NESTED_COMMENT
-%token LINE_COMMENT
 
 %token STRING
 %token UNDEFINED

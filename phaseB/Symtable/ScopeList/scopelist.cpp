@@ -18,8 +18,7 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
         std::cout << "Error: scopeList is empty" << std::endl;
         return;
     }
-    
-    for (int i = 0; i < scope && i < scopeList.size(); i++) {  
+
     for (int i = 1; i < scope; i++) {
         for (auto& entry : scopeList[i]) {
             entry->isActive = false;

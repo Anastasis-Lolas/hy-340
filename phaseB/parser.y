@@ -10,7 +10,6 @@ using namespace std;
 extern FILE* yyin;
 void yyerror (const char* yaccProvidedMessage);
 extern int yylineno;
-extern FILE* yyout;
 extern int yylex(void);
 extern char* yytext;
 extern int yylex(void);
@@ -150,8 +149,7 @@ primary:
     | call                                  { DEBUG_REDUCE("primary -> call");      }
     | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-                                            { DEBUG_REDUCE("primary -> (funcdef)"); }
-    | funcdef                               { DEBUG_REDUCE("primary -> funcdef");   }                                      
+                                            { DEBUG_REDUCE("primary -> (funcdef)"); }                                 
     | const                                 { DEBUG_REDUCE("primary -> const");     }
     ;
 
@@ -287,7 +285,7 @@ int main(int argc, char** argv) {
         yyin = inputFile;
     }
     init_tables();
-    yyout = stdout;
+
     yyparse();
 
     //print_args(args);

@@ -16,8 +16,8 @@ extern int yylex(void);
 extern unsigned int scope;
 std::vector<void *> args;
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -67,10 +67,9 @@ std::vector<void *> args;
 %left MULT DIV  MOD 
 %right PLUS MINUS
 %nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
-%nonassoc NOT_EQUALS EQUALS_EQUALS
+%nonassoc NOT_EQUALS EQUAL
 %left AND
 %left OR 
-%right EQUALS
 %right ASSIGN
 
 
@@ -113,7 +112,7 @@ expr:
     | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr"); }
     | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr"); }
     | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr"); }
-    | expr EQUALS_EQUALS expr                 { DEBUG_REDUCE("expr -> expr == expr"); }
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr"); }
     | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr"); }
     | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); }
     | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr"); }
@@ -185,7 +184,7 @@ normcall:
     ;
 
 methodcall:
-      NAMESPACE IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+      DOUBLE_DOT IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
                                            { DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
     ;
 

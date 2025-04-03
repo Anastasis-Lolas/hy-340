@@ -16,8 +16,8 @@ extern int yylex(void);
 extern unsigned int scope;
 std::vector<void *> args;
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {

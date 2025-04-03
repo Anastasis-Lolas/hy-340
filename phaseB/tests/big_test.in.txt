@@ -1,9 +1,0 @@
-if else while for function return break continue  and not or 
-local true  false nil = + - * / % == != ++ -- > < <= >=  { } [ ]
-( ) ; , .  . . :: :    
-/* msdasd;lasfasf */
-// dasdasdasds dasd aasda
-/*dasdkasdjkasjd[a\adasjkdjas\
-dasdashdjasdhasda
-dasjdk]/ */
-int 45 float 63.6

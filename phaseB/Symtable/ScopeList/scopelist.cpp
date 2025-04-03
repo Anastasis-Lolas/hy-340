@@ -14,6 +14,7 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 }
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
+<<<<<<< HEAD
 
     if (scopeList.empty()) {
         std::cout << "Error: scopeList is empty" << std::endl;
@@ -22,6 +23,9 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
     
     for (int i = 0; i < scope && i < scopeList.size(); i++) {
         
+=======
+    for (int i = 1; i < scope; i++) {
+>>>>>>> upstream/main
         for (auto& entry : scopeList[i]) {
             entry->isActive = false;
         }
@@ -169,7 +173,10 @@ SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/main
     return nullptr;
 }
 

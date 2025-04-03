@@ -78,12 +78,6 @@ SymbolTableEntry_T add_ident(std::string name) {
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
 
-    if (search_LIBS_FUNC(name) == 0) {
-        std::cerr << "Error: var with name: " << name
-                  << " shadows lib function at line " << yylineno << std::endl;
-        return nullptr;
-    }
-
     entry = lookup_active(scopeList, name, scope);
     if (entry) {
         /* Found something (var or function) that we have access to it, so

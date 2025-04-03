@@ -221,8 +221,8 @@ block:
 
 funcdef:
       FUNCTION {scope++;}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            block {scope--;add_function("", args); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_function("", args);}
+            block { DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT {scope++;}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 

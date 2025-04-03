@@ -29,12 +29,14 @@ std::vector<void *> args;
 %union { 
 	std::string *stringValue;
 	int intValue ;
+    double doubleVal;
     SymbolTableEntry_T symEntry;
     std::vector<void *>* idList;
 }
 
 
 %token <intValue> INTEGER
+%token <doubleVal> DOUBLE
 %token IDENT 
 
 
@@ -229,6 +231,7 @@ funcdef:
 
 const:
       INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
+    | DOUBLE      { DEBUG_REDUCE("const -> DOUBLE"); }
     | STRING      { DEBUG_REDUCE("const -> STRING"); }
     | NIL         { DEBUG_REDUCE("const -> NIL"); }
     | TRUE        { DEBUG_REDUCE("const -> TRUE"); }

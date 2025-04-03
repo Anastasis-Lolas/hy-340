@@ -3,6 +3,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <algorithm>
+
 
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
@@ -177,19 +179,18 @@ void check_assignable(SymbolTableEntry_T entry) {
 }
 
 
+
 void printFullSymTable(SymTable_T table) {
     std::map<unsigned int, std::vector<SymbolTableEntry_T>> scopedEntries;
 
     for (size_t i = 0; i < table->size; ++i) {
         hash_t node = table->buckets[i];
         while (node) {
-            SymbolTableEntry_T entry =
-                static_cast<SymbolTableEntry_T>(node->value);
+            SymbolTableEntry_T entry = static_cast<SymbolTableEntry_T>(node->value);
             if (entry && entry->isActive) {
-                unsigned int scope =
-                    (entry->type == USERFUNC || entry->type == LIBFUNC)
-                        ? entry->value.funcVal->scope
-                        : entry->value.varVal->scope;
+                unsigned int scope = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                                     ? entry->value.funcVal->scope
+                                     : entry->value.varVal->scope;
                 scopedEntries[scope].push_back(entry);
             }
             node = node->next;
@@ -201,42 +202,43 @@ void printFullSymTable(SymTable_T table) {
 
         std::cout << "------------   Scope #" << scope << "   ------------\n";
 
-        for (const auto& entry : entries) {
+  
+        std::vector<SymbolTableEntry_T> sortedEntries = entries;
+        std::sort(sortedEntries.begin(), sortedEntries.end(),
+            [](SymbolTableEntry_T a, SymbolTableEntry_T b) {
+                unsigned int lineA = (a->type == USERFUNC || a->type == LIBFUNC)
+                                     ? a->value.funcVal->line
+                                     : a->value.varVal->line;
+                unsigned int lineB = (b->type == USERFUNC || b->type == LIBFUNC)
+                                     ? b->value.funcVal->line
+                                     : b->value.varVal->line;
+                return lineA < lineB;
+            });
+
+        for (const auto& entry : sortedEntries) {
             std::string name;
             std::string label;
             unsigned int line;
 
             switch (entry->type) {
-                case GLOBAL:
-                    label = "[global variable]";
-                    break;
-                case LLOCAL:
-                    label = "[local variable]";
-                    break;
-                case FORMAL:
-                    label = "[formal argument]";
-                    break;
-                case USERFUNC:
-                    label = "[user function]";
-                    break;
-                case LIBFUNC:
-                    label = "[library function]";
-                    break;
-                default:
-                    label = "[unknown]";
-                    break;
+                case GLOBAL:   label = "[global variable]"; break;
+                case LLOCAL:   label = "[local variable]"; break;
+                case FORMAL:   label = "[formal argument]"; break;
+                case USERFUNC: label = "[user function]"; break;
+                case LIBFUNC:  label = "[library function]"; break;
+                default:       label = "[unknown]"; break;
             }
 
             name = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                       ? entry->value.funcVal->name
-                       : entry->value.varVal->name;
+                   ? entry->value.funcVal->name
+                   : entry->value.varVal->name;
 
             line = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                       ? entry->value.funcVal->line
-                       : entry->value.varVal->line;
+                   ? entry->value.funcVal->line
+                   : entry->value.varVal->line;
 
-            std::cout << "\"" << name << "\" " << label << " (line " << line
-                      << ")"
+            std::cout << "\"" << name << "\" " << label
+                      << " (line " << line << ")"
                       << " (scope " << scope << ")\n";
         }
     }

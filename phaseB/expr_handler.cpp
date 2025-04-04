@@ -40,7 +40,7 @@ void add_function(std::string name, std::vector<void*> args) {
     } else {
         if (search_LIBS_FUNC(name) == 0) {
             // print error message shadows lib function
-            std::cerr << "Error at line" << yylineno << ": function [" << name
+            std::cerr << "Error at line " << yylineno << ": function [" << name
                       << "] shadows lib function" << std::endl;
             return;
 
@@ -56,7 +56,7 @@ void add_function(std::string name, std::vector<void*> args) {
                     return;
                 } else {
                     // print error message function-same name as variable
-                    std::cerr << "Error at line" << yylineno << ": function ["
+                    std::cerr << "Error at line " << yylineno << ": function ["
                               << name << "] same name as variable in line "
                               << entry->value.varVal->line << std::endl;
                 }
@@ -98,7 +98,7 @@ SymbolTableEntry_T add_ident(std::string name) {
                           << " inside scope: " << scope << std::endl;
             } else {
                 // print error message function-same name as variable
-                std::cout << "Error at line" << yylineno
+                std::cout << "Error at line " << yylineno
                           << ": Cannot access variable with name: " << name
                           << " and scope: " << entry->value.varVal->scope
                           << " inside scope: " << scope << std::endl;
@@ -124,7 +124,7 @@ SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     if (search_LIBS_FUNC(name) == 0 && symtype == LLOCAL) {
         // print error message shadows lib function
-        std::cerr << "Error at line" << yylineno << ": var with name [" << name
+        std::cerr << "Error at line " << yylineno << ": var with name [" << name
                   << "] shadows lib function " << std::endl;
         return nullptr;
     }
@@ -142,7 +142,7 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     entry = lookup_within_scope(scopeList, name, 0, true);
     if (!entry) {
-        std::cerr << "Error at line" << yylineno
+        std::cerr << "Error at line " << yylineno
                   << ": No global var of function with name: " << name
                   << std::endl;
     }
@@ -152,7 +152,7 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
 
 void null_entry(SymbolTableEntry_T entry, std::string message) {
     if (!entry) {
-        std::cerr << "Error at line" << yylineno << ": " << message
+        std::cerr << "Error at line " << yylineno << ": " << message
                   << " was not declared in this scope (Scope: " << scope << ")."
                   << std::endl;
     }
@@ -161,7 +161,7 @@ void null_entry(SymbolTableEntry_T entry, std::string message) {
 void assign_error(SymbolTableEntry_T entry) {
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cerr << "Error at line" << yylineno
+            std::cerr << "Error at line " << yylineno
                       << ": assigning value to a function'"
                       << " in this scope (Scope: " << scope << ")."
                       << std::endl;
@@ -173,7 +173,7 @@ void member_error(SymbolTableEntry_T entry, std::string memrule) {
     null_entry(entry, "lvalue ");
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cerr << "Error at line" << yylineno
+            std::cerr << "Error at line " << yylineno
                       << ": using function name as lvalue '" << memrule
                       << " in this scope (Scope: " << scope << ")."
                       << std::endl;
@@ -182,7 +182,7 @@ void member_error(SymbolTableEntry_T entry, std::string memrule) {
 }
 void print_entry(SymbolTableEntry_T entry) {
     if (!entry) {
-        std::cerr << "Error at line" << yylineno << ":Entry is null"
+        std::cerr << "Error at line " << yylineno << ":Entry is null"
                   << std::endl;
         return;
     }
@@ -205,7 +205,7 @@ void temrs_error(SymbolTableEntry_T entry, std::string op) {
 
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
-            std::cerr << "Error at line" << yylineno
+            std::cerr << "Error at line " << yylineno
                       << ": Cannot apply operator '" << op
                       << "' to a function '"
                       << "' (Scope: " << scope << ")."
@@ -238,7 +238,7 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     // take the ident an check for duplicate in libs first
     if (search_LIBS_FUNC(name) == 0) {
         // print error message shadows lib function
-        std::cerr << "Error at line" << yylineno << ": var with name: " << name
+        std::cerr << "Error at line " << yylineno << ": var with name: " << name
                   << " shadows lib function " << std::endl;
         return {};
     }
@@ -247,8 +247,9 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
         int different_line = find_line(name);
         std::string* cur_arg = static_cast<std::string*>(arg);
         if (*cur_arg == name && different_line == yylineno) {
-            std::cerr << "Error at line" << yylineno << ": duplicate argument '"
-                      << name << "' in function" << std::endl;
+            std::cerr << "Error at line " << yylineno
+                      << ": duplicate argument '" << name << "' in function"
+                      << std::endl;
             return {};
         }
     }

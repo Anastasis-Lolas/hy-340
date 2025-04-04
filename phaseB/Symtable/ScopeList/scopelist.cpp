@@ -14,16 +14,13 @@ void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
 }
 
 void deactivate_scope(ScopeList_T& scopeList, int scope) {
-    if (scopeList.empty()) {
+    if (scopeList.empty() || scope < 0) {
         return;
     }
 
     size_t maxIndex;
 
-    if (scope < 0) {
-        std::cout << "Error: scope is negative (" << scope << ")" << std::endl;
-        return;  // No iteration for negative scope
-    } else if (scope > static_cast<int>(scopeList.size())) {
+    if (scope > static_cast<int>(scopeList.size())) {
         maxIndex = scopeList.size();  // Cap at size if scope is too large
     } else {
         maxIndex = static_cast<size_t>(scope);  // Use scope if within bounds
@@ -41,25 +38,17 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
 
 
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
-    if (scopeList.empty()) {
+    if (scopeList.empty() || scope < 0) {
         return;
     }
 
-    size_t maxIndex;
-
-    if (scope < 0) {
-        std::cout << "Error: scope is negative (" << scope << ")" << std::endl;
-        return;  // No iteration for negative scope
-    } else if (scope > static_cast<int>(scopeList.size())) {
-        maxIndex = scopeList.size();  // Cap at size if scope is too large
-    } else {
-        maxIndex = static_cast<size_t>(scope);  // Use scope if within bounds
+    if (scope >= static_cast<int>(scopeList.size())) {
+        scopeList.resize(scope + 1);
     }
 
-    for (int i = 1; i < maxIndex; i++) {
-        for (auto& entry : scopeList[i]) {
-            entry->isActive = true;
-        }
+
+    for (auto& entry : scopeList[scope]) {
+        entry->isActive = true;
     }
     return;
 }

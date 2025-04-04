@@ -40,6 +40,7 @@ std::vector<void *> args;
 %token IDENT 
 
 
+
 %token IF ELSE WHILE FUNCTION FOR RETURN BREAK CONTINUE AND NOT OR NIL
 
 %token REALCONST TRUE FALSE LOCAL
@@ -231,7 +232,7 @@ funcdef:
 
 const:
       INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
-    | DOUBLE      { DEBUG_REDUCE("const -> DOUBLE"); }
+    | REALCONST   { DEBUG_REDUCE("const -> REALCONST"); }
     | STRING      { DEBUG_REDUCE("const -> STRING"); }
     | NIL         { DEBUG_REDUCE("const -> NIL"); }
     | TRUE        { DEBUG_REDUCE("const -> TRUE"); }

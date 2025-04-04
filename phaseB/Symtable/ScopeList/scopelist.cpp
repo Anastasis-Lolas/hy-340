@@ -28,8 +28,8 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
     } else {
         maxIndex = static_cast<size_t>(scope);  // Use scope if within bounds
     }
-    
-    for (size_t i = 0; i < maxIndex; i++) {
+
+    for (size_t i = 1; i < maxIndex; i++) {
         for (auto& entry : scopeList[i]) {
             if (entry) {  // Check for null pointers
                 entry->isActive = false;
@@ -41,7 +41,6 @@ void deactivate_scope(ScopeList_T& scopeList, int scope) {
 
 
 void reactivate_scope(ScopeList_T& scopeList, int scope) {
-
     if (scopeList.empty()) {
         return;
     }
@@ -181,7 +180,7 @@ SymbolTableEntry_T lookup_active(const ScopeList_T& scopeList,
         return nullptr;
     }
 
-    for (int i = scope; i >= 0; i--) {
+    for (int i = scope; i > 0; i--) {
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i, true);
         if (entry) return entry;
     }
@@ -195,7 +194,7 @@ SymbolTableEntry_T lookup_in_list(ScopeList_T& scopeList, const std::string& id,
                   << std::endl;
         return nullptr;
     }
-    for (int i = scope; i >= 0; i--) {
+    for (int i = scope; i > 0; i--) {
         SymbolTableEntry_T entry = lookup_within_scope(scopeList, id, i);
         if (entry) return entry;
     }
@@ -263,7 +262,6 @@ void print_scopeList(ScopeList_T& scopeList) {
 
 void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
     if (scope < 0 || scope >= static_cast<int>(scopeList.size())) {
-        std::cerr << "Error: Invalid scope " << scope << std::endl;
         return;
     }
     scopeList[scope].clear();

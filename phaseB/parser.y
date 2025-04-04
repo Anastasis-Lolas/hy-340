@@ -297,5 +297,5 @@ int main(int argc, char** argv) {
 }
 
 void yyerror(const char *s) {
-    cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token: " <<  yytext << endl;
+    std::cerr << "Parse error: " << s << " at line : "<<yylineno <<" before token: " <<  yytext << endl;
 }

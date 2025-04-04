@@ -50,7 +50,7 @@ void add_function(std::string name, std::vector<void*> args) {
                 if (entry->type == USERFUNC) {
                     // print error message function already declared in the same
                     // scope
-                    std::cerr << "Error at line" << yylineno << ": function "
+                    std::cerr << "Error at line " << yylineno << ": function "
                               << name << " already declared in line "
                               << entry->value.funcVal->line << std::endl;
                     return;
@@ -105,11 +105,14 @@ SymbolTableEntry_T add_ident(std::string name) {
             }
             return nullptr;
         } else {
-            offset = find_offset(scopeList, scope);
-            entry =
-                SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
-            add_entry(scopeList, entry, scope);
-            SymTable_put(oSymTable, name, entry);
+            entry = lookup_within_scope(scopeList, name, 0, true);
+            if (!entry) {
+                offset = find_offset(scopeList, scope);
+                entry = SymTableEntry_new(symtype, name, scope, yylineno,
+                                          offset, {});
+                add_entry(scopeList, entry, scope);
+                SymTable_put(oSymTable, name, entry);
+            }
         }
     }
 

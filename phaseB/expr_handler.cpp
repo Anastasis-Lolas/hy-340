@@ -118,6 +118,8 @@ SymbolTableEntry_T add_ident(std::string name) {
 
     return entry;
 }
+void sdas() {}
+sdas() {}
 SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     int offset;

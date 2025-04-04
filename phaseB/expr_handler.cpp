@@ -118,8 +118,6 @@ SymbolTableEntry_T add_ident(std::string name) {
 
     return entry;
 }
-void sdas() {}
-sdas() {}
 SymbolTableEntry_T add_local_dent(std::string name) {
     SymbolTableEntry_T entry = nullptr;
     int offset;
@@ -154,9 +152,9 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
 
 void null_entry(SymbolTableEntry_T entry, std::string message) {
     if (!entry) {
-        std::cerr << "Error at line" << yylineno << ": '" << message
-                  << "' was not declared in this scope (Scope: " << scope
-                  << ")." << std::endl;
+        std::cerr << "Error at line" << yylineno << ": " << message
+                  << " was not declared in this scope (Scope: " << scope << ")."
+                  << std::endl;
     }
 }
 

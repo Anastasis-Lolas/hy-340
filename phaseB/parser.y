@@ -158,23 +158,19 @@ primary:
 lvalue:
       IDENT                                 {$$ = add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
     | LOCAL IDENT                           {$$ = add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
-    | NAMESPACE IDENT                       {$$ =handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
-    | member                                { DEBUG_REDUCE("lvalue -> member"); }
+    | NAMESPACE IDENT                       {$$ = handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
+    | member                                {$$ = NULL;  DEBUG_REDUCE("lvalue -> member"); }
     ;
 
 member:
-      lvalue DOT IDENT                      {member_error($1, "ident"); DEBUG_REDUCE("member -> lvalue . IDENT"); }
-    | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {member_error($1, "expr"); DEBUG_REDUCE("member -> lvalue [expr]"); }
-    | call DOT IDENT                        { DEBUG_REDUCE("member -> call . IDENT"); }
-    | call LEFT_BRACKET expr RIGHT_BRACKET      { DEBUG_REDUCE("member -> call [expr]"); }
+      lvalue DOT IDENT                          {DEBUG_REDUCE("member -> lvalue . IDENT"); }
+    | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {DEBUG_REDUCE("member -> lvalue [expr]");  }
+    | call DOT IDENT                            {DEBUG_REDUCE("member -> call . IDENT");   }
+    | call LEFT_BRACKET expr RIGHT_BRACKET      {DEBUG_REDUCE("member -> call [expr]");    }
     ;
 
 call:
-        lvalue callsuffix {
-            //normal_call($1); 
-            null_entry($1, "function"); 
-            DEBUG_REDUCE("call -> lvalue callsuffix");
-        }
+        lvalue callsuffix {DEBUG_REDUCE("call -> lvalue callsuffix"); }
     | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
                                            { DEBUG_REDUCE("call -> (funcdef)(elist)"); }

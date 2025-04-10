@@ -33,4 +33,5 @@ std::vector<void *> handle_func_args(std::vector<void *> args,
 void print_args(std::vector<void *> args);
 int find_line(std::string name);
 void enter_func();
+void normal_call(SymbolTableEntry_T entry);
 #endif

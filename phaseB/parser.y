@@ -170,7 +170,7 @@ member:
     ;
 
 call:
-        lvalue callsuffix {null_entry($1, "function"); DEBUG_REDUCE("call -> lvalue callsuffix"); }
+        lvalue callsuffix {normal_call($1); null_entry($1, "function"); DEBUG_REDUCE("call -> lvalue callsuffix"); }
     | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
                                            { DEBUG_REDUCE("call -> (funcdef)(elist)"); }

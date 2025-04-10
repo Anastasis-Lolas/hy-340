@@ -15,7 +15,22 @@ SymTable_T oSymTable;
 extern int yylineno;
 ScopeList_T scopeList;
 
-
+void normal_call(SymbolTableEntry_T entry) {
+    std::string name;
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        name = entry->value.funcVal->name;
+    } else {
+        name = entry->value.varVal->name;
+    }
+    SymbolTableEntry_T resu = nullptr;
+    resu = lookup_in_list(scopeList, name, scope);
+    if (resu == nullptr) {
+        std::cerr << "Error at line " << yylineno << ": "
+                  << "Identifier '" << name
+                  << "' is not a function or is not accessible in scope "
+                  << scope << "." << std::endl;
+    }
+}
 void init_tables() {
     oSymTable = SymTable_new();
     init_LIBS_FUNC(scopeList, oSymTable);
@@ -92,10 +107,12 @@ SymbolTableEntry_T add_ident(std::string name) {
         if (entry) {
             if (entry->type == USERFUNC) {
                 // Collision with library function
+                /*
                 std::cout << "Error at line " << yylineno
                           << ": Cannot access function :" << name
                           << " with scope: " << entry->value.funcVal->scope
-                          << " inside scope: " << scope << std::endl;
+                          << " inside scope: " << scope << std::endl;*/
+                return entry;
             } else {
                 // print error message function-same name as variable
                 std::cout << "Error at line " << yylineno

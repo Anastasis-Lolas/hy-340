@@ -218,13 +218,13 @@ void print_entry(SymbolTableEntry_T entry) {
 }
 
 void temrs_error(SymbolTableEntry_T entry, std::string op) {
-    null_entry(entry, "lvalue ");
+    // null_entry(entry, "lvalue ");
 
     if (entry) {
         if (entry->type == USERFUNC || entry->type == LIBFUNC) {
             std::cerr << "Error at line " << yylineno
                       << ": Cannot apply operator '" << op
-                      << "' to a function '"
+                      << "' to a function '" << entry->value.funcVal->name
                       << "' (Scope: " << scope << ")."
                       << " Functions are constants and cannot be modified."
                       << std::endl;

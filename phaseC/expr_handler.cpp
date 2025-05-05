@@ -399,6 +399,7 @@ SymbolTableEntry_T newtemp() {
 }
 
 expr* member_item(expr* lvalue, std::string name) {
+    // elegxous gia null, programfunc kai libraryfunc ? flag
     lvalue = emit_iftableitem(lvalue);
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;

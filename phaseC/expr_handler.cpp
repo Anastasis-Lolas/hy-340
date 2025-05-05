@@ -1,16 +1,21 @@
 #ifndef HANDLER_HEADER
 #define HANDLER_HEADER
 #include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <vector>
 
+#include "Quads/expression.h"
+#include "Quads/quad.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
 
 unsigned int scope = 0;
 unsigned int func_num = 0;
+unsigned int temp_num = 0;
+
 SymTable_T oSymTable;
 extern int yylineno;
 ScopeList_T scopeList;
@@ -373,5 +378,56 @@ void printFullSymTable(SymTable_T table) {
     std::cout << "\n--------------------------------------------------\n";
 }
 
+// ===================================================================================
+
+// flag ----?>>?>?>?>?>?>?
+SymbolTableEntry_T newtemp() {
+    // ignore for now
+    SymbolTableEntry_T entry = nullptr;
+    int offset;
+    SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
+    std::string name = "_t" + std::to_string(temp_num++);
+
+    entry = lookup_within_scope(scopeList, name, scope);
+    if (!entry) {
+        offset = find_offset(scopeList, scope);
+        entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
+        add_entry(scopeList, entry, scope);
+        SymTable_put(oSymTable, name, entry);
+    }
+    return entry;
+}
+
+expr* member_item(expr* lvalue, std::string name) {
+    lvalue = emit_iftableitem(lvalue);
+    expr* item = newexpr(tableitem_e);
+    item->sym = lvalue->sym;
+    item->index = newexpr_conststring(name);
+    return item;
+}
+
+expr* newexpr(expr_t t) {
+    expr* e = new expr;
+    memset(e, 0, sizeof(expr));
+    e->type = t;
+    return e;
+}
+
+expr* newexpr_conststring(std::string str) {
+    expr* e = newexpr(conststring_e);
+    e->strConst = str;
+    return e;
+}
+
+expr* emit_iftableitem(expr* e) {
+    if (e->type != tableitem_e) {
+        return e;
+    } else {
+        expr* result = newexpr(var_e);
+        result->sym = newtemp();
+        emit(tablegetelem, e, e->index, result);
+        return result;
+    }
+}
 
 #endif

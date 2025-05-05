@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+#include "Quads/expression.h"
+#include "Quads/quad.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"

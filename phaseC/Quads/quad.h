@@ -26,7 +26,7 @@ typedef struct quad {
     unsigned    line;    
 } quad;
 
-std::vector<quad> quad_table;
+std::vector<quad *> quad_table;
 
 void print_quads();
 

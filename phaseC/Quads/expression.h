@@ -25,7 +25,7 @@ enum expr_t {
 
 typedef struct expr {
     expr_t              type;
-    SymbolTableEntry    sym;
+    SymbolTableEntry_T*   sym;
     expr*               index;
     double              numConst;
     std::string         strConst;
@@ -33,5 +33,6 @@ typedef struct expr {
     expr *              next;
 
 } expr;
+
 
 #endif

@@ -3,13 +3,13 @@
 
 #include "expression.h"
 
-#define NUM_OF_OP_CODES 26
+
 
 enum iopcode {
     assign,         add,            sub,
-    mul,            div,          mod,
-    uminus,         and_op,            or_op,   
-    not_op,          if_eq,          if_noteq,
+    mul,            div,            mod,
+    uminus,         and_op,         or_op,   
+    not_op,         if_eq,          if_noteq,
     if_lesseq,      if_greatereq,   if_less,   
     if_greater,     call,           param, 
     ret,            getretval,      funcstart,
@@ -26,7 +26,11 @@ typedef struct quad {
     unsigned    line;    
 } quad;
 
+std::vector<quad> quad_table;
 
+void print_quads();
+
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 
 
 #endif

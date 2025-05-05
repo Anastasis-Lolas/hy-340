@@ -3,7 +3,7 @@
 
 #include "expression.h"
 
-#define NUM_OF_OP_CODES 26
+
 
 enum iopcode {
     assign,         add,            sub,

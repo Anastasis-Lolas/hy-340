@@ -7,12 +7,16 @@ std::vector<quad *> quad_table;
 unsigned int total = 0;
 
 quad * quads = (quad * ) 0;
-unsigned int currQuad = 0; 
+unsigned  currQuad = 0; 
+
+unsigned nextquadlabel(void){
+    return currQuad;
+}
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line) {
     quad * newQuad;
 
-    newQuad = quads + currQuad; 
+    newQuad = quads + currQuad++; 
 
     newQuad->op = op;
     newQuad->arg1 = arg1;

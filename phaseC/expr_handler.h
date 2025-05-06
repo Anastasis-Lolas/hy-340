@@ -34,4 +34,8 @@ void print_args(std::vector<void *> args);
 int find_line(std::string name);
 void enter_func();
 void normal_call(SymbolTableEntry_T entry);
+
+expr* newexpr(expr_t t) ;
+expr * newexpr_constnum(double i);
+expr* newexpr_conststring(std::string str);
 #endif

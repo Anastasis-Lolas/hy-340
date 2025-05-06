@@ -441,4 +441,16 @@ expr* member_item(expr* lvalue, std::string name) {
 }
 
 
+
+expr * newexpr_constnum(double i){
+
+    expr * e = newexpr(constnum_e);
+
+    e->numConst = i;
+
+    return e;
+}
+
+
+
 #endif

@@ -26,6 +26,7 @@ typedef struct quad {
     unsigned    line;    
 } quad;
 
+unsigned nextquadlabel(void);
 
 void print_quads();
 

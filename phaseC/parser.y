@@ -3,18 +3,20 @@
 #include <string>
 #include "Symtable/symtable.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
+#include "Quads/quad.h"
 #include "expr_handler.h"
 
 
-using namespace std;
-extern FILE* yyin;
-void yyerror (const char* yaccProvidedMessage);
-extern int yylineno;
-extern int yylex(void);
-extern char* yytext;
-extern int yylex(void);
-extern unsigned int scope;
-std::vector<void *> args;
+using namespace         std;
+extern FILE*            yyin;
+void yyerror            (const char* yaccProvidedMessage);
+extern int              yylineno;
+extern int              yylex(void);
+extern char*            yytext;
+extern int              yylex(void);
+extern unsigned int     scope;
+extern unsigned         currQuad;
+std::vector<void *>     args;
 
 //#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
 #define DEBUG_REDUCE(msg)
@@ -253,11 +255,15 @@ idlist:
 
 
 ifstmt:
-      IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
-        { DEBUG_REDUCE("ifstmt -> if (expr) stmt"); }
+      IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+            emit(if_eq,newexpr_conststring("1"),$3,newexpr_constnum(nextquadlabel() + 2),currQuad,yylineno);
+      }
+         stmt { DEBUG_REDUCE("ifstmt -> if (expr) stmt"); }
     | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
         { DEBUG_REDUCE("ifstmt -> if (expr) stmt else stmt"); }
     ;
+
+
 
 whilestmt:
       WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt

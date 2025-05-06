@@ -22,6 +22,7 @@ typedef struct Function {
 
 enum SymbolType { GLOBAL, LLOCAL, FORMAL, USERFUNC, LIBFUNC };
 
+
 typedef struct SymbolTableEntry {
     bool isActive;
     union {
@@ -31,8 +32,13 @@ typedef struct SymbolTableEntry {
     enum SymbolType type;
 } *SymbolTableEntry_T;
 
+
+
 SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
                                      unsigned int scope, unsigned int line,
                                      int offset, std::vector<void *> args);
+
+
+
 
 #endif

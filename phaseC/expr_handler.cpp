@@ -398,15 +398,6 @@ SymbolTableEntry_T newtemp() {
     return entry;
 }
 
-expr* member_item(expr* lvalue, std::string name) {
-    // elegxous gia null, programfunc kai libraryfunc ? flag
-    lvalue = emit_iftableitem(lvalue);
-    expr* item = newexpr(tableitem_e);
-    item->sym = lvalue->sym;
-    item->index = newexpr_conststring(name);
-    return item;
-}
-
 expr* newexpr(expr_t t) {
     expr* e = new expr;
     memset(e, 0, sizeof(expr));
@@ -426,9 +417,19 @@ expr* emit_iftableitem(expr* e) {
     } else {
         expr* result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem, e, e->index, result);
+        emit(tablegetelem, e, e->index, result,0,0);
         return result;
     }
 }
+
+expr* member_item(expr* lvalue, std::string name) {
+    // elegxous gia null, programfunc kai libraryfunc ? flag
+    lvalue = emit_iftableitem(lvalue);
+    expr* item = newexpr(tableitem_e);
+    item->sym = lvalue->sym;
+    item->index = newexpr_conststring(name);
+    return item;
+}
+
 
 #endif

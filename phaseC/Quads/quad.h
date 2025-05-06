@@ -7,7 +7,7 @@
 
 enum iopcode {
     assign,         add,            sub,
-    mul,            div,            mod,
+    mul,            divv,            mod,
     uminus,         and_op,         or_op,   
     not_op,         if_eq,          if_noteq,
     if_lesseq,      if_greatereq,   if_less,   
@@ -26,7 +26,6 @@ typedef struct quad {
     unsigned    line;    
 } quad;
 
-std::vector<quad *> quad_table;
 
 void print_quads();
 

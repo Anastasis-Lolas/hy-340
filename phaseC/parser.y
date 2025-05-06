@@ -166,17 +166,17 @@ primary:
     ;
 
 lvalue:
-      IDENT                                 {$$ = add_ident(*$1); DEBUG_REDUCE("lvalue -> IDENT"); }
-    | LOCAL IDENT                           {$$ = add_local_dent(*$2);  DEBUG_REDUCE("lvalue -> local IDENT"); }
-    | NAMESPACE IDENT                       {$$ = handle_namespace_dent(*$2);DEBUG_REDUCE("lvalue -> ::IDENT"); }
+      IDENT                                 {SymbolTableEntry_T entry = add_ident(*$1); $$ = symEntr_to_expr(entry); DEBUG_REDUCE("lvalue -> IDENT"); }
+    | LOCAL IDENT                           {SymbolTableEntry_T entry = add_local_dent(*$2); $$ = symEntr_to_expr(entry);  DEBUG_REDUCE("lvalue -> local IDENT"); }
+    | NAMESPACE IDENT                       {SymbolTableEntry_T entry = handle_namespace_dent(*$2); $$ = symEntr_to_expr(entry); DEBUG_REDUCE("lvalue -> ::IDENT"); }
     | member                                {$$ = NULL;  DEBUG_REDUCE("lvalue -> member"); }
     ;
 
 member:
-      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, $3);DEBUG_REDUCE("member -> lvalue . IDENT"); }
-    | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {$$ = member_handler($1, $3);DEBUG_REDUCE("member -> lvalue [expr]");     }
-    | call DOT IDENT                            {$$ = member_item($1, $3);DEBUG_REDUCE("member -> call . IDENT");         }
-    | call LEFT_BRACKET expr RIGHT_BRACKET      {$$ = member_handler($1, $3);DEBUG_REDUCE("member -> call [expr]");       }
+      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, $3); DEBUG_REDUCE("member -> lvalue . IDENT"); }
+    | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> lvalue [expr]");     }
+    | call DOT IDENT                            {$$ = member_item($1, $3); DEBUG_REDUCE("member -> call . IDENT");         }
+    | call LEFT_BRACKET expr RIGHT_BRACKET      {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> call [expr]");       }
     ;
 
 call:

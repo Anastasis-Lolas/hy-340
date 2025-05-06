@@ -380,14 +380,9 @@ void printFullSymTable(SymTable_T table) {
 
 // ===================================================================================
 
+std::string newtempname() { return "_t" + std::to_string(temp_num++); }
 
-std::string newtempname() {
-    return "_t" + std::to_string(temp_num++);
-}
-
-void resettemp() {
-    temp_num = 0;
-}
+void resettemp() { temp_num = 0; }
 
 // flag ----?>>?>?>?>?>?>?
 SymbolTableEntry_T newtemp() {
@@ -405,6 +400,39 @@ SymbolTableEntry_T newtemp() {
         SymTable_put(oSymTable, name, entry);
     }
     return entry;
+}
+
+expr* lvalue_id_handler(expr* lvalue, std::string name) {
+    expr* tableitem;
+
+    if (!lvalue) {
+        std::cerr << "Error in line " << yylineno
+                  << ": lvalue was not declared '" << name << "' in scope: ["
+                  << scope << "]." << std::endl;
+
+    } else if (lvalue->type == programfunc_e || lvalue->type == libraryfunc_e) {
+        std::cerr << "Error in line " << yylineno
+                  << ": Cannot use function name as lvalue '" << name
+                  << "' in scope: [" << scope << "]." << std::endl;
+    }
+    tableitem = member_item(lvalue, name);
+    return tableitem;
+}
+
+expr* member_handler(expr* lvalue, expr* i) {
+    lvalue = emit_iftableitem(lvalue);
+    expr* item = newexpr(tableitem_e);
+    item->sym = lvalue->sym;
+    item->index = i;
+    return item;
+}
+
+expr* member_item(expr* lvalue, std::string name) {
+    lvalue = emit_iftableitem(lvalue);
+    expr* item = newexpr(tableitem_e);
+    item->sym = lvalue->sym;
+    item->index = newexpr_conststring(name);
+    return item;
 }
 
 expr* newexpr(expr_t t) {
@@ -426,7 +454,7 @@ expr* emit_iftableitem(expr* e) {
     } else {
         expr* result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem, e, e->index, result,0,0);
+        emit(tablegetelem, e, e->index, result);
         return result;
     }
 }
@@ -450,7 +478,5 @@ expr * newexpr_constnum(double i){
 
     return e;
 }
-
-
 
 #endif

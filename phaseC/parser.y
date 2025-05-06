@@ -117,20 +117,20 @@ stmt:
 
 expr:
       assignexpr                              { DEBUG_REDUCE("expr -> assignexpr"); }
-    | expr PLUS expr                          { DEBUG_REDUCE("expr -> expr + expr"); }
-    | expr MINUS expr                         { DEBUG_REDUCE("expr -> expr - expr"); }
-    | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr"); }
-    | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr"); }
-    | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr"); }
-    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr"); }
-    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr"); }
-    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr"); }
-    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr"); }
-    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr"); }
-    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr"); }
-    | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); }
-    | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr"); }
-    | term                                    { DEBUG_REDUCE("expr -> term"); }
+    | expr PLUS expr                          {  DEBUG_REDUCE("expr -> expr + expr");  $$ = emit_arith_op(add, $1, $3); }
+    | expr MINUS expr                         { DEBUG_REDUCE("expr -> expr - expr");   $$ = emit_arith_op(sub, $1, $3); }
+    | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr");   $$ = emit_arith_op(mul, $1, $3); }
+    | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr");   $$ = emit_arith_op(divv, $1, $3); }
+    | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
+    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = emit_relop_op(if_greater, $1, $3); }
+    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");  $$ = emit_relop_op(if_greatereq, $1, $3);}
+    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = emit_relop_op(if_less, $1, $3);}
+    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  $$ = emit_relop_op(if_lesseq, $1, $3);}
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = emit_relop_op(if_eq, $1, $3);}
+    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  $$ = emit_relop_op(if_noteq, $1, $3);}
+    | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
+    | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr");  $$ = emit_relop_op(or_op, $1, $3); }
+    | term                                    { DEBUG_REDUCE("expr -> term"); $$ = $1; }
     ;
 
 
@@ -154,7 +154,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 assignexpr:
       lvalue ASSIGN expr
-        {assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr"); }
+        {assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr"); $$ = emit_assign_expr($1, $3);}
     ;
 
 primary:
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 
     //print_args(args);
     printFullSymTable(oSymTable); 
-
+    print_quads();
     return 0;
 }
 

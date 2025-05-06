@@ -72,6 +72,7 @@ std::vector<void *>     args;
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
+%type <exprVal> ifprefix elseprefix ifstmt
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -173,9 +174,9 @@ lvalue:
     ;
 
 member:
-      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, $3); DEBUG_REDUCE("member -> lvalue . IDENT"); }
+      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, *$3); DEBUG_REDUCE("member -> lvalue . IDENT"); }
     | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> lvalue [expr]");     }
-    | call DOT IDENT                            {$$ = member_item($1, $3); DEBUG_REDUCE("member -> call . IDENT");         }
+    | call DOT IDENT                            {$$ = member_item($1, *$3); DEBUG_REDUCE("member -> call . IDENT");         }
     | call LEFT_BRACKET expr RIGHT_BRACKET      {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> call [expr]");       }
     ;
 
@@ -261,14 +262,29 @@ idlist:
   | {}
 ;
 
+ifprefix : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+                                        emit(if_eq,newexpr_conststring("1"),$3,newexpr_constnum(nextquadlabel() + 2),currQuad,yylineno);
+
+                                        $$ = newexpr(var_e);
+                                        $$->numConst  = nextquadlabel();
+                                        emit(jump,NULL,NULL,NULL,currQuad,yylineno);
+                                    }
+
+
+elseprefix : ELSE       { 
+                            $$->numConst = nextquadlabel();
+                            emit(jump,NULL,NULL,0,currQuad,yylineno);
+
+                        }   
+
 
 ifstmt:
-      IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-            emit(if_eq,newexpr_conststring("1"),$3,newexpr_constnum(nextquadlabel() + 2),currQuad,yylineno);
-      }
-         stmt { DEBUG_REDUCE("ifstmt -> if (expr) stmt"); }
-    | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt
-        { DEBUG_REDUCE("ifstmt -> if (expr) stmt else stmt"); }
+      ifprefix stmt {patchlabel((int)$1->numConst,nextquadlabel());}
+    | ifprefix stmt elseprefix stmt { 
+                    patchlabel((int)$1->numConst,(int)$3->numConst+1);
+                    patchlabel((int)$3->numConst,nextquadlabel());
+                                    }
+
     ;
 
 

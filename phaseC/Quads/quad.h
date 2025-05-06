@@ -13,7 +13,7 @@ enum iopcode {
     if_lesseq,      if_greatereq,   if_less,   
     if_greater,     call,           param, 
     ret,            getretval,      funcstart,
-    funcend,        tablecreate,    
+    funcend,        tablecreate,    jump,
     tablegetelem,   tablesetelem
 };
 
@@ -32,5 +32,6 @@ void print_quads();
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 
+void patchlabel(unsigned quadNo , unsigned label);
 
 #endif

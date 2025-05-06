@@ -1,6 +1,7 @@
 #include "quad.h"
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 std::vector<quad *> quad_table;
 
@@ -26,4 +27,12 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsi
     newQuad->line = line;
 
     quad_table.push_back(newQuad);
+}
+
+void patchlabel(unsigned quadNo, unsigned label) {
+    // Check if quadNo is within the bounds of the vector and if label is not already set
+    assert(quadNo < currQuad && !quads[quadNo].label);
+
+    // Update the label at the given index
+    quads[quadNo].label = label;
 }

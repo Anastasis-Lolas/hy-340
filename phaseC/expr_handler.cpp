@@ -459,16 +459,6 @@ expr* emit_iftableitem(expr* e) {
 }
 
 
-expr* member_item(expr* lvalue, std::string name) {
-    // elegxous gia null, programfunc kai libraryfunc ? flag
-    lvalue = emit_iftableitem(lvalue);
-    expr* item = newexpr(tableitem_e);
-    item->sym = lvalue->sym;
-    item->index = newexpr_conststring(name);
-    return item;
-}
-
-
 
 expr * newexpr_constnum(double i){
 
@@ -477,6 +467,7 @@ expr * newexpr_constnum(double i){
     e->numConst = i;
 
     return e;
+}
 
 expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
     expr* result = newexpr(var_e);
@@ -517,5 +508,6 @@ expr* symEntr_to_expr(SymbolTableEntry_T entry) {
     e->sym = entry;
     return e;
 }
+
 
 #endif

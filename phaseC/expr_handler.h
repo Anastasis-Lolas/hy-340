@@ -4,11 +4,11 @@
 #include <iostream>
 #include <vector>
 
+#include "Quads/expression.h"
+#include "Quads/quad.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
-#include "Quads/expression.h"
-#include "Quads/quad.h"
 
 extern unsigned int scope;
 extern unsigned int func_num;
@@ -18,7 +18,7 @@ extern ScopeList_T scopeList;
 
 void init_tables();
 std::string create_func_name(void);
-void add_function(std::string name, std::vector<void *> args);
+void add_function(std::string name, std::vector<void*> args);
 SymbolTableEntry_T add_ident(std::string name);
 SymbolTableEntry_T add_local_dent(std::string name);
 SymbolTableEntry_T handle_namespace_dent(std::string name);
@@ -30,15 +30,16 @@ void assign_error(SymbolTableEntry_T entry);
 void null_entry(SymbolTableEntry_T entry, std::string message);
 // debug
 void print_entry(SymbolTableEntry_T entry);
-std::vector<void *> handle_func_args(std::vector<void *> args,
-                                     std::string name);
-void print_args(std::vector<void *> args);
+std::vector<void*> handle_func_args(std::vector<void*> args, std::string name);
+void print_args(std::vector<void*> args);
 int find_line(std::string name);
 void enter_func();
 void normal_call(SymbolTableEntry_T entry);
 
 
-
+void resettemp();
+std::string newtempname();
+SymbolTableEntry_T newtemp();
 expr* newexpr(expr_t t);
 expr* newexpr_conststring(std::string str);
 expr* emit_iftableitem(expr* e);

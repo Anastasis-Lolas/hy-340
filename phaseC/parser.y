@@ -69,7 +69,7 @@ std::vector<void *>     args;
 
 %type <exprVal> member assignexpr term primary const
 %type <exprVal> expr call
-%type <SymbolTableEntry> lvalue
+%type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
 

@@ -167,9 +167,9 @@ lvalue:
     ;
 
 member:
-      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, $3); DEBUG_REDUCE("member -> lvalue . IDENT"); }
+      lvalue DOT IDENT                          {$$ = lvalue_id_handler($1, *$3); DEBUG_REDUCE("member -> lvalue . IDENT"); }
     | lvalue LEFT_BRACKET expr RIGHT_BRACKET    {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> lvalue [expr]");     }
-    | call DOT IDENT                            {$$ = member_item($1, $3); DEBUG_REDUCE("member -> call . IDENT");         }
+    | call DOT IDENT                            {$$ = member_item($1, *$3); DEBUG_REDUCE("member -> call . IDENT");         }
     | call LEFT_BRACKET expr RIGHT_BRACKET      {$$ = member_handler($1, $3); DEBUG_REDUCE("member -> call [expr]");       }
     ;
 

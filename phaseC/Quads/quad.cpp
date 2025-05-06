@@ -16,10 +16,11 @@ unsigned nextquadlabel(void){
 
 void patchlabel(unsigned quadNo, unsigned label) {
     // Check if quadNo is within the bounds of the vector and if label is not already set
-    assert(quadNo < currQuad && !quads[quadNo].label);
+    if(quadNo < currQuad)
+        std::cout<<"quadNo less than currQuad"<<std::endl;
 
     // Update the label at the given index
-    quads[quadNo].label = label;
+    quad_table[quadNo]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line) {

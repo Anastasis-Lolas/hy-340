@@ -478,4 +478,23 @@ expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
     return result;
 }
 
+expr* symEntr_to_expr(SymbolTableEntry_T entry) {
+    expr* e;
+    if (!entry) {
+        std::cerr << "Error at line " << yylineno << ": entry is null"
+                  << std::endl;
+        return nullptr;
+    }
+    if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        e = newexpr(entry->type == USERFUNC ? programfunc_e : libraryfunc_e);
+    } else if (entry->type == GLOBAL || entry->type == LLOCAL ||
+               entry->type == FORMAL) {
+        e = newexpr(var_e);
+    }
+
+
+    e->sym = entry;
+    return e;
+}
+
 #endif

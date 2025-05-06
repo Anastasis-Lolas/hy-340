@@ -3,8 +3,11 @@
 #include <string>
 #include "Symtable/symtable.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
+
 #include "Quads/quad.h"
 #include "expr_handler.h"
+
+
 
 
 using namespace         std;
@@ -24,6 +27,9 @@ std::vector<void *>     args;
 %}
 %code requires {
     #include "Symtable/TableEntry/SymbolTableEntry.h"
+    #include "Quads/expression.h"
+    #include "Quads/quad.h"
+    #include "expr_handler.h"
 }
 
 %start program
@@ -34,6 +40,7 @@ std::vector<void *>     args;
     double doubleVal;
     SymbolTableEntry_T symEntry;
     std::vector<void *>* idList;
+    expr* exprVal;
 }
 
 
@@ -60,8 +67,9 @@ std::vector<void *>     args;
 %token STRING
 %token UNDEFINED
 
-%type <intValue> expr
-%type <symEntry> lvalue
+%type <exprVal> member assignexpr term primary const
+%type <exprVal> expr call
+%type <SymbolTableEntry> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
 

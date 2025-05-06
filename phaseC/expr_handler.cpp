@@ -6,8 +6,7 @@
 #include <map>
 #include <vector>
 
-#include "Quads/expression.h"
-#include "Quads/quad.h"
+#include "expr_handler.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
@@ -454,10 +453,11 @@ expr* emit_iftableitem(expr* e) {
     } else {
         expr* result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem, e, e->index, result);
+        emit(tablegetelem, e, e->index, result, 0, yylineno);
         return result;
     }
 }
+
 
 expr* member_item(expr* lvalue, std::string name) {
     // elegxous gia null, programfunc kai libraryfunc ? flag
@@ -477,6 +477,26 @@ expr * newexpr_constnum(double i){
     e->numConst = i;
 
     return e;
+
+expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
+    expr* result = newexpr(var_e);
+    result->sym = newtemp();
+    emit(op, e1, e2, result, 0, yylineno);
+    return result;
+}
+
+
+expr* emit_assign_expr(expr* lval, expr* rval) {
+    emit(assign, rval, nullptr, lval, 0, yylineno);
+    return lval; // result of assignment is the lvalue
+}
+
+expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
+    expr* result = newexpr(boolexpr_e); 
+    result->sym = newtemp();
+    emit(op, e1, e2, result, 0, yylineno);
+    return result;
+
 }
 
 #endif

@@ -3,6 +3,14 @@
 #include "../symtable.h"
 
 
+unsigned programVarOffset = 0;
+unsigned functionLocalOffset = 0;
+unsigned formalArgOffset = 0;
+unsigned scopeSpaceCounter = 0;
+
+
+
+
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
     assert(entry);
 
@@ -255,3 +263,58 @@ void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
     }
     scopeList[scope].clear();
 }
+
+
+/*===========================================================================================*/
+scopespace_t currscopespace(void) {
+    if (scopeSpaceCounter == 1) {
+        return programvar;
+    }
+    else if (scopeSpaceCounter % 2 == 0) {
+        return formalarg;
+    }
+    else {
+        return functionlocal;
+    }
+}
+
+
+unsigned currscopeoffset(void) {
+    switch (currscopespace()) {
+        case programvar: return programVarOffset;
+        case functionlocal: return functionLocalOffset;
+        case formalarg: return formalArgOffset;
+        default: assert(0); 
+    }
+}
+
+void incurrscopeoffset(void) {
+    switch (currscopespace()) {
+        case programvar:
+            ++programVarOffset;
+            break;
+        case functionlocal:
+            ++functionLocalOffset;
+            break;
+        case formalarg:
+            ++formalArgOffset;
+            break;
+        default:
+            assert(0);
+            break;
+    }
+}
+
+void enterscopespace(void) {
+    ++scopeSpaceCounter;
+}
+
+void exitscopespace(void) {
+    assert(scopeSpaceCounter > 1);
+    --scopeSpaceCounter;
+}
+
+void resetformalargsoffset(void) {
+    formalArgOffset = 0;
+}
+

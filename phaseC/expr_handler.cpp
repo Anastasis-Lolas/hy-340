@@ -380,13 +380,22 @@ void printFullSymTable(SymTable_T table) {
 
 // ===================================================================================
 
+
+std::string newtempname() {
+    return "_t" + std::to_string(temp_num++);
+}
+
+void resettemp() {
+    temp_num = 0;
+}
+
 // flag ----?>>?>?>?>?>?>?
 SymbolTableEntry_T newtemp() {
     // ignore for now
     SymbolTableEntry_T entry = nullptr;
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
-    std::string name = "_t" + std::to_string(temp_num++);
+    std::string name = newtempname();
 
     entry = lookup_within_scope(scopeList, name, scope);
     if (!entry) {

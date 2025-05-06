@@ -14,7 +14,7 @@ SCOPE_CPP = Symtable/ScopeList/scopelist.cpp
 PARSER_Y = parser.y
 PARSER_CPP = parser.cpp
 PARSER_H = parser.hpp
-
+QUAD_CPP = Quads/quad.cpp
 EXEC = scanner
 
 TESTS_DIR = tests
@@ -30,7 +30,7 @@ $(SCANNER_CPP): $(SCANNER_L) $(PARSER_H)
 $(PARSER_CPP) $(PARSER_H): $(PARSER_Y)
 	$(BISON) -d -v -o $(PARSER_CPP) $<
 
-$(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  $(HANDLER_CPP)  # Added SYMTABLE_CPP
+$(EXEC): $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_CPP) $(SYM_ENTRY_CPP) $(SCANNER_CPP) $(PARSER_CPP)  $(HANDLER_CPP) $(QUAD_CPP) # Added SYMTABLE_CPP
 	$(CC) $(CXXFLAGS) $^ -o $@
 
 handler: $(LIST_CPP) $(SYMTABLE_CPP) $(SCOPE_LIST_CPP) $(SYM_ENTRY_CPP) $(HANDLER_CPP)

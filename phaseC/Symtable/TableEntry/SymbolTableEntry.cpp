@@ -5,6 +5,7 @@
 #include <vector>
 
 
+
 /*Creates a new entry for the Symbol Table */
 SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
                                      unsigned int scope, unsigned int line,

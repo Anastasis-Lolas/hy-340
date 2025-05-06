@@ -415,13 +415,7 @@ expr* lvalue_id_handler(expr* lvalue, std::string name) {
     return tableitem;
 }
 
-expr* lvalue_expr_handler(expr* lvalue, expr* i) {
-    expr* tableitem;
-    tableitem = member_item(lvalue, i);
-    return tableitem;
-}
-
-expr* member_item(expr* lvalue, expr* i) {
+expr* member_handler(expr* lvalue, expr* i) {
     lvalue = emit_iftableitem(lvalue);
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;

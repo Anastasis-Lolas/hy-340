@@ -1,12 +1,13 @@
 #ifndef HANDLER_HEADER
 #define HANDLER_HEADER
+#include "expr_handler.h"
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <map>
 #include <vector>
 
-#include "expr_handler.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
@@ -171,7 +172,7 @@ SymbolTableEntry_T handle_namespace_dent(std::string name) {
 }
 
 
-void null_entry(SymbolTableEntry_T entry, std::string message) {
+void null_entry(expr* entry, std::string message) {
     if (!entry) {
         std::cerr << "Error at line " << yylineno << ": " << message
                   << " was not declared in this scope (Scope: " << scope << ")."
@@ -179,9 +180,9 @@ void null_entry(SymbolTableEntry_T entry, std::string message) {
     }
 }
 
-void assign_error(SymbolTableEntry_T entry) {
+void assign_error(expr* entry) {
     if (entry) {
-        if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        if (entry->type == programfunc_e || entry->type == libraryfunc_e) {
             std::cerr << "Error at line " << yylineno
                       << ": assigning value to a function'"
                       << " in this scope (Scope: " << scope << ")."
@@ -190,10 +191,10 @@ void assign_error(SymbolTableEntry_T entry) {
     }
 }
 
-void member_error(SymbolTableEntry_T entry, std::string memrule) {
+void member_error(expr* entry, std::string memrule) {
     null_entry(entry, "lvalue ");
     if (entry) {
-        if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        if (entry->type == programfunc_e || entry->type == libraryfunc_e) {
             std::cerr << "Error at line " << yylineno
                       << ": using function name as lvalue '" << memrule
                       << " in this scope (Scope: " << scope << ")."
@@ -221,15 +222,14 @@ void print_entry(SymbolTableEntry_T entry) {
     }
 }
 
-void temrs_error(SymbolTableEntry_T entry, std::string op) {
+void temrs_error(expr* entry, std::string op) {
     // null_entry(entry, "lvalue ");
 
     if (entry) {
-        if (entry->type == USERFUNC || entry->type == LIBFUNC) {
+        if (entry->type == programfunc_e || entry->type == libraryfunc_e) {
             std::cerr << "Error at line " << yylineno
                       << ": Cannot apply operator '" << op
-                      << "' to a function '" << entry->value.funcVal->name
-                      << "' (Scope: " << scope << ")."
+                      << "' to a function (Scope: " << scope << ")."
                       << " Functions are constants and cannot be modified."
                       << std::endl;
         }
@@ -468,11 +468,11 @@ expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
 
 expr* emit_assign_expr(expr* lval, expr* rval) {
     emit(assign, rval, nullptr, lval, 0, yylineno);
-    return lval; // result of assignment is the lvalue
+    return lval;  // result of assignment is the lvalue
 }
 
 expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
-    expr* result = newexpr(boolexpr_e); 
+    expr* result = newexpr(boolexpr_e);
     result->sym = newtemp();
     emit(op, e1, e2, result, 0, yylineno);
     return result;

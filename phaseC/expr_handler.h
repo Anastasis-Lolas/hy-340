@@ -64,4 +64,9 @@ expr* emit_arith_op(iopcode op, expr* e1, expr* e2);
 expr* emit_relop_op(iopcode op, expr* e1, expr* e2);
 
 
+
+
+//
+expr* symEntr_to_expr(SymbolTableEntry_T entry);
+
 #endif

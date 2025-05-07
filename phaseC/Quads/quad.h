@@ -27,11 +27,12 @@ typedef struct quad {
 } quad;
 
 unsigned nextquadlabel(void);
+unsigned nextquad(void);
 
 void print_quads();
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 
-void patchlabel(unsigned quadNo , unsigned label);
+void patchlabel(int quadNo , unsigned label);
 
 #endif

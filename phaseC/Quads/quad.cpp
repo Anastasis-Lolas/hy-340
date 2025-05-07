@@ -8,19 +8,26 @@ std::vector<quad *> quad_table;
 unsigned int total = 0;
 
 quad * quads = (quad * ) 0;
-unsigned  currQuad = 0; 
+unsigned int currQuad = 0; 
 
 unsigned nextquadlabel(void){
     return currQuad;
 }
+unsigned nextquad(void){
+    return currQuad++;
+}
 
-void patchlabel(unsigned quadNo, unsigned label) {
-    // Check if quadNo is within the bounds of the vector and if label is not already set
-    if(quadNo < currQuad)
-        std::cout<<"quadNo less than currQuad"<<std::endl;
 
-    // Update the label at the given index
-    quad_table[quadNo]->label = label;
+void patchlabel(int quadNo, unsigned label) {
+    if (quadNo < 1 || quadNo > quad_table.size()) {
+        std::cerr << "Error: Invalid quad number " << quadNo << std::endl;
+        return;
+    }
+    if (quad_table[quadNo-1] == nullptr) {
+        std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
+        return;
+    }
+    quad_table[quadNo-1]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line) {

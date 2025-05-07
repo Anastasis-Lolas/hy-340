@@ -33,17 +33,14 @@ void print_entry(SymbolTableEntry_T entry);
 std::vector<void*> handle_func_args(std::vector<void*> args, std::string name);
 void print_args(std::vector<void*> args);
 int find_line(std::string name);
-void enter_func();
+void enter_func(int flag, std::string name);
 void normal_call(SymbolTableEntry_T entry);
 
 
-
-expr* newexpr(expr_t t) ;
-expr * newexpr_constnum(double i);
+expr* newexpr(expr_t t);
+expr* newexpr_constnum(double i);
 expr* newexpr_conststring(std::string str);
 expr* newexpr_bool(bool b);
-
-
 
 
 void resettemp();
@@ -63,8 +60,6 @@ expr* member_item(expr* lvalue, std::string name);
 expr* emit_assign_expr(expr* lval, expr* rval);
 expr* emit_arith_op(iopcode op, expr* e1, expr* e2);
 expr* emit_relop_op(iopcode op, expr* e1, expr* e2);
-
-
 
 
 //

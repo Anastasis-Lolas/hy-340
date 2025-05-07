@@ -48,7 +48,12 @@ void exit_block() {
     scope--;
     reactivate_scope(scopeList, scope);
 }
-void enter_func() {
+void enter_func(int flag, std::string name) {
+    if (flag == 0) {
+        std::cout << "Anonymous function" << std::endl;
+    } else {
+        std::cout << "Function name: " << name << std::endl;
+    }
     scope++;
     deactivate_scope(scopeList, scope);
 }
@@ -448,7 +453,6 @@ expr* newexpr_conststring(std::string str) {
 }
 
 
-
 expr* newexpr_bool(bool b) {
     expr* e = newexpr(constbool_e);
     e->boolConst = b;
@@ -468,10 +472,8 @@ expr* emit_iftableitem(expr* e) {
 }
 
 
-
-expr * newexpr_constnum(double i){
-
-    expr * e = newexpr(constnum_e);
+expr* newexpr_constnum(double i) {
+    expr* e = newexpr(constnum_e);
 
     e->numConst = i;
 
@@ -496,7 +498,6 @@ expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
     result->sym = newtemp();
     emit(op, e1, e2, result, 0, yylineno);
     return result;
-
 }
 
 expr* symEntr_to_expr(SymbolTableEntry_T entry) {

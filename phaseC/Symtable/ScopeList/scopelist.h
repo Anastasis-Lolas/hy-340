@@ -13,11 +13,7 @@
 // ScopeList_T is a vector of lists cointaining all entries for each scope
 using ScopeList_T = std::vector<std::list<SymbolTableEntry_T> >;
 
-enum scopespace_t {
-	programvar,
-	functionlocal,
-	formalarg
-};
+enum scopespace_t { programvar, functionlocal, formalarg };
 
 const std::string LIBS_FUNC[] = {"print",
                                  "input",
@@ -74,8 +70,10 @@ scopespace_t currscopespace(void);
 unsigned currscopeoffset(void);
 void resetformalargsoffset(void);
 void incurrscopeoffset(void);
-void restorecurrscopeoffset(void);
 
-
+void resetformalargsoffset(void);
+void resetformalargsoffset(void);
+void resetfunctionlocaloffset(void);
+void restorecurrscopeoffset(unsigned n);
 
 #endif

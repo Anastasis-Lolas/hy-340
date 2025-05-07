@@ -128,7 +128,13 @@ expr:
     | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = emit_relop_op(if_greater, $1, $3); }
     | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");  $$ = emit_relop_op(if_greatereq, $1, $3);}
     | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = emit_relop_op(if_less, $1, $3);}
-    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  $$ = emit_relop_op(if_lesseq, $1, $3);}
+    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
+                                                $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_lesseq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);
+		                                        emit(assign, newexpr_bool(true), NULL,$$ ,-1 , yylineno);}
     | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = emit_relop_op(if_eq, $1, $3);}
     | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  $$ = emit_relop_op(if_noteq, $1, $3);}
     | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
@@ -157,7 +163,23 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 assignexpr:
       lvalue ASSIGN expr
-        {assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr"); $$ = emit_assign_expr($1, $3);}
+        {          assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr");             
+
+                    // Handle table item assignments
+                    if ($1->type == tableitem_e) {
+                        emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+                        $$ = emit_iftableitem($1);
+                        $$->type = assignexpr_e;
+                    } else {
+                        
+                        $$ = emit_assign_expr($1, $3);
+                        // Create a new temporary expression for the result
+                       $assignexpr = newexpr(assignexpr_e);
+						$assignexpr->sym = newtemp();
+						emit(assign, $assignexpr, $lvalue, NULL, -1, yylineno);
+                    }
+                }
+        
     ;
 
 primary:

@@ -86,6 +86,7 @@ std::string iopcode_to_string(iopcode op) {
         case tablecreate: return "tablecreate";
         case tablegetelem: return "tablegetelem";
         case tablesetelem: return "tablesetelem";
+        case jump: return "jump";
         default: return "unknown";
     }
 }

@@ -1,25 +1,7 @@
-z=4;
- x % b;
- k = 3-b;
-{
-     z=5;
-    x=5;
-    y=2;
-}
 
-x=3;
-y=3;
+z=3;
 
-function(a, b) {
-    return a + b;
-};
+x=4;
 
-function myfunc(x, y, z) {
-    print(x);
-    function DOoo(a,s){}
-    return y + z;
-}
-
-function(print, e) {
-    print("Hello");
-}
+if(x > z)
+    c=3;

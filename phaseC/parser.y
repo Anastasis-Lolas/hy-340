@@ -47,14 +47,14 @@ std::vector<void *>     args;
 
 
 %token <intValue> INTEGER
-%token <doubleVal> DOUBLE
+%token <doubleVal> DOUBLE REALCONST
 %token IDENT 
 
 
 
 %token IF ELSE WHILE FUNCTION FOR RETURN BREAK CONTINUE AND NOT OR NIL
 
-%token REALCONST TRUE FALSE LOCAL
+%token  TRUE FALSE LOCAL
 
 %token ASSIGN PLUS MINUS MULT DIV MOD EQUAL NOT_EQUALS PLUS_PLUS MINUS_MINUS
 
@@ -66,12 +66,12 @@ std::vector<void *>     args;
 
 
 
-%token STRING
+%token <stringValue> STRING
 %token UNDEFINED
 
 %type <s> stmt
-%type <exprVal> member assignexpr term primary const
-%type <exprVal> expr call
+%type <exprVal> member assignexpr term primary 
+%type <exprVal> expr call const
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
@@ -245,12 +245,12 @@ funcdef:
 
 
 const:
-      INTEGER     { DEBUG_REDUCE("const -> INTEGER"); }
-    | REALCONST   { DEBUG_REDUCE("const -> REALCONST"); }
-    | STRING      { DEBUG_REDUCE("const -> STRING"); }
-    | NIL         { DEBUG_REDUCE("const -> NIL"); }
-    | TRUE        { DEBUG_REDUCE("const -> TRUE"); }
-    | FALSE       { DEBUG_REDUCE("const -> FALSE"); }
+      INTEGER     { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> INTEGER"); }
+    | REALCONST   { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> REALCONST"); }
+    | STRING      {  DEBUG_REDUCE("const -> STRING"); }
+    | NIL         { $$ = newexpr(nil_e); DEBUG_REDUCE("const -> NIL"); }
+    | TRUE        { $$ = newexpr(constbool_e); $$->boolConst = true; DEBUG_REDUCE("const -> TRUE"); }
+    | FALSE       { $$ = newexpr(constbool_e); $$->boolConst = false; DEBUG_REDUCE("const -> FALSE"); }
     ;
 
 idlist:

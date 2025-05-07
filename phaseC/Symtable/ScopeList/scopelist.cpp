@@ -9,8 +9,6 @@ unsigned formalArgOffset = 0;
 unsigned scopeSpaceCounter = 0;
 
 
-
-
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
     assert(entry);
 
@@ -269,11 +267,9 @@ void scope_nodes_remove(ScopeList_T& scopeList, int scope) {
 scopespace_t currscopespace(void) {
     if (scopeSpaceCounter == 1) {
         return programvar;
-    }
-    else if (scopeSpaceCounter % 2 == 0) {
+    } else if (scopeSpaceCounter % 2 == 0) {
         return formalarg;
-    }
-    else {
+    } else {
         return functionlocal;
     }
 }
@@ -281,10 +277,14 @@ scopespace_t currscopespace(void) {
 
 unsigned currscopeoffset(void) {
     switch (currscopespace()) {
-        case programvar: return programVarOffset;
-        case functionlocal: return functionLocalOffset;
-        case formalarg: return formalArgOffset;
-        default: assert(0); 
+        case programvar:
+            return programVarOffset;
+        case functionlocal:
+            return functionLocalOffset;
+        case formalarg:
+            return formalArgOffset;
+        default:
+            assert(0);
     }
 }
 
@@ -305,16 +305,28 @@ void incurrscopeoffset(void) {
     }
 }
 
-void enterscopespace(void) {
-    ++scopeSpaceCounter;
-}
+void enterscopespace(void) { ++scopeSpaceCounter; }
 
 void exitscopespace(void) {
     assert(scopeSpaceCounter > 1);
     --scopeSpaceCounter;
 }
 
-void resetformalargsoffset(void) {
-    formalArgOffset = 0;
+void resetformalargsoffset(void) { formalArgOffset = 0; }
+void resetfunctionlocaloffset(void) { functionLocalOffset = 0; }
+void restorecurrscopeoffset(unsigned n) {
+    switch (currscopespace()) {
+        case programvar:
+            programVarOffset = n;
+            break;
+        case functionlocal:
+            functionLocalOffset = n;
+            break;
+        case formalarg:
+            formalArgOffset = n;
+            break;
+        default:
+            assert(0);
+            break;
+    }
 }
-

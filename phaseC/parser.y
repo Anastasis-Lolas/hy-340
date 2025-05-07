@@ -263,17 +263,18 @@ idlist:
 ;
 
 ifprefix : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                                        emit(if_eq,newexpr_conststring("1"),$3,newexpr_constnum(nextquadlabel() + 2),currQuad,yylineno);
-
-                                        $$ = newexpr(var_e);
-                                        $$->numConst  = nextquadlabel();
-                                        emit(jump,NULL,NULL,NULL,currQuad,yylineno);
+                                        emit(if_eq, newexpr_bool(true) , NULL , $expr, currQuad, yylineno);
+                                        $$ = newexpr(constnum_e);  
+                                        $$->numConst = nextquad();
+                                       
+                                        emit(jump,NULL,NULL,NULL,-1,yylineno);
                                     }
 
 
 elseprefix : ELSE       { 
-                            $$->numConst = nextquadlabel();
-                            emit(jump,NULL,NULL,0,currQuad,yylineno);
+                            $$ = newexpr(constnum_e);  
+                            $$->numConst = nextquad();
+                            emit(jump,NULL,NULL,NULL,-1,yylineno);
 
                         }   
 

@@ -447,6 +447,15 @@ expr* newexpr_conststring(std::string str) {
     return e;
 }
 
+
+
+expr* newexpr_bool(bool b) {
+    expr* e = newexpr(constbool_e);
+    e->boolConst = b;
+    return e;
+}
+
+
 expr* emit_iftableitem(expr* e) {
     if (e->type != tableitem_e) {
         return e;

@@ -18,8 +18,9 @@ extern int              yylex(void);
 extern char*            yytext;
 extern int              yylex(void);
 extern unsigned int     scope;
-extern unsigned         currQuad;
+extern unsigned int     currQuad;
 std::vector<void *>     args;
+
 
 //#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
 #define DEBUG_REDUCE(msg)
@@ -41,6 +42,7 @@ std::vector<void *>     args;
     SymbolTableEntry_T symEntry;
     std::vector<void *>* idList;
     expr* exprVal;
+    stmt_t * s;
 }
 
 
@@ -67,12 +69,13 @@ std::vector<void *>     args;
 %token STRING
 %token UNDEFINED
 
+%type <s> stmt
 %type <exprVal> member assignexpr term primary const
 %type <exprVal> expr call
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
-%type <exprVal> ifprefix elseprefix ifstmt
+%type <exprVal> ifprefix elseprefix ifstmt whilestart whilecond  whilestmt
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -263,36 +266,53 @@ idlist:
 ;
 
 ifprefix : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                                        emit(if_eq, newexpr_bool(true) , NULL , $expr, currQuad, yylineno);
-                                        $$ = newexpr(constnum_e);  
-                                        $$->numConst = nextquad();
-                                       
-                                        emit(jump,NULL,NULL,NULL,-1,yylineno);
+                                        emit(if_eq,newexpr_bool('1'),$3,newexpr_constnum(nextquad() + 2),nextquadlabel(),yylineno);
+
+                                        $$ = newexpr(var_e);
+                                        $$->numConst  = nextquad();
+                                        emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno);
                                     }
+         ;
 
-
-elseprefix : ELSE       { 
-                            $$ = newexpr(constnum_e);  
+elseprefix : ELSE       {   
+                            $$ = newexpr(var_e);
                             $$->numConst = nextquad();
-                            emit(jump,NULL,NULL,NULL,-1,yylineno);
+                            emit(jump,NULL,NULL,0,nextquadlabel(),yylineno);
 
                         }   
-
+            ;
 
 ifstmt:
-      ifprefix stmt {patchlabel((int)$1->numConst,nextquadlabel());}
+      ifprefix stmt {patchlabel((int)$1->numConst,nextquad());}
     | ifprefix stmt elseprefix stmt { 
                     patchlabel((int)$1->numConst,(int)$3->numConst+1);
-                    patchlabel((int)$3->numConst,nextquadlabel());
+                    patchlabel((int)$3->numConst,nextquad());
                                     }
 
     ;
 
+whilestart : WHILE {$$ = newexpr(var_e);
+                    $$->numConst = nextquad();} 
+           ;
+
+whilecond  : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+
+              emit(if_eq,$2,newexpr_bool('1'),newexpr_constnum(nextquad() + 2),nextquadlabel(),yylineno);
+              $$->numConst = nextquad();
+              emit(jump,NULL,NULL,0,nextquadlabel(),yylineno);
+}          ;
 
 
 whilestmt:
-      WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
-        { DEBUG_REDUCE("whilestmt -> while (expr) stmt"); }
+      whilestart whilecond stmt { 
+
+                emit(jump,NULL,NULL,$1,nextquadlabel(),yylineno);
+                patchlabel((int)$2->numConst,nextquad());
+                patchlist($3->breakList,nextquad());
+                patchlist($3->contList,nextquad());
+                
+                
+      }
     ;
 
     

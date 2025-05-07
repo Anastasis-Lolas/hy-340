@@ -26,13 +26,27 @@ typedef struct quad {
     unsigned    line;    
 } quad;
 
+struct stmt_t{
+    int breakList;
+    int contList;
+};
+
 unsigned nextquadlabel(void);
-unsigned nextquad(void);
 
 void print_quads();
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
 
 void patchlabel(int quadNo , unsigned label);
+
+void patchlist(int list,int label);
+
+int mergelist(int l1,int l2);
+
+void make_stmt(stmt_t * s);
+
+int newlist(int i);
+
+unsigned nextquad(void);
 
 #endif

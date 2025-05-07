@@ -13,10 +13,6 @@ unsigned int currQuad = 0;
 unsigned nextquadlabel(void){
     return currQuad;
 }
-unsigned nextquad(void){
-    return currQuad++;
-}
-
 
 void patchlabel(int quadNo, unsigned label) {
     if (quadNo < 1 || quadNo > quad_table.size()) {
@@ -130,4 +126,40 @@ void print_quads() {
     }
 
     std::cout << "----------------------\n";
+}
+
+
+void patchlist(int list,int label){
+
+    while (list) {
+        int next = quad_table[list]->label;
+        quad_table[list]->label = label;
+        list = next;
+    }
+}
+
+int mergelist (int l1, int l2) {
+    if (!l1)
+        return l2;
+    else
+        if (!l2)
+            return l1;
+        else {
+            int i = l1;
+
+            while (quad_table[i]->label)
+                i = quad_table[i]->label;
+
+            quad_table[i]->label = l2;
+
+            return l1;
+        }
+}
+
+void make_stmt (stmt_t* s) { s->breakList = s->contList = 0; }
+
+int newlist (int i) { quad_table[i]->  label = 0; return i; }
+
+unsigned nextquad(void){
+    return currQuad++;
 }

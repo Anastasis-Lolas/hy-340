@@ -196,3 +196,5 @@ int newlist (int i) { quad_table[i]->  label = 0; return i; }
 unsigned nextquad(void){
     return currQuad++;
 }
+
+

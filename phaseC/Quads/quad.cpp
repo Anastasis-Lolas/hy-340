@@ -42,6 +42,8 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsi
 	quadd->label 	= label;
 	quadd->line		= line;
     quad_table.push_back(quadd);
+
+    currQuad++;
  
 }
 
@@ -194,7 +196,7 @@ void make_stmt (stmt_t* s) { s->breakList = s->contList = 0; }
 int newlist (int i) { quad_table[i]->  label = 0; return i; }
 
 unsigned nextquad(void){
-    return currQuad++;
+    return currQuad;
 }
 
 

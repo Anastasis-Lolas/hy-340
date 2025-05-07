@@ -313,7 +313,6 @@ void exitscopespace(void) {
 }
 
 void resetformalargsoffset(void) { formalArgOffset = 0; }
-void resetformalargsoffset(void) { formalArgOffset = 0; }
 void resetfunctionlocaloffset(void) { functionLocalOffset = 0; }
 void restorecurrscopeoffset(unsigned n) {
     switch (currscopespace()) {

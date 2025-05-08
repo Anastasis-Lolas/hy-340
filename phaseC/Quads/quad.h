@@ -31,6 +31,11 @@ struct stmt_t{
     int contList;
 };
 
+struct forloop_t{
+    unsigned test;
+    unsigned enter;
+};
+
 unsigned nextquadlabel(void);
 
 void print_quads();
@@ -44,6 +49,8 @@ void patchlist(int list,int label);
 int mergelist(int l1,int l2);
 
 void make_stmt(stmt_t * s);
+
+void make_loop_t(forloop_t * loop);
 
 int newlist(int i);
 

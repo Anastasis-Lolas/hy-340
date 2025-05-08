@@ -44,6 +44,7 @@ std::vector<void *>     args;
     std::vector<void *>* idList;
     expr* exprVal;
     stmt_t * s;
+    forloop_t * loop_t;
 }
 
 
@@ -76,7 +77,8 @@ std::vector<void *>     args;
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
-%type <exprVal> ifprefix elseprefix ifstmt whilestart whilecond  whilestmt
+%type <exprVal> ifprefix elseprefix ifstmt whilestart whilecond  whilestmt M N 
+%type <loop_t> forprefix
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -372,24 +374,59 @@ whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 
 whilestmt:
     whilestart whilecond stmt {
+
+        make_stmt($3);
        
         emit(jump, NULL, NULL, $1,nextquadlabel(), yylineno);
     
         patchlabel((int)$2->numConst, nextquad());
        
-        // patchlist($3->breakList, nextquad());
+        patchlist($3->breakList, nextquad());
         
-        // patchlist($3->contList, nextquad());
+        patchlist($3->contList, nextquad());
         
     }
 ;
 
+M : {
+    $$ = newexpr(constnum_e);
+    $$->numConst = nextquad();
+    emit(jump,NULL,NULL,0,-1,yylineno);
+}
+;
 
-    
-forstmt:
-      FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
-        { DEBUG_REDUCE("forstmt -> for (elist; expr; elist) stmt"); }
-    ;
+N : {
+    $$ = newexpr(constnum_e);
+    $$->numConst = nextquad();
+}
+;
+
+forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
+
+    make_loop_t($$);
+
+    $$->test = $5->numConst;
+    $$->enter = nextquad();
+
+    emit(if_eq,$6,newexpr_bool('1'),0,-1,yylineno);
+
+}
+;
+
+forstmt: forprefix N elist RIGHT_PARENTHESIS N stmt N {
+
+    patchlabel($1->enter,(int)$5->numConst+1);
+    patchlabel((int)$2->numConst,nextquad());
+    patchlabel((int)$5->numConst,$1->test);
+    patchlabel((int)$7->numConst,(int)$2->numConst+1);
+
+    make_stmt($6);
+
+    patchlist($6->breakList,nextquad());
+    patchlist($6->contList,(int)$2->numConst + 1);
+
+}
+;
 
 returnstmt:
       RETURN SEMICOLON

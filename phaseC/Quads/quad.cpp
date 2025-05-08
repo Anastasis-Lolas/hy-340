@@ -200,3 +200,6 @@ unsigned nextquad(void){
 }
 
 
+void make_loop_t(forloop_t * loop){
+    loop->enter = loop->test = 0;
+}

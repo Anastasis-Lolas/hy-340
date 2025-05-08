@@ -19,6 +19,14 @@ unsigned int temp_num = 0;
 SymTable_T oSymTable;
 extern int yylineno;
 ScopeList_T scopeList;
+std::vector<int> scopeoffsetstack;
+std::vector<std::string> anonym_funcs;
+
+extern unsigned programVarOffset;
+extern unsigned functionLocalOffset;
+extern unsigned formalArgOffset;
+extern unsigned scopeSpaceCounter;
+
 
 void normal_call(SymbolTableEntry_T entry) {
     std::string name;
@@ -49,57 +57,123 @@ void exit_block() {
     reactivate_scope(scopeList, scope);
 }
 void enter_func(int flag, std::string name) {
-    if (flag == 0) {
-        std::cout << "Anonymous function" << std::endl;
-    } else {
-        std::cout << "Function name: " << name << std::endl;
-    }
     scope++;
+    // nextquad ??
+    if (flag == 0) {
+        // std::cout << "Anonymous function" << std::endl;
+        name = create_func_name();
+        anonym_funcs.push_back(name);
+    } else {
+        // std::cout << "Function name: " << name << std::endl;
+    }
+    // $funcprefix.iaddress = nextquadlabel();
+    // unsigned funcStartQuad = nextquadlabel();
+    emit(jump, nullptr, nullptr, nullptr, 0,
+         yylineno);  // logika anti gia yylineno thelei quads ??
+    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, 0,
+         yylineno);  // same here
+
+    scopeoffsetstack.push_back(currscopeoffset());
+    enterscopespace();
+    resetformalargsoffset();
+
     deactivate_scope(scopeList, scope);
+    /*
+    note gia alex--> an sta emit thelei quads anti gia yylineno tha prepei se
+    ena stack na apothikeuw kai to twrino quad :_)
+    * den krataw ta anonymous name kapou
+    * kai ta current quads
+    */
 }
+void exit_func(int flag, std::string name) {
+    int offset, totalLocals;
+    SymbolTableEntry_T entry = nullptr;
+    std::cout << "exit_" << name << " {" << std::endl;
+    print_offset();
+    std::cout << "}" << std::endl;
+    totalLocals = currscopeoffset();
+
+    // pou to apothikeuw? entry->value.funcVal->totalLocals = totalLocals;
+    offset = scopeoffsetstack.back();
+    scopeoffsetstack.pop_back();
+    resetfunctionlocaloffset();
+    exitscopespace();
+    restorecurrscopeoffset(offset);
+    if (flag == 0) {
+        // std::cout << "Anonymous function" << std::endl;
+        name = anonym_funcs.back();
+        anonym_funcs.pop_back();
+    }
+    entry = lookup_within_scope(scopeList, name, scope);
+    if (entry) {
+        entry->value.funcVal->totalLocals = totalLocals;
+        std::cout << "Total local var: " << totalLocals << std::endl;
+    }
+    if (currscopespace() == formalarg) {
+        exitscopespace();
+    }
+    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0, yylineno);
+
+    // prepei na kanw reset ta formal args ??
+    // patch label ??
+}
+
+
 void add_function(std::string name, std::vector<void*> args) {
     SymbolTableEntry_T entry = nullptr;
-    int offset;
-    if (name == "") {
-        name = create_func_name();
-    } else {
-        if (search_LIBS_FUNC(name) == 0) {
-            // print error message shadows lib function
-            std::cerr << "Error at line " << yylineno << ": function [" << name
-                      << "] shadows lib function" << std::endl;
-            return;
+    int offset = 0;
+    scopeoffsetstack.push_back(currscopeoffset());
+    enterscopespace();
 
-        } else {
-            entry = lookup_within_scope(scopeList, name, scope);
-            if (entry) {
-                if (entry->type == USERFUNC) {
-                    // print error message function already declared in the same
-                    // scope
-                    std::cerr << "Error at line " << yylineno << ": function "
-                              << name << " already declared in line "
-                              << entry->value.funcVal->line << std::endl;
-                    return;
-                } else {
-                    // print error message function-same name as variable
-                    std::cerr << "Error at line " << yylineno << ": function ["
-                              << name << "] same name as variable in line "
-                              << entry->value.varVal->line << std::endl;
-                }
+    resetfunctionlocaloffset();
+    if (search_LIBS_FUNC(name) == 0) {
+        // print error message shadows lib function
+        std::cerr << "Error at line " << yylineno << ": function [" << name
+                  << "] shadows lib function" << std::endl;
+        return;
+
+    } else {
+        entry = lookup_within_scope(scopeList, name, scope);
+        if (entry) {
+            if (entry->type == USERFUNC) {
+                // print error message function already declared in the same
+                // scope
+                std::cerr << "Error at line " << yylineno << ": function "
+                          << name << " already declared in line "
+                          << entry->value.funcVal->line << std::endl;
                 return;
+            } else {
+                // print error message function-same name as variable
+                std::cerr << "Error at line " << yylineno << ": function ["
+                          << name << "] same name as variable in line "
+                          << entry->value.varVal->line << std::endl;
             }
+            return;
         }
     }
-    offset = find_offset(scopeList, scope);
 
+    // offset = find_offset(scopeList, scope);
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
     add_entry(scopeList, entry, scope);
 
     SymTable_put(oSymTable, name, entry);
 }
+void add_anon_function(std::vector<void*> args) {
+    SymbolTableEntry_T entry = nullptr;
+    int offset = 0;
+    std::string name = anonym_funcs.back();
+    scopeoffsetstack.push_back(currscopeoffset());
+    enterscopespace();
+    resetfunctionlocaloffset();
 
+    // offset = find_offset(scopeList, scope);
+    entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
+    add_entry(scopeList, entry, scope);
+    SymTable_put(oSymTable, name, entry);
+}
 SymbolTableEntry_T add_ident(std::string name) {
     SymbolTableEntry_T entry = nullptr;
-    int offset;
+    int offset = 0;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
 
     entry = lookup_active(scopeList, name, scope);
@@ -134,11 +208,15 @@ SymbolTableEntry_T add_ident(std::string name) {
         } else {
             entry = lookup_within_scope(scopeList, name, 0, true);
             if (!entry) {
-                offset = find_offset(scopeList, scope);
+                // offset = find_offset(scopeList, scope);
+                offset = currscopeoffset();
+                // std::cout << "Creating new entry with name: " << name
+                //           << " and offset: " << offset << std::endl;
                 entry = SymTableEntry_new(symtype, name, scope, yylineno,
                                           offset, {});
                 add_entry(scopeList, entry, scope);
                 SymTable_put(oSymTable, name, entry);
+                incurrscopeoffset();
             }
         }
     }
@@ -157,10 +235,12 @@ SymbolTableEntry_T add_local_dent(std::string name) {
     }
     entry = lookup_within_scope(scopeList, name, scope);
 
-    offset = find_offset(scopeList, scope);
+    // offset = find_offset(scopeList, scope);
+    offset = currscopeoffset();
     entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
     add_entry(scopeList, entry, scope);
     SymTable_put(oSymTable, name, entry);
+    incurrscopeoffset();
 
     return entry;
 }
@@ -284,11 +364,14 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     args.push_back(static_cast<void*>(name_copy));
 
     // Add to symbol table
-    int offset = find_offset(scopeList, scope);
+    // int offset = find_offset(scopeList, scope);
+    int offset = currscopeoffset();
+
     SymbolTableEntry_T formal_arg =
         SymTableEntry_new(FORMAL, name, scope, yylineno, offset, {});
     add_entry(scopeList, formal_arg, scope);
     SymTable_put(oSymTable, name, formal_arg);
+    incurrscopeoffset();
 
     return args;
 }
@@ -343,6 +426,7 @@ void printFullSymTable(SymTable_T table) {
             std::string name;
             std::string label;
             unsigned int line;
+            unsigned int offset;
 
             switch (entry->type) {
                 case GLOBAL:
@@ -372,10 +456,12 @@ void printFullSymTable(SymTable_T table) {
             line = (entry->type == USERFUNC || entry->type == LIBFUNC)
                        ? entry->value.funcVal->line
                        : entry->value.varVal->line;
-
+            offset = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                         ? 0
+                         : entry->value.varVal->offset;
             std::cout << "\"" << name << "\" " << label << " (line " << line
                       << ")"
-                      << " (scope " << scope << ")\n";
+                      << " (scope " << scope << ") (offset " << offset << ")\n";
         }
     }
 
@@ -398,7 +484,11 @@ SymbolTableEntry_T newtemp() {
 
     entry = lookup_within_scope(scopeList, name, scope);
     if (!entry) {
-        offset = find_offset(scopeList, scope);
+        // offset = find_offset(scopeList, scope);
+        // offset = currscopeoffset();
+        offset = (entry->type == USERFUNC || entry->type == LIBFUNC)
+                     ? 0
+                     : currscopeoffset();
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);

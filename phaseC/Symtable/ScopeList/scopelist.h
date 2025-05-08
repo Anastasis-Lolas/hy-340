@@ -76,4 +76,6 @@ void resetformalargsoffset(void);
 void resetfunctionlocaloffset(void);
 void restorecurrscopeoffset(unsigned n);
 
+void print_offset();
+
 #endif

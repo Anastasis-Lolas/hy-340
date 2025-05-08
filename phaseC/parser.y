@@ -3,6 +3,7 @@
 #include <string>
 #include "Symtable/symtable.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
+#include "Symtable/ScopeList/scopelist.h"
 
 #include "Quads/quad.h"
 #include "expr_handler.h"
@@ -233,14 +234,14 @@ block:
 
 funcdef:
       FUNCTION {enter_func(0, "");}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_function("", args);}
-            block { DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args);}
+            block {exit_func(0, ""); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT {enter_func(1, *$2);}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
             {scope--; add_function(*$2, args);}
             block
-            { DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+            {exit_func(1, *$2); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
 
 

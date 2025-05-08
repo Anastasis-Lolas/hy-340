@@ -18,6 +18,7 @@ typedef struct Function {
     unsigned int scope;
     unsigned int line;
     unsigned int offset;
+    unsigned int totalLocals;
 } Function;
 
 enum SymbolType { GLOBAL, LLOCAL, FORMAL, USERFUNC, LIBFUNC };
@@ -33,12 +34,9 @@ typedef struct SymbolTableEntry {
 } *SymbolTableEntry_T;
 
 
-
 SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
                                      unsigned int scope, unsigned int line,
                                      int offset, std::vector<void *> args);
-
-
 
 
 #endif

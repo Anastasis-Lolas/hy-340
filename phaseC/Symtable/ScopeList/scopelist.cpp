@@ -6,7 +6,7 @@
 unsigned programVarOffset = 0;
 unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
-unsigned scopeSpaceCounter = 0;
+unsigned scopeSpaceCounter = 1;
 
 
 void add_entry(ScopeList_T& scopeList, SymbolTableEntry_T entry, int scope) {
@@ -329,4 +329,11 @@ void restorecurrscopeoffset(unsigned n) {
             assert(0);
             break;
     }
+}
+
+// debugging
+void print_offset() {
+    std::cout << "programVarOffset: " << programVarOffset << std::endl;
+    std::cout << "functionLocalOffset: " << functionLocalOffset << std::endl;
+    std::cout << "formalArgOffset: " << formalArgOffset << std::endl;
 }

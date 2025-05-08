@@ -489,6 +489,7 @@ SymbolTableEntry_T newtemp() {
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
+        incurrscopeoffset();
     }
     return entry;
 }

@@ -23,7 +23,7 @@ void patchlabel(int quadNo, unsigned label) {
         std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
         return;
     }
-    quad_table[quadNo-1]->label = label;
+    quad_table[quadNo]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line) {

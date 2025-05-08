@@ -125,9 +125,21 @@ expr:
     | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr");   $$ = emit_arith_op(mul, $1, $3); }
     | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr");   $$ = emit_arith_op(divv, $1, $3); }
     | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
-    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = emit_relop_op(if_greater, $1, $3); }
-    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");  $$ = emit_relop_op(if_greatereq, $1, $3);}
-    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = emit_relop_op(if_less, $1, $3);}
+    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_greater,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_greatereq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_less,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
     | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
                                                 $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
@@ -135,8 +147,16 @@ expr:
 		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
 		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);
 		                                        emit(assign, newexpr_bool(true), NULL,$$ ,-1 , yylineno);}
-    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = emit_relop_op(if_eq, $1, $3);}
-    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  $$ = emit_relop_op(if_noteq, $1, $3);}
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_eq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_noteq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
     | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
     | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr");  $$ = emit_relop_op(or_op, $1, $3); }
     | term                                    { DEBUG_REDUCE("expr -> term"); $$ = $1; }
@@ -174,9 +194,9 @@ assignexpr:
                         
                         $$ = emit_assign_expr($1, $3);
                         // Create a new temporary expression for the result
-                       $assignexpr = newexpr(assignexpr_e);
+                        $assignexpr = newexpr(var_e); 
 						$assignexpr->sym = newtemp();
-						emit(assign, $assignexpr, $lvalue, NULL, -1, yylineno);
+						emit(assign, $assignexpr, $lvalue, NULL, 0, yylineno);
                     }
                 }
         

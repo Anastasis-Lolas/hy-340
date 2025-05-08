@@ -406,33 +406,55 @@ SymbolTableEntry_T newtemp() {
     return entry;
 }
 
-expr* lvalue_id_handler(expr* lvalue, std::string name) {
-    expr* tableitem;
+// expr* lvalue_id_handler(expr* lvalue, std::string name) {
+//     expr* tableitem;
 
+//     if (!lvalue) {
+//         std::cerr << "Error in line " << yylineno
+//                   << ": lvalue was not declared '" << name << "' in scope: ["
+//                   << scope << "]." << std::endl;
+
+//     } else if (lvalue->type == programfunc_e || lvalue->type == libraryfunc_e) {
+//         std::cerr << "Error in line " << yylineno
+//                   << ": Cannot use function name as lvalue '" << name
+//                   << "' in scope: [" << scope << "]." << std::endl;
+//     }
+//     tableitem = member_item(lvalue, name);
+//     return tableitem;
+// }
+
+
+expr* lvalue_id_handler(expr* lvalue, std::string name) {
     if (!lvalue) {
         std::cerr << "Error in line " << yylineno
                   << ": lvalue was not declared '" << name << "' in scope: ["
                   << scope << "]." << std::endl;
+        return NULL;
+    }
 
-    } else if (lvalue->type == programfunc_e || lvalue->type == libraryfunc_e) {
+    if (lvalue->type == programfunc_e || lvalue->type == libraryfunc_e) {
         std::cerr << "Error in line " << yylineno
                   << ": Cannot use function name as lvalue '" << name
                   << "' in scope: [" << scope << "]." << std::endl;
+        return NULL;
     }
-    tableitem = member_item(lvalue, name);
-    return tableitem;
+
+    return member_item(lvalue, name);  
 }
 
 expr* member_handler(expr* lvalue, expr* i) {
     lvalue = emit_iftableitem(lvalue);
+    if (!lvalue) {  std::cerr << "[DEBUG] NULL lvalue at member_handler" << std::endl; return NULL;}
+
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;
     item->index = i;
     return item;
 }
-
 expr* member_item(expr* lvalue, std::string name) {
     lvalue = emit_iftableitem(lvalue);
+    if (!lvalue)  {  std::cerr << "[DEBUG] NULL lvalue at member_item" << std::endl; return NULL;}
+
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;
     item->index = newexpr_conststring(name);

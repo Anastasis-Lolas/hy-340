@@ -126,12 +126,38 @@ expr:
     | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr");   $$ = emit_arith_op(mul, $1, $3); }
     | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr");   $$ = emit_arith_op(divv, $1, $3); }
     | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
-    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = emit_relop_op(if_greater, $1, $3); }
-    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");  $$ = emit_relop_op(if_greatereq, $1, $3);}
-    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = emit_relop_op(if_less, $1, $3);}
-    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  $$ = emit_relop_op(if_lesseq, $1, $3);}
-    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = emit_relop_op(if_eq, $1, $3);}
-    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  $$ = emit_relop_op(if_noteq, $1, $3);}
+    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_greater,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_greatereq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_less,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
+                                                $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_lesseq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);
+		                                        emit(assign, newexpr_bool(true), NULL,$$ ,-1 , yylineno);}
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_eq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");   $$ = newexpr(boolexpr_e);
+		                                        $$->sym = newtemp();
+		                                        emit(if_noteq,  $1, $3,$$, nextquad()+3 , yylineno);
+		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
     | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
     | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr");  $$ = emit_relop_op(or_op, $1, $3); }
     | term                                    { DEBUG_REDUCE("expr -> term"); $$ = $1; }
@@ -158,7 +184,23 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 assignexpr:
       lvalue ASSIGN expr
-        {assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr"); $$ = emit_assign_expr($1, $3);}
+       {          assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr");             
+
+                    // Handle table item assignments
+                    if ($1->type == tableitem_e) {
+                        emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
+                        $$ = emit_iftableitem($1);
+                        $$->type = assignexpr_e;
+                    } else {
+                        
+                        $$ = emit_assign_expr($1, $3);
+                        // Create a new temporary expression for the result
+                        $assignexpr = newexpr(var_e); 
+						$assignexpr->sym = newtemp();
+						emit(assign, $assignexpr, $lvalue, NULL, 0, yylineno);
+                    }
+                }
+        
     ;
 
 primary:
@@ -266,55 +308,82 @@ idlist:
   | {}
 ;
 
-ifprefix : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-                                        emit(if_eq,newexpr_bool('1'),$3,newexpr_constnum(nextquad() + 2),nextquadlabel(),yylineno);
+ifprefix 
+: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+    
+    emit(if_eq, newexpr_bool('1'), $3, newexpr_constnum(nextquad() + 2), currQuad, yylineno);
 
-                                        $$ = newexpr(var_e);
-                                        $$->numConst  = nextquad();
-                                        emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno);
-                                    }
-         ;
+    $$ = newexpr(constnum_e);
+    $$->numConst = nextquad();
 
-elseprefix : ELSE       {   
-                            $$ = newexpr(var_e);
-                            $$->numConst = nextquad();
-                            emit(jump,NULL,NULL,0,nextquadlabel(),yylineno);
+    emit(jump, NULL, NULL, 0, currQuad, yylineno); 
 
-                        }   
-            ;
+   
+}
+;
 
-ifstmt:
-      ifprefix stmt {patchlabel((int)$1->numConst,nextquad());}
-    | ifprefix stmt elseprefix stmt { 
-                    patchlabel((int)$1->numConst,(int)$3->numConst+1);
-                    patchlabel((int)$3->numConst,nextquad());
-                                    }
+elseprefix 
+: ELSE {
 
-    ;
+    $$ = newexpr(constnum_e);
 
-whilestart : WHILE {$$ = newexpr(var_e);
-                    $$->numConst = nextquad();} 
-           ;
+    $$->numConst = nextquad();
 
-whilecond  : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+    emit(jump, NULL, NULL, 0, currQuad, yylineno); 
 
-              emit(if_eq,$2,newexpr_bool('1'),newexpr_constnum(nextquad() + 2),nextquadlabel(),yylineno);
-              $$->numConst = nextquad();
-              emit(jump,NULL,NULL,0,nextquadlabel(),yylineno);
-}          ;
+}
+;
 
+ifstmt 
+: ifprefix stmt {
+
+      patchlabel((int)$1->numConst, nextquad());
+     
+  }
+| ifprefix stmt elseprefix stmt {
+
+      patchlabel((int)$1->numConst, (int)$3->numConst + 1);
+
+      patchlabel((int)$3->numConst, nextquad());
+     
+  }
+;
+
+whilestart : WHILE {
+   
+    $$ = newexpr(constnum_e);
+    $$->numConst = nextquad();
+   
+}
+;
+
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+   
+    emit(if_eq, $2, newexpr_bool('1'), newexpr_constnum(nextquad() + 2), nextquadlabel(), yylineno);
+    
+
+    $$ = newexpr(constnum_e);
+    $$->numConst = nextquad();
+   
+    emit(jump, NULL, NULL, 0,0,0);
+    
+}
+;
 
 whilestmt:
-      whilestart whilecond stmt { 
+    whilestart whilecond stmt {
+       
+        emit(jump, NULL, NULL, $1,nextquadlabel(), yylineno);
+    
+        patchlabel((int)$2->numConst, nextquad());
+       
+        // patchlist($3->breakList, nextquad());
+        
+        // patchlist($3->contList, nextquad());
+        
+    }
+;
 
-                emit(jump,NULL,NULL,$1,nextquadlabel(),yylineno);
-                patchlabel((int)$2->numConst,nextquad());
-                patchlist($3->breakList,nextquad());
-                patchlist($3->contList,nextquad());
-                
-                
-      }
-    ;
 
     
 forstmt:
@@ -344,7 +413,7 @@ int main(int argc, char** argv) {
     yyparse();
 
     //print_args(args);
-    printFullSymTable(oSymTable); 
+   // printFullSymTable(oSymTable); 
     print_quads();
     return 0;
 }

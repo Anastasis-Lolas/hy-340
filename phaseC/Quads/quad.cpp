@@ -23,7 +23,7 @@ void patchlabel(int quadNo, unsigned label) {
         std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
         return;
     }
-    quad_table[quadNo-1]->label = label;
+    quad_table[quadNo]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line) {
@@ -42,6 +42,8 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsi
 	quadd->label 	= label;
 	quadd->line		= line;
     quad_table.push_back(quadd);
+
+    currQuad++;
  
 }
 
@@ -92,7 +94,39 @@ std::string iopcode_to_string(iopcode op) {
 }
 
 std::string expr_to_string(expr* e) {
-  return "oxi";
+    if (!e) {
+        return "0"; // Handle null expression
+    }
+    switch (e->type) {
+        case var_e:
+            if (e->sym && (e->sym->type == GLOBAL || e->sym->type == LLOCAL || e->sym->type == FORMAL)) {
+                if (e->sym->value.varVal && !e->sym->value.varVal->name.empty()) {
+                    return e->sym->value.varVal->name;
+                }
+            }
+            return "_t"; 
+        case programfunc_e:
+        case libraryfunc_e:
+            if (e->sym && (e->sym->type == USERFUNC || e->sym->type == LIBFUNC)) {
+                if (e->sym->value.funcVal && !e->sym->value.funcVal->name.empty()) {
+                    return "_" + e->sym->value.funcVal->name;
+                }
+            }
+            return "_unknown"; // Unknown function
+        case constnum_e:
+            if (e->numConst == static_cast<int>(e->numConst)) {
+                return std::to_string(static_cast<int>(e->numConst));
+            }
+            return std::to_string(e->numConst);
+        case conststring_e:
+            return "\"" + e->strConst + "\"";
+        case constbool_e:
+            return e->boolConst ? "\"true\"" : "\"false\"";
+        case nil_e:
+            return "nil";
+        default:
+            return "unknown"; 
+    }
 }
 
 
@@ -162,5 +196,7 @@ void make_stmt (stmt_t* s) { s->breakList = s->contList = 0; }
 int newlist (int i) { quad_table[i]->  label = 0; return i; }
 
 unsigned nextquad(void){
-    return currQuad++;
+    return currQuad;
 }
+
+

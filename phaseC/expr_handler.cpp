@@ -481,14 +481,11 @@ SymbolTableEntry_T newtemp() {
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     std::string name = newtempname();
-
     entry = lookup_within_scope(scopeList, name, scope);
     if (!entry) {
         // offset = find_offset(scopeList, scope);
         // offset = currscopeoffset();
-        offset = (entry->type == USERFUNC || entry->type == LIBFUNC)
-                     ? 0
-                     : currscopeoffset();
+        offset = currscopeoffset();
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
         SymTable_put(oSymTable, name, entry);
@@ -504,7 +501,8 @@ SymbolTableEntry_T newtemp() {
 //                   << ": lvalue was not declared '" << name << "' in scope: ["
 //                   << scope << "]." << std::endl;
 
-//     } else if (lvalue->type == programfunc_e || lvalue->type == libraryfunc_e) {
+//     } else if (lvalue->type == programfunc_e || lvalue->type ==
+//     libraryfunc_e) {
 //         std::cerr << "Error in line " << yylineno
 //                   << ": Cannot use function name as lvalue '" << name
 //                   << "' in scope: [" << scope << "]." << std::endl;
@@ -529,12 +527,15 @@ expr* lvalue_id_handler(expr* lvalue, std::string name) {
         return NULL;
     }
 
-    return member_item(lvalue, name);  
+    return member_item(lvalue, name);
 }
 
 expr* member_handler(expr* lvalue, expr* i) {
     lvalue = emit_iftableitem(lvalue);
-    if (!lvalue) {  std::cerr << "[DEBUG] NULL lvalue at member_handler" << std::endl; return NULL;}
+    if (!lvalue) {
+        std::cerr << "[DEBUG] NULL lvalue at member_handler" << std::endl;
+        return NULL;
+    }
 
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;
@@ -543,7 +544,10 @@ expr* member_handler(expr* lvalue, expr* i) {
 }
 expr* member_item(expr* lvalue, std::string name) {
     lvalue = emit_iftableitem(lvalue);
-    if (!lvalue)  {  std::cerr << "[DEBUG] NULL lvalue at member_item" << std::endl; return NULL;}
+    if (!lvalue) {
+        std::cerr << "[DEBUG] NULL lvalue at member_item" << std::endl;
+        return NULL;
+    }
 
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;

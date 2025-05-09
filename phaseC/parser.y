@@ -71,14 +71,15 @@ std::vector<void *>     args;
 %token <stringValue> STRING
 %token UNDEFINED
 
-%type <s> stmt
+%type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt
 %type <exprVal> member assignexpr term primary 
 %type <exprVal> expr call const
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
-%type <exprVal> ifprefix elseprefix ifstmt whilestart whilecond  whilestmt M N 
+%type <exprVal> ifprefix elseprefix whilestart whilecond M N
 %type <loop_t> forprefix
+%type <symEntry> funcdef
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -101,21 +102,44 @@ program:
    
     ;
 
-stmt_list : stmt_list stmt { DEBUG_REDUCE("stmt -> expr ;"); }
-            | { DEBUG_REDUCE("stmt list  -> empty ;"); }
-          ;
+stmt_list:
+      stmt
+        { $$ = $1; }
+    | stmt_list stmt
+        {
+            $$ = new stmt_t();
+            make_stmt($$);
+            $$->breakList = mergelist($1->breakList, $2->breakList);
+            $$->contList  = mergelist($1->contList, $2->contList);
+            $$->returnList = mergelist($1->returnList, $2->returnList);
+        }
+    | /* empty */
+        {
+            $$ = new stmt_t();
+            make_stmt($$);
+            DEBUG_REDUCE("stmt_list -> empty");
+        }
+;
 
 stmt:
-      expr SEMICOLON      { DEBUG_REDUCE("stmt -> expr ;"); }
-    | ifstmt              { DEBUG_REDUCE("stmt -> ifstmt"); }
-    | whilestmt           { DEBUG_REDUCE("stmt -> whilestmt"); }
-    | forstmt             { DEBUG_REDUCE("stmt -> forstmt"); }
-    | returnstmt          { DEBUG_REDUCE("stmt -> returnstmt"); }
+      expr SEMICOLON      {  
+                            $$ = new stmt_t();
+                            make_stmt($$);
+                            DEBUG_REDUCE("stmt -> expr ;"); 
+                          }
+    | ifstmt              {$$ = $1; DEBUG_REDUCE("stmt -> ifstmt"); }
+    | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
+    | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
+    | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
     | BREAK SEMICOLON     { DEBUG_REDUCE("stmt -> break ;"); }
     | CONTINUE SEMICOLON  { DEBUG_REDUCE("stmt -> continue ;"); }
-    | block               { DEBUG_REDUCE("stmt -> block"); }
-    | funcdef             { DEBUG_REDUCE("stmt -> funcdef"); }
-    | SEMICOLON           { DEBUG_REDUCE("stmt -> ;"); }
+    | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
+    | funcdef             {
+                            $$ = new stmt_t();
+                            make_stmt($$); 
+                            DEBUG_REDUCE("stmt -> funcdef"); 
+                          }
+    | SEMICOLON           {DEBUG_REDUCE("stmt -> ;"); }
     ;
 
 
@@ -272,20 +296,20 @@ indexedelem:
     ;
 
 block:
-      LEFT_BRACE { scope++; } stmt_list RIGHT_BRACE { exit_block(); DEBUG_REDUCE("block -> {stmt_list}"); }
+      LEFT_BRACE { scope++; } stmt_list RIGHT_BRACE {$$=$3; exit_block(); DEBUG_REDUCE("block -> {stmt_list}"); }
     ;
     
 
 funcdef:
       FUNCTION {enter_func(0, "");}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args);}
-            block {exit_func(0, ""); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            block {exit_func(0, "", $7->returnList); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT {enter_func(1, *$2);}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
             {scope--; add_function(*$2, args);}
             block
-            {exit_func(1, *$2); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+            {exit_func(1, *$2, $8->returnList); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
 
 
@@ -429,9 +453,21 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N stmt N {
 
 returnstmt:
       RETURN SEMICOLON
-        { DEBUG_REDUCE("returnstmt -> return ;"); }
+        {  
+            emit(ret, nullptr, nullptr, nullptr, 0, nextquadlabel());
+            $$ = new stmt_t();
+            make_stmt($$);
+            $$->returnList = nextquadlabel() - 1;
+            DEBUG_REDUCE("returnstmt -> return ;");
+        }
     | RETURN expr SEMICOLON
-        { DEBUG_REDUCE("returnstmt -> return expr ;"); }
+        {
+            emit(ret, $2, nullptr, nullptr, 0, nextquadlabel());
+            $$ = new stmt_t();
+            make_stmt($$);
+            $$->returnList = nextquadlabel() - 1;
+            DEBUG_REDUCE("returnstmt -> return expr ;"); 
+        }
     ;
 %%
 

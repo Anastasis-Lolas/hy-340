@@ -355,19 +355,19 @@ whilestart : WHILE {
    
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
-   
+    std::cout << "Checking for start at : " << nextquad()<<std::endl;
 }
 ;
 
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
    
-    emit(if_eq, $2, newexpr_bool('1'), newexpr_constnum(nextquad() + 2), nextquadlabel(), yylineno);
-    
+    emit(if_eq, $2, newexpr_bool('1'), newexpr_constnum(nextquad() + 2), -1, yylineno);
 
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
-   
-    emit(jump, NULL, NULL, 0,0,0);
+    std::cout << "before jump whilecod : " << nextquad()<<std::endl;
+    emit(jump, NULL, NULL, 0,-1,0);
+    std::cout << "after jump whilecod : " << nextquad()<<std::endl;
     
 }
 ;
@@ -376,10 +376,11 @@ whilestmt:
     whilestart whilecond stmt {
 
         make_stmt($3);
-       
-        emit(jump, NULL, NULL, $1,nextquadlabel(), yylineno);
-    
+
+        emit(jump, NULL, NULL, $1,(int)$1->numConst, yylineno);
+        
         patchlabel((int)$2->numConst, nextquad());
+
        
         patchlist($3->breakList, nextquad());
         
@@ -388,14 +389,14 @@ whilestmt:
     }
 ;
 
-M : {
+N : {
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
     emit(jump,NULL,NULL,0,-1,yylineno);
 }
 ;
 
-N : {
+M : {
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
 }

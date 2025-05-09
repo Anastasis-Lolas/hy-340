@@ -69,11 +69,10 @@ void enter_func(int flag, std::string name) {
     }
     // $funcprefix.iaddress = nextquadlabel();
     // unsigned funcStartQuad = nextquadlabel();
-    jump_stack.push_back(nextquadlabel());
-    emit(jump, nullptr, nullptr, nullptr, 0,
-         nextquadlabel());  // logika anti gia yylineno thelei quads ??
-    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, 0,
-         nextquadlabel());  // label ??
+    jump_stack.push_back(nextquad());
+    emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
+    // logika anti gia yylineno thelei quads ??
+    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, 0, nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());
     enterscopespace();
@@ -88,9 +87,11 @@ void exit_func(int flag, std::string name, int returnList) {
         name = anonym_funcs.back();
         anonym_funcs.pop_back();
     }
+    /*
     std::cout << "exit_" << name << " {" << std::endl;
     print_offset();
     std::cout << "}" << std::endl;
+    */
     totalLocals = currscopeoffset();
 
     // pou to apothikeuw? entry->value.funcVal->totalLocals = totalLocals;
@@ -102,17 +103,16 @@ void exit_func(int flag, std::string name, int returnList) {
     entry = lookup_within_scope(scopeList, name, scope);
     if (entry) {
         entry->value.funcVal->totalLocals = totalLocals;
-        std::cout << "Total local var: " << totalLocals << std::endl;
+        // std::cout << "Total local var: " << totalLocals << std::endl;
     }
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
-    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0,
-         nextquadlabel());
-    patchlabel(jump_stack.back(), nextquadlabel());
+    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0, nextquad());
+    patchlabel(jump_stack.back(), nextquad());
     jump_stack.pop_back();
     if (returnList) {
-        patchlist(returnList, nextquadlabel());
+        patchlist(returnList, nextquad() - 1);
     }
 }
 

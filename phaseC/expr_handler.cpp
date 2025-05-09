@@ -21,6 +21,7 @@ extern int yylineno;
 ScopeList_T scopeList;
 std::vector<int> scopeoffsetstack;
 std::vector<std::string> anonym_funcs;
+std::vector<unsigned> jump_stack;
 
 extern unsigned programVarOffset;
 extern unsigned functionLocalOffset;
@@ -68,10 +69,11 @@ void enter_func(int flag, std::string name) {
     }
     // $funcprefix.iaddress = nextquadlabel();
     // unsigned funcStartQuad = nextquadlabel();
+    jump_stack.push_back(nextquadlabel());
     emit(jump, nullptr, nullptr, nullptr, 0,
-         yylineno);  // logika anti gia yylineno thelei quads ??
+         nextquadlabel());  // logika anti gia yylineno thelei quads ??
     emit(funcstart, newexpr_conststring(name), nullptr, nullptr, 0,
-         yylineno);  // same here
+         nextquadlabel());  // label ??
 
     scopeoffsetstack.push_back(currscopeoffset());
     enterscopespace();
@@ -85,9 +87,14 @@ void enter_func(int flag, std::string name) {
     * kai ta current quads
     */
 }
-void exit_func(int flag, std::string name) {
+void exit_func(int flag, std::string name, int returnList) {
     int offset, totalLocals;
     SymbolTableEntry_T entry = nullptr;
+    if (flag == 0) {
+        // std::cout << "Anonymous function" << std::endl;
+        name = anonym_funcs.back();
+        anonym_funcs.pop_back();
+    }
     std::cout << "exit_" << name << " {" << std::endl;
     print_offset();
     std::cout << "}" << std::endl;
@@ -99,11 +106,6 @@ void exit_func(int flag, std::string name) {
     resetfunctionlocaloffset();
     exitscopespace();
     restorecurrscopeoffset(offset);
-    if (flag == 0) {
-        // std::cout << "Anonymous function" << std::endl;
-        name = anonym_funcs.back();
-        anonym_funcs.pop_back();
-    }
     entry = lookup_within_scope(scopeList, name, scope);
     if (entry) {
         entry->value.funcVal->totalLocals = totalLocals;
@@ -112,8 +114,13 @@ void exit_func(int flag, std::string name) {
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
-    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0, yylineno);
-
+    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0,
+         nextquadlabel());
+    patchlabel(jump_stack.back(), nextquadlabel());
+    jump_stack.pop_back();
+    if (returnList) {
+        patchlist(returnList, nextquadlabel());
+    }
     // prepei na kanw reset ta formal args ??
     // patch label ??
 }

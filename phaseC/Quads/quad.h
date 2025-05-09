@@ -4,34 +4,51 @@
 #include "expression.h"
 
 
-
 enum iopcode {
-    assign,         add,            sub,
-    mul,            divv,            mod,
-    uminus,         and_op,         or_op,   
-    not_op,         if_eq,          if_noteq,
-    if_lesseq,      if_greatereq,   if_less,   
-    if_greater,     call,           param, 
-    ret,            getretval,      funcstart,
-    funcend,        tablecreate,    jump,
-    tablegetelem,   tablesetelem
+    assign,
+    add,
+    sub,
+    mul,
+    divv,
+    mod,
+    uminus,
+    and_op,
+    or_op,
+    not_op,
+    if_eq,
+    if_noteq,
+    if_lesseq,
+    if_greatereq,
+    if_less,
+    if_greater,
+    call,
+    param,
+    ret,
+    getretval,
+    funcstart,
+    funcend,
+    tablecreate,
+    jump,
+    tablegetelem,
+    tablesetelem
 };
 
 typedef struct quad {
-    iopcode     op;
-    expr*       result;
-    expr*       arg1;
-    expr*       arg2;
-    unsigned    label;
-    unsigned    line;    
+    iopcode op;
+    expr* result;
+    expr* arg1;
+    expr* arg2;
+    unsigned label;
+    unsigned line;
 } quad;
 
-struct stmt_t{
+struct stmt_t {
     int breakList;
     int contList;
+    int returnList;
 };
 
-struct forloop_t{
+struct forloop_t {
     unsigned test;
     unsigned enter;
 };
@@ -40,17 +57,18 @@ unsigned nextquadlabel(void);
 
 void print_quads();
 
-void emit(iopcode op, expr *arg1, expr *arg2, expr *result, unsigned label, unsigned line);
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label,
+          unsigned line);
 
-void patchlabel(int quadNo , unsigned label);
+void patchlabel(int quadNo, unsigned label);
 
-void patchlist(int list,int label);
+void patchlist(int list, int label);
 
-int mergelist(int l1,int l2);
+int mergelist(int l1, int l2);
 
-void make_stmt(stmt_t * s);
+void make_stmt(stmt_t* s);
 
-void make_loop_t(forloop_t * loop);
+void make_loop_t(forloop_t* loop);
 
 int newlist(int i);
 

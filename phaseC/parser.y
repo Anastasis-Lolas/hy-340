@@ -102,24 +102,16 @@ program:
    
     ;
 
-stmt_list:
-      stmt
-        { $$ = $1; }
-    | stmt_list stmt
-        {
-            $$ = new stmt_t();
-            make_stmt($$);
-            $$->breakList = mergelist($1->breakList, $2->breakList);
-            $$->contList  = mergelist($1->contList, $2->contList);
-            $$->returnList = mergelist($1->returnList, $2->returnList);
-        }
-    | /* empty */
-        {
-            $$ = new stmt_t();
-            make_stmt($$);
-            DEBUG_REDUCE("stmt_list -> empty");
-        }
-;
+stmt_list : stmt_list stmt {
+                             $$ = new stmt_t();
+                             make_stmt($$);
+                             $$->breakList = mergelist($1->breakList, $2->breakList);
+                             $$->contList = mergelist($1->contList, $2->contList);
+                             $$->returnList = mergelist($1->returnList, $2->returnList);
+                             DEBUG_REDUCE("stmt -> expr ;"); 
+                           }
+            | {DEBUG_REDUCE("stmt list  -> empty ;"); }
+          ;
 
 stmt:
       expr SEMICOLON      {  

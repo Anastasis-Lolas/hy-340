@@ -355,19 +355,17 @@ whilestart : WHILE {
    
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
-    std::cout << "Checking for start at : " << nextquad()<<std::endl;
 }
 ;
 
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
    
-    emit(if_eq, $2, newexpr_bool('1'), newexpr_constnum(nextquad() + 2), -1, yylineno);
+    emit(if_eq, $2, newexpr_bool('1'), NULL, nextquad()+2, yylineno);
 
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
-    std::cout << "before jump whilecod : " << nextquad()<<std::endl;
+  
     emit(jump, NULL, NULL, 0,-1,0);
-    std::cout << "after jump whilecod : " << nextquad()<<std::endl;
     
 }
 ;

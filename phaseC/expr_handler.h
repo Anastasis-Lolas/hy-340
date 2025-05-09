@@ -66,5 +66,6 @@ expr* emit_relop_op(iopcode op, expr* e1, expr* e2);
 
 //
 expr* symEntr_to_expr(SymbolTableEntry_T entry);
+stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2);
 
 #endif

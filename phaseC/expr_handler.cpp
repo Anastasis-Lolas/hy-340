@@ -78,14 +78,7 @@ void enter_func(int flag, std::string name) {
     scopeoffsetstack.push_back(currscopeoffset());
     enterscopespace();
     resetformalargsoffset();
-
     deactivate_scope(scopeList, scope);
-    /*
-    note gia alex--> an sta emit thelei quads anti gia yylineno tha prepei se
-    ena stack na apothikeuw kai to twrino quad :_)
-    * den krataw ta anonymous name kapou
-    * kai ta current quads
-    */
 }
 void exit_func(int flag, std::string name, int returnList) {
     int offset, totalLocals;
@@ -121,8 +114,6 @@ void exit_func(int flag, std::string name, int returnList) {
     if (returnList) {
         patchlist(returnList, nextquadlabel());
     }
-    // prepei na kanw reset ta formal args ??
-    // patch label ??
 }
 
 
@@ -643,5 +634,16 @@ expr* symEntr_to_expr(SymbolTableEntry_T entry) {
     return e;
 }
 
+stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
+    assert(s1);
+    assert(s2);
+    stmt_t* result = new stmt_t();
+    make_stmt(result);
+
+    result->breakList = mergelist(s1->breakList, s2->breakList);
+    result->contList = mergelist(s1->contList, s2->contList);
+    result->returnList = mergelist(s1->returnList, s2->returnList);
+    return result;
+}
 
 #endif

@@ -9,7 +9,10 @@ std::vector<quad*> quad_table;
 unsigned int total = 0;
 
 quad* quads = (quad*)0;
+struct lc_stack_t *lcs_top = 0, *lcs_bottom = 0;
 unsigned int currQuad = 0;
+
+
 
 unsigned nextquadlabel(void) { return currQuad; }
 
@@ -172,7 +175,8 @@ void print_quads() {
         }
 
         // print index and opcode
-        std::cout << i << ": " << iopcode_to_string(q->op) << "   (";
+        
+        std::cout << i<< ": " << iopcode_to_string(q->op) << "   (";
 
         // arg1
         std::cout << expr_to_string(q->arg1) << ", ";
@@ -229,3 +233,27 @@ unsigned nextquad(void) { return currQuad; }
 
 
 void make_loop_t(forloop_t* loop) { loop->enter = loop->test = 0; }
+
+void push_loopcounter(void){
+
+    struct lc_stack_t * new_stack = new lc_stack_t;
+
+    new_stack->counter = 0;
+    new_stack->next = lcs_top;
+    lcs_top = new_stack;
+
+    if (!lcs_bottom) lcs_bottom = new_stack;
+
+}
+
+void pop_loopcounter(void){
+
+    if (lcs_top) {
+        struct lc_stack_t* temp = lcs_top;
+        lcs_top = lcs_top->next;
+        free(temp);
+
+        if (!lcs_top)
+            lcs_bottom = nullptr;
+    }      
+}

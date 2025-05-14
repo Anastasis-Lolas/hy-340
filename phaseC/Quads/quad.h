@@ -53,6 +53,16 @@ struct forloop_t {
     unsigned enter;
 };
 
+struct lc_stack_t {
+  struct lc_stack_t* next;
+  unsigned  counter;
+};
+
+extern struct lc_stack_t *lcs_top, *lcs_bottom;
+
+ #define loopcounter \
+ (lcs_top->counter)
+
 unsigned nextquadlabel(void);
 
 void print_quads();
@@ -73,5 +83,9 @@ void make_loop_t(forloop_t* loop);
 int newlist(int i);
 
 unsigned nextquad(void);
+
+void push_loopcounter(void);
+
+void pop_loopcounter(void);
 
 #endif

@@ -3,7 +3,8 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-
+#include <iostream>
+#include <iomanip> 
 std::vector<quad*> quad_table;
 
 unsigned int total = 0;
@@ -123,29 +124,29 @@ std::string iopcode_to_string(iopcode op) {
 }
 
 std::string expr_to_string(expr* e) {
-    if (!e) {
-        return "0";  // Handle null expression
-    }
-    switch (e->type) {
-        case var_e:
-            if (e->sym && (e->sym->type == GLOBAL || e->sym->type == LLOCAL ||
-                           e->sym->type == FORMAL)) {
-                if (e->sym->value.varVal &&
-                    !e->sym->value.varVal->name.empty()) {
+    if (!e) return "";
+
+    // get name 
+    if (e->sym) {
+        switch (e->sym->type) {
+            case GLOBAL:
+            case LLOCAL:
+            case FORMAL:
+                if (e->sym->value.varVal && !e->sym->value.varVal->name.empty()) {
                     return e->sym->value.varVal->name;
                 }
-            }
-            return "_t";
-        case programfunc_e:
-        case libraryfunc_e:
-            if (e->sym &&
-                (e->sym->type == USERFUNC || e->sym->type == LIBFUNC)) {
-                if (e->sym->value.funcVal &&
-                    !e->sym->value.funcVal->name.empty()) {
-                    return "_" + e->sym->value.funcVal->name;
+                break;
+            case USERFUNC:
+            case LIBFUNC:
+                if (e->sym->value.funcVal && !e->sym->value.funcVal->name.empty()) {
+                    return e->sym->value.funcVal->name;
                 }
-            }
-            return "_unknown";  // Unknown function
+                break;
+        }
+    }
+
+    // if sym failed
+    switch (e->type) {
         case constnum_e:
             if (e->numConst == static_cast<int>(e->numConst)) {
                 return std::to_string(static_cast<int>(e->numConst));
@@ -158,42 +159,95 @@ std::string expr_to_string(expr* e) {
         case nil_e:
             return "nil";
         default:
-            return "unknown";
+            return "_";  // fallback for unnamed temp
     }
+}
+
+
+// void print_quads() {
+//     std::cout << "----- QUAD TABLE -----\n";
+//     std::cout << "Total quads: " << quad_table.size() << "\n\n";
+
+//     for (size_t i = 0; i < quad_table.size(); ++i) {
+//         quad* q = quad_table[i];
+//         if (!q) {
+//             std::cout << i << ": <null quad>\n";
+//             continue;
+//         }
+
+//         // print index and opcode
+        
+//         std::cout << i<< ": " << iopcode_to_string(q->op) << "   (";
+
+//         // arg1
+//         std::cout << expr_to_string(q->arg1) << ", ";
+
+//         // arg2
+//         std::cout << expr_to_string(q->arg2) << ", ";
+
+//         // result
+//         std::cout << expr_to_string(q->result) << ")";
+
+//         // label and line
+//         std::cout << "   [label=" << q->label << ", line=" << q->line << "]\n";
+//     }
+
+//     std::cout << "----------------------\n";
+// }
+
+
+std::string safe_expr_to_string(expr* e) {
+    if (!e) return "";
+    std::string s = expr_to_string(e);
+    if (s == "0" || s == "unknown") return "";
+    return s;
 }
 
 
 void print_quads() {
-    std::cout << "----- QUAD TABLE -----\n";
-    std::cout << "Total quads: " << quad_table.size() << "\n\n";
+    const int W_IDX    = 8;
+    const int W_OP     = 16;
+    const int W_RES    = 14;
+    const int W_ARG1   = 14;
+    const int W_ARG2   = 14;
+    const int W_LABEL  = 8;
+
+   std::cout << "------------------------------- QUAD TABLE -------------------------------\n";
+    std::cout << std::left
+              << std::setw(W_IDX)   << "quad #"
+              << std::setw(W_OP)    << "opcode"
+              << std::setw(W_RES)   << "result"
+              << std::setw(W_ARG1)  << "arg1"
+              << std::setw(W_ARG2)  << "arg2"
+              << std::setw(W_LABEL) << "label"
+              << "\n";
+
+    std::cout << std::string(W_IDX + W_OP + W_RES + W_ARG1 + W_ARG2 +W_LABEL, '-')
+              << "\n";
 
     for (size_t i = 0; i < quad_table.size(); ++i) {
         quad* q = quad_table[i];
-        if (!q) {
-            std::cout << i << ": <null quad>\n";
-            continue;
-        }
+        if (!q) continue;  // skip null quads
 
-        // print index and opcode
-        
-        std::cout << i<< ": " << iopcode_to_string(q->op) << "   (";
+        std::string result = safe_expr_to_string(q->result);
+        std::string arg1   = safe_expr_to_string(q->arg1);
+        std::string arg2   = safe_expr_to_string(q->arg2);
+        std::string label  = q->label == 0 ? "" : std::to_string(q->label);
 
-        // arg1
-        std::cout << expr_to_string(q->arg1) << ", ";
-
-        // arg2
-        std::cout << expr_to_string(q->arg2) << ", ";
-
-        // result
-        std::cout << expr_to_string(q->result) << ")";
-
-        // label and line
-        std::cout << "   [label=" << q->label << ", line=" << q->line << "]\n";
+        std::cout << std::left
+                  << std::setw(W_IDX)   << i
+                  << std::setw(W_OP)    << iopcode_to_string(q->op)
+                  << std::setw(W_RES)   << result
+                  << std::setw(W_ARG1)  << arg1
+                  << std::setw(W_ARG2)  << arg2
+                  << std::right
+                  << std::setw(W_LABEL) << label
+                  << std::left << "\n";
     }
 
-    std::cout << "----------------------\n";
+    std::cout << std::string(W_IDX + W_OP + W_RES + W_ARG1 + W_ARG2 + W_LABEL, '-')
+              << "\n";
 }
-
 
 void patchlist(int list, int label) {
     while (list) {
@@ -256,4 +310,13 @@ void pop_loopcounter(void){
         if (!lcs_top)
             lcs_bottom = nullptr;
     }      
+}
+
+
+void backpatch(std::vector<unsigned>& lst, unsigned label) {
+    // Iterate over each quad number in the list
+    for (unsigned quadNo : lst) {
+        // Update the label of the quad at quadNo with the provided label
+        patchlabel(quadNo, label);
+    }
 }

@@ -210,7 +210,7 @@ static int Resize(SymTable_T oSymTable) {
     }
     // oSymTable->buckets = Buckets;
     // free(oSymTable->buckets);
-    oSymTable->buckets = move(newBuckets);
+    oSymTable->buckets = std::move(newBuckets);
     oSymTable->size = newSize;
 
     return 1;

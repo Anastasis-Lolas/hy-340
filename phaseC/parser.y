@@ -71,7 +71,7 @@ std::vector<void *>     args;
 %token <stringValue> STRING
 %token UNDEFINED
 
-%type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt
+%type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt loopstmt Continue Break
 %type <exprVal> member assignexpr term primary 
 %type <exprVal> expr call const
 %type <exprVal> lvalue
@@ -119,8 +119,8 @@ stmt:
     | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
     | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
-    | BREAK SEMICOLON     { DEBUG_REDUCE("stmt -> break ;"); }
-    | CONTINUE SEMICOLON  { DEBUG_REDUCE("stmt -> continue ;"); }
+    | Break               { DEBUG_REDUCE("stmt -> break ;"); }
+    | Continue            { DEBUG_REDUCE("stmt -> continue ;"); }
     | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
     | funcdef             {
                             $$ = new stmt_t();
@@ -142,36 +142,74 @@ expr:
     | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
     | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
-		                                        emit(if_greater,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+                                                // emiting the opcode for the comparison and than static casting the next jump
+		                                        emit(if_greater,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);
+		                                                                                                    }
     | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
-		                                        emit(if_greatereq,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+		                                        emit(if_greatereq,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
     | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-		                                        emit(if_less,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+		                                         // emiting the opcode for the comparison and than static casting the next jump
+		                                        emit(if_less,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);
+                                                }
     | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
                                                 $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
-		                                        emit(if_lesseq,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);
-		                                        emit(assign, newexpr_bool(true), NULL,$$ ,-1 , yylineno);}
+		                                        emit(if_lesseq,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
     | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
-		                                        emit(if_eq,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+		                                        emit(if_eq,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
     | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");   $$ = newexpr(boolexpr_e);
 		                                        $$->sym = newtemp();
-		                                        emit(if_noteq,  $1, $3,$$, nextquad()+3 , yylineno);
-		                                        emit(assign, newexpr_bool(false), NULL,$$, -1 , yylineno);
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+2, yylineno);}
+		                                        emit(if_noteq,  $1, $3,$$, nextquad()+2 , yylineno);
+                                                // we jump 3 quads down since we know the location for the while quads is the same always
+		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
+                                                // next we assign the true 
+                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
+                                                // the jump to the if eq
+                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
+                                                // assign the false
+                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);}
     | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
     | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr");  $$ = emit_relop_op(or_op, $1, $3); }
     | term                                    { DEBUG_REDUCE("expr -> term"); $$ = $1; }
@@ -363,6 +401,13 @@ ifstmt
   }
 ;
 
+loopstart :                        {++loopcounter;}
+          ;
+loopend   :                        {--loopcounter;}
+          ;
+loopstmt  : loopstart stmt loopend {$$ = $2;}
+          ;
+
 whilestart : WHILE {
    
     $$ = newexpr(constnum_e);
@@ -372,18 +417,19 @@ whilestart : WHILE {
 
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
    
-    emit(if_eq, $2, newexpr_bool('1'), NULL, nextquad()+2, yylineno);
+    emit(if_eq, $2, newexpr_bool('1'), NULL, nextquad()+2, yylineno); //assign true
+    
 
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
   
-    emit(jump, NULL, NULL, 0,-1,0);
+    emit(jump, NULL, NULL, 0,0,yylineno);
     
 }
 ;
 
 whilestmt:
-    whilestart whilecond stmt {
+    whilestart whilecond loopstmt {
 
         make_stmt($3);
 
@@ -439,6 +485,25 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N stmt N {
 }
 ;
 
+Break : BREAK SEMICOLON {
+
+    make_stmt($$);
+
+    $$->breakList = nextquad();
+
+    emit(jump,0,0,0,nextquad(),yylineno);
+
+}
+
+Continue : CONTINUE SEMICOLON { 
+
+     make_stmt($$);
+
+     $$->contList = nextquad();
+
+     emit(jump,0,0,0,nextquad(),yylineno);
+}
+
 returnstmt:
       RETURN SEMICOLON
         {  
@@ -469,7 +534,7 @@ int main(int argc, char** argv) {
         yyin = inputFile;
     }
     init_tables();
-
+    push_loopcounter();
     yyparse();
 
     //print_args(args);

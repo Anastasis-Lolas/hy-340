@@ -31,11 +31,16 @@ typedef struct expr {
     double numConst;
     std::string strConst;
     bool boolConst;
-    std::vector<unsigned> truelist;  
+    std::vector<unsigned> truelist;
     std::vector<unsigned> falselist;
     expr* next;
 
 } expr;
 
+typedef struct call_t {
+    expr* elist;
+    unsigned char method;
+    std::string name;
+} call_t;
 
 #endif

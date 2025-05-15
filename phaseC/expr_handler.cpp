@@ -640,10 +640,66 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-    result->breakList = mergelist(s1->breakList, s2->breakList);
-    result->contList = mergelist(s1->contList, s2->contList);
-    result->returnList = mergelist(s1->returnList, s2->returnList);
+    if (result && result->breakList && result->contList && result->returnList) {
+        result->breakList = mergelist(s1->breakList, s2->breakList);
+        result->contList = mergelist(s1->contList, s2->contList);
+        result->returnList = mergelist(s1->returnList, s2->returnList);
+    }
     return result;
 }
 
+// For testing purposes
+expr* anonym_call(SymbolTableEntry_T entry, expr* args) {
+    expr* func = newexpr(programfunc_e);
+    func->sym = entry;
+    return call_handler(func, args);
+}
+
+expr* call_handler(expr* e, expr* elist) {
+    expr* func = emit_iftableitem(e);
+
+    std::vector<expr*> args;
+    for (expr* arg = elist; arg != nullptr; arg = arg->next) {
+        args.push_back(arg);
+    }
+
+    // Stack-like access
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {
+        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());
+    }
+    emit(call, func, nullptr, nullptr, 0, nextquadlabel());
+
+    expr* result = newexpr(var_e);
+    result->sym = newtemp();
+    emit(getretval, result, nullptr, result, 0, yylineno);
+    return result;
+}
+
+call_t* normcall_handler(expr* e) {
+    call_t* temp = new call_t;
+    memset(temp, 0, sizeof(call_t));
+
+    temp->elist = e;
+    temp->method = 0;
+    // temp->name = "";  // nullstring??
+    return temp;
+}
+call_t* methodcall_handler(expr* e, std::string name) {
+    call_t* temp = new call_t;
+    memset(temp, 0, sizeof(call_t));
+
+    temp->elist = e;
+    temp->method = 1;
+    temp->name = name;
+    return temp;
+}
+
+// ignore for now=================================================
+expr* normal_call_handler(std::vector<expr*> args) {             //|
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {     //|
+        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());  //|
+    }  //|
+    return nullptr;  //|
+}  //|
+//=================================================================
 #endif

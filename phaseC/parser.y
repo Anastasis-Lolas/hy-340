@@ -45,6 +45,7 @@ std::vector<void *>     args;
     expr* exprVal;
     stmt_t * s;
     forloop_t * loop_t;
+    call_t* callVal;
 }
 
 
@@ -73,13 +74,15 @@ std::vector<void *>     args;
 
 %type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt loopstmt Continue Break
 %type <exprVal> member assignexpr term primary 
-%type <exprVal> expr call const
+%type <exprVal> expr call const elist elist_tail
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
 %type <exprVal> ifprefix elseprefix whilestart whilecond M N
 %type <loop_t> forprefix
 %type <symEntry> funcdef
+%type<callVal> callsuffix normcall methodcall
+
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
@@ -279,31 +282,50 @@ member:
     ;
 
 call:
-        lvalue callsuffix {DEBUG_REDUCE("call -> lvalue callsuffix"); }
-    | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
+        lvalue callsuffix   {
+                                $1 = emit_iftableitem($1);
+                                expr* funcToCall = $1;
+                                if($2->method){
+                                    expr* self = newexpr(var_e);
+                                    self = member_item($1, $2->name);
+                                    self->next = $2->elist;
+                                    $2->elist = self;
+                                }
+
+                                $$ = call_handler(funcToCall, $2->elist);
+                                DEBUG_REDUCE("call -> lvalue callsuffix"); 
+                            }
+    | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {$$ = call_handler($1, $3); DEBUG_REDUCE("call -> call(elist)"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("call -> (funcdef)(elist)"); }
+                                           {$$ = anonym_call($2, $5); DEBUG_REDUCE("call -> (funcdef)(elist)"); }
     ;
 
 callsuffix:
-      normcall                              { DEBUG_REDUCE("callsuffix -> normcall"); }
-    | methodcall                            { DEBUG_REDUCE("callsuffix -> methodcall"); }
+      normcall                              {$$ = $1; DEBUG_REDUCE("callsuffix -> normcall"); }
+    | methodcall                            {$$ = $1; DEBUG_REDUCE("callsuffix -> methodcall"); }
     ;
 
 normcall:
-      LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("normcall -> (elist)"); }
+      LEFT_PARENTHESIS elist RIGHT_PARENTHESIS{$$ = normcall_handler($2);DEBUG_REDUCE("normcall -> (elist)");}
     ;
 
 methodcall:
       DOUBLE_DOT IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
+                                           {$$ = methodcall_handler($4, *$2); DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
     ;
 
 elist:
-      /* empty */                           { DEBUG_REDUCE("elist -> empty"); }
-    | expr                                  { DEBUG_REDUCE("elist -> expr"); }
-    | elist COMMA expr                      { DEBUG_REDUCE("elist -> elist , expr"); }
+      /* empty */                           {$$ = nullptr; DEBUG_REDUCE("elist -> empty"); }
+    | expr elist_tail                       {$1->next = $2; $$ = $1; DEBUG_REDUCE("elist -> expr"); }
+    ;
+elist_tail:
+      COMMA expr elist_tail {
+          $2->next = $3;
+          $$ = $2;
+      }
+    | /* empty */ {
+          $$ = nullptr;
+      }
     ;
 
 objectdef:

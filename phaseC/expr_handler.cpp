@@ -640,9 +640,12 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-    result->breakList = mergelist(s1->breakList, s2->breakList);
-    result->contList = mergelist(s1->contList, s2->contList);
-    result->returnList = mergelist(s1->returnList, s2->returnList);
+    
+    if(result && result->breakList && result->contList && result->returnList){
+        result->breakList = mergelist(s1->breakList, s2->breakList);
+        result->contList = mergelist(s1->contList, s2->contList);
+        result->returnList = mergelist(s1->returnList, s2->returnList);
+    }
     return result;
 }
 

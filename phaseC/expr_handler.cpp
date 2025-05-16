@@ -641,8 +641,7 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-
-    if(result && result->breakList && result->contList && result->returnList){
+    if (result && result->breakList && result->contList && result->returnList) {
         result->breakList = mergelist(s1->breakList, s2->breakList);
         result->contList = mergelist(s1->contList, s2->contList);
         result->returnList = mergelist(s1->returnList, s2->returnList);
@@ -650,57 +649,6 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     return result;
 }
 
-expr* boolify_expr(expr* e) {
-    if (e->type != boolexpr_e) {
-        return e; // Non-boolean, return as-is
-    }
-    
-    expr* result = newexpr(var_e);
-    result->sym = newtemp();
-
-  
-    unsigned true_quad = nextquad();
-    emit(assign, newexpr_bool(true), NULL, result, 0, yylineno);
-
-
-    unsigned jump_after_true = nextquad();
-    emit(jump, NULL, NULL, NULL, 0, yylineno);
-
-    //quad for assign false se result
-    unsigned false_quad = nextquad();
-    emit(assign, newexpr_bool(false), NULL, result, 0, yylineno);
-
-    // Backpatch true list in assign true
-    backpatch(e->truelist, true_quad);
-
-    // Backpatch false list assign false
-    backpatch(e->falselist, false_quad);
-
-   
-   backpatch({(int)jump_after_true}, nextquad());
-
-
-    return result;
-}
-
-expr* to_boolexpr(expr* e) {
-    if (e->type == boolexpr_e) {
-        return e;
-    }
-
-    expr* result = newexpr(boolexpr_e);
-    result->sym = newtemp();
-
-    unsigned true_jump = nextquad();
-    emit(if_eq, e, newexpr_bool(true), NULL, 0, yylineno);  // if e == true goto _
-    unsigned false_jump = nextquad();
-    emit(jump, NULL, NULL, NULL, 0, yylineno);  // unconditional jump
-
-    result->truelist.push_back(true_jump);
-    result->falselist.push_back(false_jump);
-
-    return result;
-}
 // For testing purposes
 expr* anonym_call(SymbolTableEntry_T entry, expr* args) {
     expr* func = newexpr(programfunc_e);
@@ -755,5 +703,4 @@ expr* normal_call_handler(std::vector<expr*> args) {             //|
     return nullptr;  //|
 }  //|
 //=================================================================
-
 #endif

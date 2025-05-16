@@ -84,17 +84,6 @@ std::vector<void *>     args;
 %type<callVal> callsuffix normcall methodcall
 
 
-
-
-%right ASSIGN
-%left OR 
-%left AND
-%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
-%nonassoc NOT_EQUALS EQUAL
-%right NOT 
-%left MULT DIV  MOD 
-%right PLUS MINUS
-%left UMINUS
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
 %left DOT DOUBLE_DOT

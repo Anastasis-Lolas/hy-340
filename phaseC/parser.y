@@ -150,17 +150,12 @@ expr:
     | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
     | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   
                                                 
-                                                    expr* left = boolify_expr($1);
-                                                    expr* right = boolify_expr($3);
-
-                                                    $$ = newexpr(boolexpr_e);
-                                                    $$->sym = newtemp();
-
-                                                    $$->truelist.push_back(nextquad());
-                                                    $$->falselist.push_back(nextquad() + 1);
-
-                                                    emit(if_greater, left, right, NULL, 0, yylineno);
-                                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                                $$ = newexpr(boolexpr_e);
+                                                $$->sym = newtemp();
+                                                $$->truelist.push_back(nextquad());
+                                                $$->falselist.push_back(nextquad() + 1);
+                                                emit(if_greater, $1, $3, NULL, 0, yylineno);
+                                                emit(jump, NULL, NULL, NULL, 0, yylineno);
 }
 		                                                                                                    
     | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   
@@ -331,7 +326,7 @@ assignexpr:
 
         if ($1->type == tableitem_e) {
             // Handle table elements (unchanged)
-            emit(tablesetelem, $1, $1->index, rval, -1, yylineno);
+            emit(tablesetelem, $1, $1->index, rval, 0, yylineno);
             $$ = emit_iftableitem($1);
             $$->type = assignexpr_e;
         } else {
@@ -471,15 +466,14 @@ idlist:
 
 ifprefix 
 : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-    
-    emit(if_eq, newexpr_bool('1'), $3, newexpr_constnum(nextquad() + 2), currQuad, yylineno);
+     $3 = boolify_expr($3); 
+
+    backpatch($3->truelist, nextquad()); //if true go
 
     $$ = newexpr(constnum_e);
-    $$->numConst = nextquad();
+    $$->numConst = nextquad(); // here we jump after the prefix
 
-    emit(jump, NULL, NULL, 0, currQuad, yylineno); 
-
-   
+    emit(jump, NULL, NULL, NULL, 0, yylineno);
 }
 ;
 
@@ -487,10 +481,8 @@ elseprefix
 : ELSE {
 
     $$ = newexpr(constnum_e);
-
-    $$->numConst = nextquad();
-
-    emit(jump, NULL, NULL, 0, currQuad, yylineno); 
+    $$->numConst = nextquad();        
+    emit(jump, NULL, NULL, NULL, 0, yylineno);
 
 }
 ;
@@ -498,7 +490,7 @@ elseprefix
 ifstmt 
 : ifprefix stmt {
 
-      patchlabel((int)$1->numConst, nextquad());
+       patchlabel((int)$1->numConst, nextquad());
      
   }
 | ifprefix stmt elseprefix stmt {

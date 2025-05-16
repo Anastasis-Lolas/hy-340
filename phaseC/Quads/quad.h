@@ -86,6 +86,11 @@ unsigned nextquad(void);
 
 void push_loopcounter(void);
 
+
 void pop_loopcounter(void);
+
+void backpatch(std::vector<int> list, unsigned label);
+
+std::vector<int> merge(const std::vector<int>& lst1, const std::vector<int>& lst2);
 
 #endif

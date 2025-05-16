@@ -18,11 +18,11 @@ unsigned int currQuad = 0;
 unsigned nextquadlabel(void) { return currQuad; }
 
 void patchlabel(int quadNo, unsigned label) {
-    if (quadNo < 1 || quadNo > quad_table.size()) {
+    if (quadNo < 0 || quadNo > quad_table.size()) {
         std::cerr << "Error: Invalid quad number " << quadNo << std::endl;
         return;
     }
-    if (quad_table[quadNo - 1] == nullptr) {
+    if (quad_table[quadNo] == nullptr) {
         std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
         return;
     }
@@ -199,7 +199,7 @@ std::string expr_to_string(expr* e) {
 std::string safe_expr_to_string(expr* e) {
     if (!e) return "";
     std::string s = expr_to_string(e);
-    if (s == "0" || s == "unknown") return "";
+    if ( s == "unknown") return "A";
     return s;
 }
 
@@ -257,6 +257,13 @@ void patchlist(int list, int label) {
     }
 }
 
+std::vector<int> merge(const std::vector<int>& lst1, const std::vector<int>& lst2) {
+    std::vector<int> result = lst1;
+    result.insert(result.end(), lst2.begin(), lst2.end());
+    return result;
+}
+
+
 int mergelist(int l1, int l2) {
     if (!l1)
         return l2;
@@ -312,11 +319,8 @@ void pop_loopcounter(void){
     }      
 }
 
-
-void backpatch(std::vector<unsigned>& lst, unsigned label) {
-    // Iterate over each quad number in the list
-    for (unsigned quadNo : lst) {
-        // Update the label of the quad at quadNo with the provided label
+void backpatch(std::vector<int> list, unsigned label) {
+    for (unsigned quadNo : list) {
         patchlabel(quadNo, label);
     }
 }

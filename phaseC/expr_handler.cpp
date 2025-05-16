@@ -11,6 +11,7 @@
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
+#include "Quads/quad.h"
 
 unsigned int scope = 0;
 unsigned int func_num = 0;
@@ -596,7 +597,7 @@ expr* newexpr_constnum(double i) {
 }
 
 expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
-    expr* result = newexpr(var_e);
+    expr* result = newexpr(arithexpr_e);
     result->sym = newtemp();
     emit(op, e1, e2, result, 0, yylineno);
     return result;
@@ -640,10 +641,119 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-    result->breakList = mergelist(s1->breakList, s2->breakList);
-    result->contList = mergelist(s1->contList, s2->contList);
-    result->returnList = mergelist(s1->returnList, s2->returnList);
+
+    if(result && result->breakList && result->contList && result->returnList){
+        result->breakList = mergelist(s1->breakList, s2->breakList);
+        result->contList = mergelist(s1->contList, s2->contList);
+        result->returnList = mergelist(s1->returnList, s2->returnList);
+    }
     return result;
 }
+
+expr* boolify_expr(expr* e) {
+    if (e->type != boolexpr_e) {
+        return e; // Non-boolean, return as-is
+    }
+    
+    expr* result = newexpr(var_e);
+    result->sym = newtemp();
+
+  
+    unsigned true_quad = nextquad();
+    emit(assign, newexpr_bool(true), NULL, result, 0, yylineno);
+
+
+    unsigned jump_after_true = nextquad();
+    emit(jump, NULL, NULL, NULL, 0, yylineno);
+
+    //quad for assign false se result
+    unsigned false_quad = nextquad();
+    emit(assign, newexpr_bool(false), NULL, result, 0, yylineno);
+
+    // Backpatch true list in assign true
+    backpatch(e->truelist, true_quad);
+
+    // Backpatch false list assign false
+    backpatch(e->falselist, false_quad);
+
+   
+   backpatch({(int)jump_after_true}, nextquad());
+
+
+    return result;
+}
+
+expr* to_boolexpr(expr* e) {
+    if (e->type == boolexpr_e) {
+        return e;
+    }
+
+    expr* result = newexpr(boolexpr_e);
+    result->sym = newtemp();
+
+    unsigned true_jump = nextquad();
+    emit(if_eq, e, newexpr_bool(true), NULL, 0, yylineno);  // if e == true goto _
+    unsigned false_jump = nextquad();
+    emit(jump, NULL, NULL, NULL, 0, yylineno);  // unconditional jump
+
+    result->truelist.push_back(true_jump);
+    result->falselist.push_back(false_jump);
+
+    return result;
+}
+// For testing purposes
+expr* anonym_call(SymbolTableEntry_T entry, expr* args) {
+    expr* func = newexpr(programfunc_e);
+    func->sym = entry;
+    return call_handler(func, args);
+}
+
+expr* call_handler(expr* e, expr* elist) {
+    expr* func = emit_iftableitem(e);
+
+    std::vector<expr*> args;
+    for (expr* arg = elist; arg != nullptr; arg = arg->next) {
+        args.push_back(arg);
+    }
+
+    // Stack-like access
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {
+        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());
+    }
+    emit(call, func, nullptr, nullptr, 0, nextquadlabel());
+
+    expr* result = newexpr(var_e);
+    result->sym = newtemp();
+    emit(getretval, result, nullptr, result, 0, yylineno);
+    return result;
+}
+
+call_t* normcall_handler(expr* e) {
+    call_t* temp = new call_t;
+    memset(temp, 0, sizeof(call_t));
+
+    temp->elist = e;
+    temp->method = 0;
+    // temp->name = "";  // nullstring??
+    return temp;
+}
+call_t* methodcall_handler(expr* e, std::string name) {
+    call_t* temp = new call_t;
+    memset(temp, 0, sizeof(call_t));
+
+    temp->elist = e;
+    temp->method = 1;
+    temp->name = name;
+    return temp;
+}
+
+// ignore for now=================================================
+expr* normal_call_handler(std::vector<expr*> args) {             //|
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {     //|
+        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());  //|
+    }  //|
+    return nullptr;  //|
+}  //|
+//=================================================================
 
 #endif

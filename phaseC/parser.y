@@ -23,8 +23,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -45,6 +45,7 @@ std::vector<void *>     args;
     expr* exprVal;
     stmt_t * s;
     forloop_t * loop_t;
+    call_t* callVal;
 }
 
 
@@ -73,25 +74,32 @@ std::vector<void *>     args;
 
 %type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt loopstmt Continue Break
 %type <exprVal> member assignexpr term primary 
-%type <exprVal> expr call const
+%type <exprVal> expr call const elist elist_tail
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
 %type <exprVal> ifprefix elseprefix whilestart whilecond M N
 %type <loop_t> forprefix
 %type <symEntry> funcdef
+%type<callVal> callsuffix normcall methodcall
 
+
+
+
+%right ASSIGN
+%left OR 
+%left AND
+%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
+%nonassoc NOT_EQUALS EQUAL
+%right NOT 
+%left MULT DIV  MOD 
+%right PLUS MINUS
+%left UMINUS
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
 %left DOT DOUBLE_DOT
-%right NOT PLUS_PLUS MINUS_MINUS 
-%left MULT DIV  MOD 
-%right PLUS MINUS
-%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
-%nonassoc NOT_EQUALS EQUAL
-%left AND
-%left OR 
-%right ASSIGN
+%right PLUS_PLUS MINUS_MINUS 
+
 
 
 
@@ -134,126 +142,208 @@ stmt:
 
 
 expr:
-      assignexpr                              { DEBUG_REDUCE("expr -> assignexpr"); }
-    | expr PLUS expr                          {  DEBUG_REDUCE("expr -> expr + expr");  $$ = emit_arith_op(add, $1, $3); }
+      assignexpr                              { $$ = $1; DEBUG_REDUCE("expr -> assignexpr"); }
+    | expr PLUS expr                          { DEBUG_REDUCE("expr -> expr + expr");  $$ = emit_arith_op(add, $1, $3); }
     | expr MINUS expr                         { DEBUG_REDUCE("expr -> expr - expr");   $$ = emit_arith_op(sub, $1, $3); }
     | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr");   $$ = emit_arith_op(mul, $1, $3); }
     | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr");   $$ = emit_arith_op(divv, $1, $3); }
     | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
-    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-                                                // emiting the opcode for the comparison and than static casting the next jump
-		                                        emit(if_greater,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);
-		                                                                                                    }
-    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-		                                        emit(if_greatereq,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
-    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   $$ = newexpr(boolexpr_e);
-		                                         // emiting the opcode for the comparison and than static casting the next jump
-		                                        emit(if_less,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);
+    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   
+                                                
+                                                    expr* left = boolify_expr($1);
+                                                    expr* right = boolify_expr($3);
+
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->sym = newtemp();
+
+                                                    $$->truelist.push_back(nextquad());
+                                                    $$->falselist.push_back(nextquad() + 1);
+
+                                                    emit(if_greater, left, right, NULL, 0, yylineno);
+                                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
+}
+		                                                                                                    
+    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   
+                                                $$ = newexpr(boolexpr_e);
+                                                $$->sym = newtemp();
+                                                $$->truelist.push_back(nextquad());
+                                                $$->falselist.push_back(nextquad() + 1);
+                                                emit(if_greatereq, $1, $3, NULL, 0, yylineno);
+                                                emit(jump, NULL, NULL, NULL, 0, yylineno); }
+
+    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   
+		                                            expr* left = boolify_expr($1);
+                                                    expr* right = boolify_expr($3);
+
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->sym = newtemp();
+
+                                                    $$->truelist.push_back(nextquad());
+                                                    $$->falselist.push_back(nextquad() + 1);
+
+                                                    emit(if_less, left, right, NULL, 0, yylineno);
+                                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                                    
                                                 }
     | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
                                                 $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-		                                        emit(if_lesseq,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
-    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");  $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-		                                        emit(if_eq,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno); }
-    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");   $$ = newexpr(boolexpr_e);
-		                                        $$->sym = newtemp();
-		                                        emit(if_noteq,  $1, $3,$$, nextquad()+2 , yylineno);
-                                                // we jump 3 quads down since we know the location for the while quads is the same always
-		                                        emit(jump,NULL,NULL,NULL,nextquad()+3, yylineno);
-                                                // next we assign the true 
-                                                emit(assign, newexpr_bool(true), NULL,$$, 32 , yylineno);
-                                                // the jump to the if eq
-                                                emit(jump,NULL,NULL,NULL,nextquad()+2,yylineno);
-                                                // assign the false
-                                                emit(assign ,newexpr_bool(false),NULL,$$,32,yylineno);}
-    | expr AND expr                           { DEBUG_REDUCE("expr -> expr and expr"); $$ = emit_relop_op(and_op, $1, $3); }
-    | expr OR expr                            { DEBUG_REDUCE("expr -> expr or expr");  $$ = emit_relop_op(or_op, $1, $3); }
-    | term                                    { DEBUG_REDUCE("expr -> term"); $$ = $1; }
+                                                $$->sym = newtemp();
+                                                $$->truelist.push_back(nextquad());
+                                                $$->falselist.push_back(nextquad() + 1);
+                                                emit(if_lesseq, $1, $3, NULL, 0, yylineno);
+                                                emit(jump, NULL, NULL, NULL, 0, yylineno); }
+
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr"); 
+                                                $$ = newexpr(boolexpr_e);
+                                                $$->sym = newtemp();
+                                                $$->truelist.push_back(nextquad());
+                                                $$->falselist.push_back(nextquad() + 1);
+                                                emit(if_eq, $1, $3, NULL, 0, yylineno);
+                                                emit(jump, NULL, NULL, NULL, 0, yylineno); }
+
+    | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  
+                                                $$ = newexpr(boolexpr_e);
+                                                $$->sym = newtemp();
+                                                $$->truelist.push_back(nextquad());
+                                                $$->falselist.push_back(nextquad() + 1);
+                                                emit(if_noteq, $1, $3, NULL, 0, yylineno);
+                                                emit(jump, NULL, NULL, NULL, 0, yylineno); }
+
+    | expr AND M expr                           { DEBUG_REDUCE("expr -> expr and expr");
+                                                    $1 = to_boolexpr($1);  // Ensure expr1 is boolexpr_e
+                                                    $4 = to_boolexpr($4);  // Ensure expr2 is boolexpr_e
+                                                    backpatch($1->truelist, (unsigned)$3->numConst);
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->truelist = $4->truelist;
+                                                    $$->falselist = merge($1->falselist, $4->falselist);
+}
+
+    | expr OR M expr                            {
+                                                   DEBUG_REDUCE("expr -> expr or expr");
+                                                    $1 = to_boolexpr($1);
+                                                    $4 = to_boolexpr($4);
+                                                    backpatch($1->falselist, (unsigned)$3->numConst);
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->truelist = merge($1->truelist, $4->truelist);
+                                                    $$->falselist = $4->falselist;
+} 
+    | term                                    {  $$ = $1; DEBUG_REDUCE("expr -> term"); $$ = $1; }
     ;
 
 
 term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        { DEBUG_REDUCE("term -> (expr)"); }
-    | MINUS expr
-        { DEBUG_REDUCE("term -> -expr"); }
+        { $$ = $2; 
+        // Pass the expr unchanged
+        DEBUG_REDUCE("term -> (expr)"); }
+    | MINUS expr%prec UMINUS {
+        DEBUG_REDUCE("term -> -expr");
+      
+        $$ = newexpr(arithexpr_e);
+        $$->sym = newtemp();
+        emit(uminus, newexpr_constnum(0), $2, $$, 0, yylineno);}
+
     | NOT expr
-        { DEBUG_REDUCE("term -> not expr"); }
+        { DEBUG_REDUCE("term -> not expr");
+        $2 = to_boolexpr($2);
+        $$ = newexpr(boolexpr_e);
+        $$->sym = newtemp();
+        
+        $$->truelist = $2->falselist;  // NOT swaps true and false lists
+        $$->falselist = $2->truelist;
+    }
     | PLUS_PLUS lvalue
-        {temrs_error($2,"++"); DEBUG_REDUCE("term -> ++lvalue"); }
+        {temrs_error($2,"++");
+        if($2->type == tableitem_e) {
+													$$ = emit_iftableitem($2);
+													emit(add, $$, newexpr_constnum(1), $$, nextquad(), yylineno);
+													emit(add, $2, $2->index, $$, nextquad(), yylineno);
+												}
+									else {
+													emit(add, $2, newexpr_constnum(1), $2,nextquad(), yylineno);
+													$$ = newexpr(arithexpr_e);
+													$$->sym = newtemp();
+													emit(assign, $$, $2, NULL, nextquad(), yylineno);
+												}
+                                                 DEBUG_REDUCE("term -> ++lvalue"); }
     | lvalue PLUS_PLUS
-        {temrs_error($1,"++"); DEBUG_REDUCE("term -> lvalue++"); }
+        {temrs_error($1,"++"); 
+     
+        $$ = newexpr(arithexpr_e);
+        $$->sym = newtemp();
+        if ($1->type == tableitem_e) {
+            $$ = emit_iftableitem($1); // Get current value
+            expr* newval = newexpr(arithexpr_e);
+            newval->sym = newtemp();
+            emit(add, $$, newexpr_constnum(1), newval, 0, yylineno); // Compute new value
+            emit(tablesetelem, $1, $1->index, newval, 0, yylineno); // Update table
+        } else {
+            emit(assign, $1, NULL, $$, 0, yylineno); // Copy current value
+            emit(add, $1, newexpr_constnum(1), $1, 0, yylineno); // Update lvalue
+        }
+        DEBUG_REDUCE("term -> lvalue++"); }
     | MINUS_MINUS lvalue
-        {temrs_error($2,"--"); DEBUG_REDUCE("term -> --lvalue"); }
+        {temrs_error($2,"--"); 
+        $$ = newexpr(arithexpr_e);
+        $$->sym = newtemp();
+        if ($2->type == tableitem_e) {
+            expr* val = emit_iftableitem($2);
+            emit(sub, val, newexpr_constnum(1), $$, 0, yylineno);
+            emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+        } else {
+            emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
+            emit(assign, $2, NULL, $$, 0, yylineno);
+        }
+        DEBUG_REDUCE("term -> --lvalue"); }
     | lvalue MINUS_MINUS
-        {temrs_error($1,"--"); DEBUG_REDUCE("term -> lvalue--"); }
+        {temrs_error($1,"--"); 
+        
+        $$ = newexpr(arithexpr_e);
+        $$->sym = newtemp();
+        if ($1->type == tableitem_e) {
+            $$ = emit_iftableitem($1);
+            expr* newval = newexpr(arithexpr_e);
+            newval->sym = newtemp();
+            emit(sub, $$, newexpr_constnum(1), newval, 0, yylineno);
+            emit(tablesetelem, $1, $1->index, newval, 0, yylineno);
+        } else {
+            emit(assign, $1, NULL, $$, 0, yylineno);
+            emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+        }
+        DEBUG_REDUCE("term -> lvalue--"); }
     | primary
-        { DEBUG_REDUCE("term -> primary"); }
+        { DEBUG_REDUCE("term -> primary"); 
+        $$ = $1;}
     ;
+
 
 assignexpr:
-      lvalue ASSIGN expr
-       {          assign_error($1); DEBUG_REDUCE("assignexpr -> lvalue = expr");             
+    lvalue ASSIGN expr
+    {
+        assign_error($1);
+        DEBUG_REDUCE("assignexpr -> lvalue = expr");
 
-                    // Handle table item assignments
-                    if ($1->type == tableitem_e) {
-                        emit(tablesetelem, $1, $1->index, $3, -1, yylineno);
-                        $$ = emit_iftableitem($1);
-                        $$->type = assignexpr_e;
-                    } else {
-                        
-                        $$ = emit_assign_expr($1, $3);
-                        // Create a new temporary expression for the result
-                        $assignexpr = newexpr(var_e); 
-						$assignexpr->sym = newtemp();
-						emit(assign, $assignexpr, $lvalue, NULL, 0, yylineno);
-                    }
-                }
-        
-    ;
+        expr* rval = $3;
+
+        // Convert boolean expressions to true/false if needed
+        if (rval->type == boolexpr_e) {
+            rval = boolify_expr(rval);
+        }
+
+        if ($1->type == tableitem_e) {
+            // Handle table elements (unchanged)
+            emit(tablesetelem, $1, $1->index, rval, -1, yylineno);
+            $$ = emit_iftableitem($1);
+            $$->type = assignexpr_e;
+        } else {
+            // Assign rval to lvalue
+            emit(assign, rval, NULL, $1, 0, yylineno);
+            // Create a temporary to hold lvalue's value
+            expr* temp = newexpr(var_e);
+            temp->sym = newtemp();
+            emit(assign, temp, $1, NULL, 0, yylineno);
+            $$ = temp;
+        }
+    };
 
 primary:
       lvalue                                { DEBUG_REDUCE("primary -> lvalue");    }
@@ -268,7 +358,7 @@ lvalue:
       IDENT                                 {SymbolTableEntry_T entry = add_ident(*$1); $$ = symEntr_to_expr(entry); DEBUG_REDUCE("lvalue -> IDENT"); }
     | LOCAL IDENT                           {SymbolTableEntry_T entry = add_local_dent(*$2); $$ = symEntr_to_expr(entry);  DEBUG_REDUCE("lvalue -> local IDENT"); }
     | NAMESPACE IDENT                       {SymbolTableEntry_T entry = handle_namespace_dent(*$2); $$ = symEntr_to_expr(entry); DEBUG_REDUCE("lvalue -> ::IDENT"); }
-    | member                                {$$ = NULL;  DEBUG_REDUCE("lvalue -> member"); }
+    | member                                {$$ = $1;  DEBUG_REDUCE("lvalue -> member"); }
     ;
 
 member:
@@ -279,31 +369,50 @@ member:
     ;
 
 call:
-        lvalue callsuffix {DEBUG_REDUCE("call -> lvalue callsuffix"); }
-    | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { DEBUG_REDUCE("call -> call(elist)"); }
+        lvalue callsuffix   {
+                                $1 = emit_iftableitem($1);
+                                expr* funcToCall = $1;
+                                if($2->method){
+                                    expr* self = newexpr(var_e);
+                                    self = member_item($1, $2->name);
+                                    self->next = $2->elist;
+                                    $2->elist = self;
+                                }
+
+                                $$ = call_handler(funcToCall, $2->elist);
+                                DEBUG_REDUCE("call -> lvalue callsuffix"); 
+                            }
+    | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {$$ = call_handler($1, $3); DEBUG_REDUCE("call -> call(elist)"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("call -> (funcdef)(elist)"); }
+                                           {$$ = anonym_call($2, $5); DEBUG_REDUCE("call -> (funcdef)(elist)"); }
     ;
 
 callsuffix:
-      normcall                              { DEBUG_REDUCE("callsuffix -> normcall"); }
-    | methodcall                            { DEBUG_REDUCE("callsuffix -> methodcall"); }
+      normcall                              {$$ = $1; DEBUG_REDUCE("callsuffix -> normcall"); }
+    | methodcall                            {$$ = $1; DEBUG_REDUCE("callsuffix -> methodcall"); }
     ;
 
 normcall:
-      LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("normcall -> (elist)"); }
+      LEFT_PARENTHESIS elist RIGHT_PARENTHESIS{$$ = normcall_handler($2);DEBUG_REDUCE("normcall -> (elist)");}
     ;
 
 methodcall:
       DOUBLE_DOT IDENT LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-                                           { DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
+                                           {$$ = methodcall_handler($4, *$2); DEBUG_REDUCE("methodcall -> ::IDENT(elist)"); }
     ;
 
 elist:
-      /* empty */                           { DEBUG_REDUCE("elist -> empty"); }
-    | expr                                  { DEBUG_REDUCE("elist -> expr"); }
-    | elist COMMA expr                      { DEBUG_REDUCE("elist -> elist , expr"); }
+      /* empty */                           {$$ = nullptr; DEBUG_REDUCE("elist -> empty"); }
+    | expr elist_tail                       {$1->next = $2; $$ = $1; DEBUG_REDUCE("elist -> expr"); }
+    ;
+elist_tail:
+      COMMA expr elist_tail {
+          $2->next = $3;
+          $$ = $2;
+      }
+    | /* empty */ {
+          $$ = nullptr;
+      }
     ;
 
 objectdef:
@@ -312,8 +421,8 @@ objectdef:
     ;
 
 indexed:
-      indexedelem                           { DEBUG_REDUCE("indexed -> indexedelem"); }
-    | indexed COMMA indexedelem            { DEBUG_REDUCE("indexed -> indexed , indexedelem"); }
+      indexedelem                           {  DEBUG_REDUCE("indexed -> indexedelem"); }
+    | indexed COMMA indexedelem            {  DEBUG_REDUCE("indexed -> indexed , indexedelem"); }
     ;
 
 indexedelem:
@@ -342,7 +451,7 @@ funcdef:
 const:
       INTEGER     { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> INTEGER"); }
     | REALCONST   { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> REALCONST"); }
-    | STRING      {  DEBUG_REDUCE("const -> STRING"); }
+    | STRING      { $$ = newexpr_conststring(*$1); DEBUG_REDUCE("const -> STRING"); }
     | NIL         { $$ = newexpr(nil_e); DEBUG_REDUCE("const -> NIL"); }
     | TRUE        { $$ = newexpr(constbool_e); $$->boolConst = true; DEBUG_REDUCE("const -> TRUE"); }
     | FALSE       { $$ = newexpr(constbool_e); $$->boolConst = false; DEBUG_REDUCE("const -> FALSE"); }
@@ -487,21 +596,31 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N stmt N {
 
 Break : BREAK SEMICOLON {
 
-    make_stmt($$);
-
-    $$->breakList = nextquad();
-
-    emit(jump,0,0,0,nextquad(),yylineno);
-
+    if(loopcounter == 0) {
+        yyerror("break statement is outside of the loop ");
+        $$ = new stmt_t();  
+        make_stmt($$);
+    } else {
+        $$ = new stmt_t();  
+        make_stmt($$);
+        $$->breakList = nextquad();
+        emit(jump, NULL, NULL, NULL, 0, yylineno);
+    }
 }
 
+
+
 Continue : CONTINUE SEMICOLON { 
-
-     make_stmt($$);
-
-     $$->contList = nextquad();
-
-     emit(jump,0,0,0,nextquad(),yylineno);
+  if(loopcounter == 0) {
+        yyerror("continue statement is outside of the loop ");
+        $$ = new stmt_t();
+        make_stmt($$);
+    } else {
+        $$ = new stmt_t();  
+        make_stmt($$);
+        $$->contList = nextquad();
+        emit(jump, NULL, NULL, NULL, 0, yylineno);
+    }
 }
 
 returnstmt:

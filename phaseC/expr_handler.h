@@ -67,5 +67,15 @@ expr* emit_relop_op(iopcode op, expr* e1, expr* e2);
 //
 expr* symEntr_to_expr(SymbolTableEntry_T entry);
 stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2);
+expr* to_boolexpr(expr* e);
+expr* boolify_expr(expr* e);
+
+
+//
+
+call_t* methodcall_handler(expr* e, std::string name);
+call_t* normcall_handler(expr* e);
+expr* anonym_call(SymbolTableEntry_T entry, expr* args);
+expr* call_handler(expr* e, expr* elist);
 
 #endif

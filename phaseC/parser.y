@@ -23,8 +23,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -78,11 +78,11 @@ std::vector<void *>     args;
 %type <exprVal> lvalue
 %type <stringValue> IDENT
 %type <idList> idlist
-%type <exprVal> ifprefix elseprefix whilestart whilecond M N
+%type <exprVal> ifprefix elseprefix  M N
 %type <loop_t> forprefix
 %type <symEntry> funcdef
 %type<callVal> callsuffix normcall methodcall
-
+%type <intValue> whilestart whilecond
 
 
 
@@ -91,10 +91,14 @@ std::vector<void *>     args;
 %left AND
 %nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
 %nonassoc NOT_EQUALS EQUAL
+
+
 %right NOT 
-%left MULT DIV  MOD 
-%right PLUS MINUS
+
+%left PLUS MINUS
+%left MULT DIV MOD
 %left UMINUS
+
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
 %left DOT DOUBLE_DOT
@@ -119,8 +123,14 @@ stmt_list : stmt_list stmt {
 
 stmt:
       expr SEMICOLON      {  
+                            if ($1->type == boolexpr_e) {
+                            $1 = boolify_expr($1);}
+                            
                             $$ = new stmt_t();
                             make_stmt($$);
+                          
+                            
+      
                             DEBUG_REDUCE("stmt -> expr ;"); 
                           }
     | ifstmt              {$$ = $1; DEBUG_REDUCE("stmt -> ifstmt"); }
@@ -167,16 +177,14 @@ expr:
                                                 emit(jump, NULL, NULL, NULL, 0, yylineno); }
 
     | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   
-		                                            expr* left = boolify_expr($1);
-                                                    expr* right = boolify_expr($3);
-
+		                                          
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->sym = newtemp();
 
                                                     $$->truelist.push_back(nextquad());
                                                     $$->falselist.push_back(nextquad() + 1);
 
-                                                    emit(if_less, left, right, NULL, 0, yylineno);
+                                                    emit(if_less, $1, $3, NULL, 0, yylineno);
                                                     emit(jump, NULL, NULL, NULL, 0, yylineno);
                                                     
                                                 }
@@ -204,10 +212,15 @@ expr:
                                                 emit(if_noteq, $1, $3, NULL, 0, yylineno);
                                                 emit(jump, NULL, NULL, NULL, 0, yylineno); }
 
-    | expr AND M expr                           { DEBUG_REDUCE("expr -> expr and expr");
-                                                    $1 = to_boolexpr($1);  // Ensure expr1 is boolexpr_e
-                                                    $4 = to_boolexpr($4);  // Ensure expr2 is boolexpr_e
-                                                    backpatch($1->truelist, (unsigned)$3->numConst);
+    | expr AND M expr                           { 
+                                                    DEBUG_REDUCE("expr -> expr and expr");
+                                                   
+                                                    $1 = to_boolexpr($1);  
+                                                    $4 = to_boolexpr($4);  
+                                                    backpatch($1->truelist, (unsigned)($3->numConst)); 
+
+                                                   
+
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->truelist = $4->truelist;
                                                     $$->falselist = merge($1->falselist, $4->falselist);
@@ -222,7 +235,7 @@ expr:
                                                     $$->truelist = merge($1->truelist, $4->truelist);
                                                     $$->falselist = $4->falselist;
 } 
-    | term                                    {  $$ = $1; DEBUG_REDUCE("expr -> term"); $$ = $1; }
+    | term                                    {  $$ = $1; DEBUG_REDUCE("expr -> term");  }
     ;
 
 
@@ -238,13 +251,12 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         emit(uminus, newexpr_constnum(0), $2, $$, 0, yylineno);}
 
     | NOT expr
-        { DEBUG_REDUCE("term -> not expr");
-        $2 = to_boolexpr($2);
+        { 
+        DEBUG_REDUCE("term -> not expr");
+        expr* b = to_boolexpr($2);
         $$ = newexpr(boolexpr_e);
-        $$->sym = newtemp();
-        
-        $$->truelist = $2->falselist;  // NOT swaps true and false lists
-        $$->falselist = $2->truelist;
+        $$->truelist = b->falselist;   
+        $$->falselist = b->truelist;
     }
     | PLUS_PLUS lvalue
         {temrs_error($2,"++");
@@ -319,23 +331,22 @@ assignexpr:
 
         expr* rval = $3;
 
-        // Convert boolean expressions to true/false if needed
-        if (rval->type == boolexpr_e) {
-            rval = boolify_expr(rval);
+       if (rval->type == boolexpr_e) {
+            rval = boolify_expr(rval);  // temp with true/false
         }
 
         if ($1->type == tableitem_e) {
-            // Handle table elements (unchanged)
             emit(tablesetelem, $1, $1->index, rval, 0, yylineno);
             $$ = emit_iftableitem($1);
             $$->type = assignexpr_e;
         } else {
-            // Assign rval to lvalue
+            // assign rval in lvalue
             emit(assign, rval, NULL, $1, 0, yylineno);
-            // Create a temporary to hold lvalue's value
+
+         
             expr* temp = newexpr(var_e);
             temp->sym = newtemp();
-            emit(assign, temp, $1, NULL, 0, yylineno);
+            emit(assign, $1, NULL, temp, 0, yylineno); // temp = lvalue 
             $$ = temp;
         }
     };
@@ -511,44 +522,35 @@ loopstmt  : loopstart stmt loopend {$$ = $2;}
 
 whilestart : WHILE {
    
-    $$ = newexpr(constnum_e);
-    $$->numConst = nextquad();
+    $$ = nextquad();
 }
 ;
 
-whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-
-    $2 = boolify_expr($2); 
-
-    backpatch($2->truelist, nextquad()); //if true go
-   
-    emit(if_eq, $2, newexpr_bool('1'), NULL, nextquad()+2, yylineno); //assign true
-    
-
-    $$ = newexpr(constnum_e);
-    $$->numConst = nextquad();
-  
-    emit(jump, NULL, NULL, 0,0,yylineno);
-    
-}
-;
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
+   {
+        if ($2->type == boolexpr_e) {
+        $2 = boolify_expr($2);
+    }
+    emit(if_eq, $2, newexpr_bool(1), NULL, nextquad() + 2, yylineno); // true -> continue
+    $$ = nextquad(); //jumpc hhere if false
+    emit(jump, NULL, NULL, NULL, 0, yylineno); // false -> out
+};
 
 whilestmt:
-    whilestart whilecond loopstmt {
+    whilestart whilecond loopstmt
+    {
+        unsigned loopStart = $1;
+        unsigned exitJump = $2;
+        stmt_t* body = $3;
 
-        make_stmt($3);
+        emit(jump, nullptr, nullptr, nullptr, loopStart, yylineno);
+        patchlabel(exitJump, nextquad());
+        patchlist(body->breakList, nextquad());
+        patchlist(body->contList, loopStart);
 
-        emit(jump, NULL, NULL, $1,(int)$1->numConst, yylineno); //reloop jump
-        
-        patchlabel((int)$2->numConst, nextquad()); //exit jump
-
-       
-        patchlist($3->breakList, nextquad());
-        
-        patchlist($3->contList, nextquad());
-        
-    }
-;
+        $$ = body;
+    };
+    
 
 N : {
     $$ = newexpr(constnum_e);

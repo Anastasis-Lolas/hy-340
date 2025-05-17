@@ -23,8 +23,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -517,6 +517,10 @@ whilestart : WHILE {
 ;
 
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+
+    $2 = boolify_expr($2); 
+
+    backpatch($2->truelist, nextquad()); //if true go
    
     emit(if_eq, $2, newexpr_bool('1'), NULL, nextquad()+2, yylineno); //assign true
     
@@ -534,9 +538,9 @@ whilestmt:
 
         make_stmt($3);
 
-        emit(jump, NULL, NULL, $1,(int)$1->numConst, yylineno);
+        emit(jump, NULL, NULL, $1,(int)$1->numConst, yylineno); //reloop jump
         
-        patchlabel((int)$2->numConst, nextquad());
+        patchlabel((int)$2->numConst, nextquad()); //exit jump
 
        
         patchlist($3->breakList, nextquad());

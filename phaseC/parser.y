@@ -117,7 +117,7 @@ std::vector<void *>     args;
 %%
 
 program:
-      stmt_list     { DEBUG_REDUCE("program -> stmt_list"); }
+      stmt_list     {$$=$1; DEBUG_REDUCE("program -> stmt_list"); }
    
     ;
 
@@ -359,11 +359,11 @@ assignexpr:
     };
 
 primary:
-      lvalue                                { DEBUG_REDUCE("primary -> lvalue");    }
+      lvalue                                {$$ = emit_iftableitem(lvalue); DEBUG_REDUCE("primary -> lvalue");}
     | call                                  { DEBUG_REDUCE("primary -> call");      }
     | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-                                            { DEBUG_REDUCE("primary -> (funcdef)"); }                                 
+                                            {$$ = newexpr(programfunc_e); DEBUG_REDUCE("primary -> (funcdef)"); }                                 
     | const                                 { DEBUG_REDUCE("primary -> const");     }
     ;
 

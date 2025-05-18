@@ -87,22 +87,29 @@ std::vector<void *>     args;
 
 
 %right ASSIGN
+
 %left OR 
 %left AND
-%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
 %nonassoc NOT_EQUALS EQUAL
 
+%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
 
-%right NOT 
+
+
 
 %left PLUS MINUS
 %left MULT DIV MOD
 %left UMINUS
+%right NOT 
+
+%right PLUS_PLUS MINUS_MINUS 
+
+
+%left DOT DOUBLE_DOT
+
 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 %left LEFT_BRACE RIGHT_BRACE 
-%left DOT DOUBLE_DOT
-%right PLUS_PLUS MINUS_MINUS 
 
 
 
@@ -124,7 +131,7 @@ stmt_list : stmt_list stmt {
 stmt:
       expr SEMICOLON      {  
                             if ($1->type == boolexpr_e) {
-                            $1 = boolify_expr($1);}
+                            $1 = to_boolexpr($1);}
                             
                             $$ = new stmt_t();
                             make_stmt($$);
@@ -477,14 +484,11 @@ idlist:
 
 ifprefix 
 : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-     $3 = boolify_expr($3); 
-
-    backpatch($3->truelist, nextquad()); //if true go
-
+    $3 = boolify_expr(to_boolexpr($3));  // Evaluate condition into a temporary
+    emit(if_eq, $3, newexpr_bool(true), NULL, nextquad() + 2, yylineno);  // Jump to body if true
     $$ = newexpr(constnum_e);
-    $$->numConst = nextquad(); // here we jump after the prefix
-
-    emit(jump, NULL, NULL, NULL, 0, yylineno);
+    $$->numConst = nextquad();
+    emit(jump, NULL, NULL, NULL, 0, yylineno);  // Jump to skip body if false
 }
 ;
 

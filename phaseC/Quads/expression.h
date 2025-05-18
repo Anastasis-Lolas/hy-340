@@ -42,10 +42,6 @@ typedef struct call_t {
     unsigned char method;
     std::string name;
 } call_t;
-typedef struct call_t {
-    expr* elist;
-    unsigned char method;
-    std::string name;
-} call_t;
+
 
 #endif

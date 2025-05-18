@@ -83,7 +83,7 @@ std::vector<void *>     args;
 %type <symEntry> funcdef
 %type<callVal> callsuffix normcall methodcall
 %type <intValue> whilestart whilecond
-
+%type<s> program
 
 
 %right ASSIGN
@@ -359,7 +359,7 @@ assignexpr:
     };
 
 primary:
-      lvalue                                {$$ = emit_iftableitem(lvalue); DEBUG_REDUCE("primary -> lvalue");}
+      lvalue                                {$$ = emit_iftableitem($1); DEBUG_REDUCE("primary -> lvalue");}
     | call                                  { DEBUG_REDUCE("primary -> call");      }
     | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS

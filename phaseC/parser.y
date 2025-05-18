@@ -125,7 +125,7 @@ stmt_list : stmt_list stmt {
                              $$ = stmt_list_handler($1,$2);
                              DEBUG_REDUCE("stmt -> expr ;"); 
                            }
-            | {$$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt list  -> empty ;"); }
+            | stmt {$$ = $1; $$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt list  -> empty ;"); }
           ;
 
 stmt:
@@ -144,8 +144,8 @@ stmt:
     | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
     | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
-    | Break               { DEBUG_REDUCE("stmt -> break ;"); }
-    | Continue            { DEBUG_REDUCE("stmt -> continue ;"); }
+    | Break               {$$ = $1; DEBUG_REDUCE("stmt -> break ;"); }
+    | Continue            {$$ = $1; DEBUG_REDUCE("stmt -> continue ;"); }
     | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
     | funcdef             {
                             $$ = new stmt_t();

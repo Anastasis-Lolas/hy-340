@@ -16,6 +16,7 @@
 unsigned int scope = 0;
 unsigned int func_num = 0;
 unsigned int temp_num = 0;
+int infunction = 0;
 
 SymTable_T oSymTable;
 extern int yylineno;
@@ -61,6 +62,7 @@ void exit_block() {
 }
 void enter_func(int flag, std::string name) {
     scope++;
+    infunction++;
     // nextquad ??
     if (flag == 0) {
         // std::cout << "Anonymous function" << std::endl;
@@ -118,6 +120,7 @@ void exit_func(int flag, std::string name, int returnList) {
     if (returnList) {
         patchlist(returnList, nextquad() - 1);
     }
+    infunction--;
 }
 
 
@@ -534,24 +537,22 @@ expr* lvalue_id_handler(expr* lvalue, std::string name) {
 }
 
 expr* member_handler(expr* lvalue, expr* i) {
-    lvalue = emit_iftableitem(lvalue);
     if (!lvalue) {
         std::cerr << "[DEBUG] NULL lvalue at member_handler" << std::endl;
         return NULL;
     }
-
+    lvalue = emit_iftableitem(lvalue);
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;
     item->index = i;
     return item;
 }
 expr* member_item(expr* lvalue, std::string name) {
-    lvalue = emit_iftableitem(lvalue);
     if (!lvalue) {
         std::cerr << "[DEBUG] NULL lvalue at member_item" << std::endl;
         return NULL;
     }
-
+    lvalue = emit_iftableitem(lvalue);
     expr* item = newexpr(tableitem_e);
     item->sym = lvalue->sym;
     item->index = newexpr_conststring(name);
@@ -750,7 +751,13 @@ call_t* methodcall_handler(expr* e, std::string name) {
     temp->name = name;
     return temp;
 }
-
+void check_arith(expr* e) {
+    if (e->type == constbool_e || e->type == conststring_e ||
+        e->type == nil_e || e->type == newtable_e || e->type == programfunc_e ||
+        e->type == libraryfunc_e || e->type == boolexpr_e) {
+        printf("Illegal expr used!\n");
+    }
+}
 // ignore for now=================================================
 expr* normal_call_handler(std::vector<expr*> args) {             //|
     for (auto it = args.rbegin(); it != args.rend(); ++it) {     //|

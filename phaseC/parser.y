@@ -13,6 +13,7 @@
 
 using namespace         std;
 extern FILE*            yyin;
+extern int              infunction;
 void yyerror            (const char* yaccProvidedMessage);
 extern int              yylineno;
 extern int              yylex(void);
@@ -144,8 +145,8 @@ stmt:
     | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
     | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
-    | Break               {$$ = $1;$$ = new stmt_t(); make_stmt(); DEBUG_REDUCE("stmt -> break ;"); }
-    | Continue            {$$ = $1;$$ = new stmt_t(); make_stmt(); DEBUG_REDUCE("stmt -> continue ;"); }
+    | Break               {$$ = $1;$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> break ;"); }
+    | Continue            {$$ = $1;$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> continue ;"); }
     | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
     | funcdef             {
                             $$ = new stmt_t();
@@ -627,7 +628,10 @@ Continue : CONTINUE SEMICOLON {
 
 returnstmt:
       RETURN SEMICOLON
-        {  
+        {
+            if(infunction==0){
+                std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
+            }  
             emit(ret, nullptr, nullptr, nullptr, 0, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);
@@ -636,6 +640,9 @@ returnstmt:
         }
     | RETURN expr SEMICOLON
         {
+            if(infunction==0){
+                std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
+            }  
             emit(ret, $2, nullptr, nullptr, 0, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);

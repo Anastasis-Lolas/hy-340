@@ -8,10 +8,10 @@
 #include <map>
 #include <vector>
 
+#include "Quads/quad.h"
 #include "Symtable/ScopeList/scopelist.h"
 #include "Symtable/TableEntry/SymbolTableEntry.h"
 #include "Symtable/symtable.h"
-#include "Quads/quad.h"
 
 unsigned int scope = 0;
 unsigned int func_num = 0;
@@ -23,6 +23,7 @@ ScopeList_T scopeList;
 std::vector<int> scopeoffsetstack;
 std::vector<std::string> anonym_funcs;
 std::vector<unsigned> jump_stack;
+std::vector<int> lc_Vstack;
 
 extern unsigned programVarOffset;
 extern unsigned functionLocalOffset;
@@ -70,6 +71,7 @@ void enter_func(int flag, std::string name) {
     }
     // $funcprefix.iaddress = nextquadlabel();
     // unsigned funcStartQuad = nextquadlabel();
+    push_loopcounter();
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
     // logika anti gia yylineno thelei quads ??
@@ -88,6 +90,7 @@ void exit_func(int flag, std::string name, int returnList) {
         name = anonym_funcs.back();
         anonym_funcs.pop_back();
     }
+    pop_loopcounter();
     /*
     std::cout << "exit_" << name << " {" << std::endl;
     print_offset();
@@ -642,7 +645,7 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     make_stmt(result);
 
 
-    if(result && result->breakList && result->contList && result->returnList){
+    if (result && result->breakList && result->contList && result->returnList) {
         result->breakList = mergelist(s1->breakList, s2->breakList);
         result->contList = mergelist(s1->contList, s2->contList);
         result->returnList = mergelist(s1->returnList, s2->returnList);
@@ -652,13 +655,13 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
 
 expr* boolify_expr(expr* e) {
     if (e->type != boolexpr_e) {
-        return e; // Non-boolean, return as-is
+        return e;  // Non-boolean, return as-is
     }
-    
+
     expr* result = newexpr(var_e);
     result->sym = newtemp();
 
-  
+
     unsigned true_quad = nextquad();
     emit(assign, newexpr_bool(true), NULL, result, 0, yylineno);
 
@@ -666,7 +669,7 @@ expr* boolify_expr(expr* e) {
     unsigned jump_after_true = nextquad();
     emit(jump, NULL, NULL, NULL, 0, yylineno);
 
-    //quad for assign false se result
+    // quad for assign false se result
     unsigned false_quad = nextquad();
     emit(assign, newexpr_bool(false), NULL, result, 0, yylineno);
 
@@ -676,8 +679,8 @@ expr* boolify_expr(expr* e) {
     // Backpatch false list assign false
     backpatch(e->falselist, false_quad);
 
-   
-   backpatch({(int)jump_after_true}, nextquad());
+
+    backpatch({(int)jump_after_true}, nextquad());
 
 
     return result;
@@ -692,7 +695,8 @@ expr* to_boolexpr(expr* e) {
     result->sym = newtemp();
 
     unsigned true_jump = nextquad();
-    emit(if_eq, e, newexpr_bool(true), NULL, 0, yylineno);  // if e == true goto _
+    emit(if_eq, e, newexpr_bool(true), NULL, 0,
+         yylineno);  // if e == true goto _
     unsigned false_jump = nextquad();
     emit(jump, NULL, NULL, NULL, 0, yylineno);  // unconditional jump
 

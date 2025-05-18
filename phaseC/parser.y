@@ -125,7 +125,7 @@ stmt_list : stmt_list stmt {
                              $$ = stmt_list_handler($1,$2);
                              DEBUG_REDUCE("stmt -> expr ;"); 
                            }
-            | stmt {$$ = $1; $$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt list  -> empty ;"); }
+            | {$$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt list  -> empty ;"); }
           ;
 
 stmt:

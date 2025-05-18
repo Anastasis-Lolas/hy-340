@@ -23,8 +23,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -152,7 +152,7 @@ stmt:
                             make_stmt($$); 
                             DEBUG_REDUCE("stmt -> funcdef"); 
                           }
-    | SEMICOLON           {DEBUG_REDUCE("stmt -> ;"); }
+    | SEMICOLON           {$$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt -> ;"); }
     ;
 
 

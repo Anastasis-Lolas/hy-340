@@ -74,7 +74,7 @@ std::vector<void *>     args;
 %token UNDEFINED
 
 %type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt loopstmt Continue Break
-%type <exprVal> member assignexpr term primary 
+%type <exprVal> member assignexpr term primary indexed
 %type <exprVal> expr call const elist elist_tail
 %type <exprVal> lvalue
 %type <stringValue> IDENT
@@ -85,7 +85,6 @@ std::vector<void *>     args;
 %type<callVal> callsuffix normcall methodcall
 %type <intValue> whilestart whilecond
 %type<s> program
-
 
 %right ASSIGN
 
@@ -430,18 +429,43 @@ elist_tail:
     ;
 
 objectdef:
-      LEFT_BRACKET elist RIGHT_BRACKET         { DEBUG_REDUCE("objectdef -> {elist}"); }
-      | LEFT_BRACKET indexed RIGHT_BRACKET         { DEBUG_REDUCE("objectdef -> indexed "); }
+      LEFT_BRACKET elist RIGHT_BRACKET          {
+                                                    expr* t = newexpr(newtable_e);
+                                                    t->sym = newtemp();
+                                                    emit(tablecreate, t, NULL, NULL, ?, nextquad(), yylineno);
+                                                    for (int i = 0; $elist; $elist = $elist->next)
+                                                        emit(tablesetelem, t, newexpr_constnum(i++), $$, nextquad(), yylineno);
+                                                    $$ = t;
+                                                    DEBUG_REDUCE("objectdef -> {elist}"); 
+                                                }
+
+      | LEFT_BRACKET indexed RIGHT_BRACKET      { 
+                                                    expr* t = newexpr(newtable_e);
+                                                    t->sym = newtemp();
+                                                    emit(tablecreate, t, NULL, NULL, nextquad(), yylineno);
+                                                    while($2){
+                                                        emit(tablesetelem, t, $2->index, $2, nextquad(), yylineno);
+                                                        $2 = $2->next;
+                                                    }
+                                                    $$= t;
+                                                    DEBUG_REDUCE("objectdef -> indexed ");  
+                                                }
     ;
 
 indexed:
-      indexedelem                           {  DEBUG_REDUCE("indexed -> indexedelem"); }
-    | indexed COMMA indexedelem            {  DEBUG_REDUCE("indexed -> indexed , indexedelem"); }
+      indexedelem                          {$$ = $1;  DEBUG_REDUCE("indexed -> indexedelem"); }
+    | indexed COMMA indexedelem            {
+                                                    while($1->next){  
+                                                        $1 = $1->next;
+                                                    }        
+                                                    $1->next = $3;   
+                                                    DEBUG_REDUCE("indexed -> indexed , indexedelem"); 
+                                            }
     ;
 
 indexedelem:
       LEFT_BRACE expr COLON expr RIGHT_BRACE
-                                           { DEBUG_REDUCE("indexedelem -> [expr : expr]"); }
+                                           {$4->index = $2; $$ = $4; DEBUG_REDUCE("indexedelem -> [expr : expr]"); }
     ;
 
 block:

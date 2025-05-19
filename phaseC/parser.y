@@ -417,11 +417,11 @@ methodcall:
 
 elist:
       /* empty */                           { $$ = nullptr; }
-    | expr elist_tail                       { if ($1) { $1->next = $2; $$ = $1; } else { $$ = $2; } }
+    | expr elist_tail                       {  $1->next = $2; $$ = $1;    }
     ;
 
 elist_tail:
-      COMMA expr elist_tail                 { if ($2) { $2->next = $3; $$ = $2; } else { $$ = $3; } }
+      COMMA expr elist_tail                 { $2->next = $3; $$ = $2;    }
     | /* empty */                           { $$ = nullptr; }
     ;
 

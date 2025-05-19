@@ -416,17 +416,13 @@ methodcall:
     ;
 
 elist:
-      /* empty */                           {$$ = nullptr; DEBUG_REDUCE("elist -> empty"); }
-    | expr elist_tail                       {$1->next = $2; $$ = $1; DEBUG_REDUCE("elist -> expr"); }
+      /* empty */                           { $$ = nullptr; }
+    | expr elist_tail                       { if ($1) { $1->next = $2; $$ = $1; } else { $$ = $2; } }
     ;
+
 elist_tail:
-      COMMA expr elist_tail {
-          $2->next = $3;
-          $$ = $2;
-      }
-    | /* empty */ {
-          $$ = nullptr;
-      }
+      COMMA expr elist_tail                 { if ($2) { $2->next = $3; $$ = $2; } else { $$ = $3; } }
+    | /* empty */                           { $$ = nullptr; }
     ;
 
 objectdef:
@@ -558,41 +554,49 @@ whilestmt:
     
 
 N : {
+
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
     emit(jump,NULL,NULL,0,-1,yylineno);
+
 }
 ;
 
 M : {
+
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
+
 }
 ;
 
 forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
 
+    $$ = new forloop_t();
     make_loop_t($$);
-
     $$->test = $5->numConst;
     $$->enter = nextquad();
-
-    emit(if_eq,$6,newexpr_bool('1'),0,-1,yylineno);
+    emit(if_eq,$6,newexpr_bool(1),0,-1,yylineno);
+    
 
 }
 ;
 
-forstmt: forprefix N elist RIGHT_PARENTHESIS N stmt N {
+forstmt: forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
+     
+    patchlabel($1->enter,(int)$5->numConst+1); //true jump 
+     
+    patchlabel((int)$2->numConst,nextquad()); //false jump 
 
-    patchlabel($1->enter,(int)$5->numConst+1);
-    patchlabel((int)$2->numConst,nextquad());
-    patchlabel((int)$5->numConst,$1->test);
-    patchlabel((int)$7->numConst,(int)$2->numConst+1);
-
+    patchlabel((int)$5->numConst,$1->test); // loop jump
+ 
+    patchlabel((int)$7->numConst,(int)$2->numConst+1); //closure jump
+    
     make_stmt($6);
-
+     
     patchlist($6->breakList,nextquad());
     patchlist($6->contList,(int)$2->numConst + 1);
+    
 
 }
 ;

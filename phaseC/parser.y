@@ -74,7 +74,7 @@ std::vector<void *>     args;
 %token UNDEFINED
 
 %type <s> stmt stmt_list returnstmt block forstmt whilestmt ifstmt loopstmt Continue Break
-%type <exprVal> member assignexpr term primary indexed
+%type <exprVal> member assignexpr term primary indexed indexedelem objectdef
 %type <exprVal> expr call const elist elist_tail
 %type <exprVal> lvalue
 %type <stringValue> IDENT
@@ -428,7 +428,7 @@ objectdef:
       LEFT_BRACKET elist RIGHT_BRACKET          {
                                                     expr* t = newexpr(newtable_e);
                                                     t->sym = newtemp();
-                                                    emit(tablecreate, t, NULL, NULL, ?, nextquad(), yylineno);
+                                                    emit(tablecreate, t, NULL, NULL, nextquad(), yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
                                                         emit(tablesetelem, t, newexpr_constnum(i++), $$, nextquad(), yylineno);
                                                     $$ = t;

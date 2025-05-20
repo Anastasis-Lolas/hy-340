@@ -281,28 +281,24 @@ expr:
                                                 emit(if_noteq, $1, $3, NULL, 0, yylineno);
                                                 emit(jump, NULL, NULL, NULL, 0, yylineno); }
 
-    | expr AND M expr                           { 
+    | expr AND {$1 = to_boolexpr($1) ; } M expr                           { 
                                                     DEBUG_REDUCE("expr -> expr and expr");
-                                                   
-                                                    $1 = to_boolexpr($1);  
-                                                    $4 = to_boolexpr($4);  
-                                                    backpatch($1->truelist, (unsigned)($3->numConst)); 
-
-                                                   
-
+                                              
+                                                    $5 = to_boolexpr($5);  
+                                                    backpatch($1->truelist, (unsigned)($4->numConst)); 
                                                     $$ = newexpr(boolexpr_e);
-                                                    $$->truelist = $4->truelist;
-                                                    $$->falselist = merge($1->falselist, $4->falselist);
+                                                    $$->truelist = $5->truelist;
+                                                    $$->falselist = merge($1->falselist, $5->falselist);
 }
 
-    | expr OR M expr                            {
+    | expr OR{$1 = to_boolexpr($1) ; }   M expr                            {
                                                    DEBUG_REDUCE("expr -> expr or expr");
-                                                    $1 = to_boolexpr($1);
-                                                    $4 = to_boolexpr($4);
-                                                    backpatch($1->falselist, (unsigned)$3->numConst);
+                                                   
+                                                    $5 = to_boolexpr($5);
+                                                    backpatch($1->falselist, (unsigned)$4->numConst);
                                                     $$ = newexpr(boolexpr_e);
-                                                    $$->truelist = merge($1->truelist, $4->truelist);
-                                                    $$->falselist = $4->falselist;
+                                                    $$->truelist = merge($1->truelist, $5->truelist);
+                                                    $$->falselist = $5->falselist;
 } 
     | term                                    {  $$ = $1; DEBUG_REDUCE("expr -> term");  }
     ;

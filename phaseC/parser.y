@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -136,7 +136,7 @@ stmt:
                             $$ = new stmt_t();
                             make_stmt($$);
                           
-                            
+                             resettemp();
       
                             DEBUG_REDUCE("stmt -> expr ;"); 
                           }
@@ -152,50 +152,97 @@ stmt:
                             make_stmt($$); 
                             DEBUG_REDUCE("stmt -> funcdef"); 
                           }
-    | SEMICOLON           {$$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt -> ;"); }
+    | SEMICOLON           {$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> ;"); }
     ;
 
 
 
 
 expr:
-      assignexpr                              { $$ = $1; DEBUG_REDUCE("expr -> assignexpr"); }
-    | expr PLUS expr                          { DEBUG_REDUCE("expr -> expr + expr");  $$ = emit_arith_op(add, $1, $3); }
-    | expr MINUS expr                         { DEBUG_REDUCE("expr -> expr - expr");   $$ = emit_arith_op(sub, $1, $3); }
-    | expr MULT expr                          { DEBUG_REDUCE("expr -> expr * expr");   $$ = emit_arith_op(mul, $1, $3); }
-    | expr DIV expr                           { DEBUG_REDUCE("expr -> expr / expr");   $$ = emit_arith_op(divv, $1, $3); }
-    | expr MOD expr                           { DEBUG_REDUCE("expr -> expr % expr");   $$ = emit_arith_op(mod, $1, $3); }
-    | expr GREATER expr                       { DEBUG_REDUCE("expr -> expr > expr");   
-                                                
-                                                $$ = newexpr(boolexpr_e);
-                                                $$->sym = newtemp();
-                                                $$->truelist.push_back(nextquad());
-                                                $$->falselist.push_back(nextquad() + 1);
-                                                emit(if_greater, $1, $3, NULL, 0, yylineno);
-                                                emit(jump, NULL, NULL, NULL, 0, yylineno);
-}
-		                                                                                                    
-    | expr GREATER_EQUAL expr                 { DEBUG_REDUCE("expr -> expr >= expr");   
-                                                $$ = newexpr(boolexpr_e);
-                                                $$->sym = newtemp();
-                                                $$->truelist.push_back(nextquad());
-                                                $$->falselist.push_back(nextquad() + 1);
-                                                emit(if_greatereq, $1, $3, NULL, 0, yylineno);
-                                                emit(jump, NULL, NULL, NULL, 0, yylineno); }
+    assignexpr                              { $$ = $1; DEBUG_REDUCE("expr -> assignexpr"); }
+    
+    | expr PLUS expr
+                                            {
+                                            if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                std::cout << "Illegal use of '+' with non-numeric expression at line " << yylineno << std::endl;                                        
+                                            } else {
+                                                DEBUG_REDUCE("expr -> expr + expr");
+                                                $$ = emit_arith_op(add, $1, $3);
+                                                }
+                                            }
+    | expr MINUS expr
+                                            {
+                                            if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                $$ = newexpr(nil_e);
+                                                std::cout << "Illegal use of '-' with non-numeric expression at line " << yylineno << std::endl;   
+                                                } else {
+                                                    DEBUG_REDUCE("expr -> expr - expr");
+                                                    $$ = emit_arith_op(sub, $1, $3);
+                                                }
+                                            }
+    | expr MULT expr
+                                            {
+                                            if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                std::cout << "Illegal use of '*' with non-numeric expression at line " << yylineno << std::endl;
+                                            } else {
+                                                DEBUG_REDUCE("expr -> expr * expr");
+                                                $$ = emit_arith_op(mul, $1, $3);
+        }
+      }
 
-    | expr LESS expr                          { DEBUG_REDUCE("expr -> expr < expr");   
-		                                          
+    | expr DIV expr
+                                            {
+                                            if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {                                                   
+                                                std::cout << "Illegal use of '/' with non-numeric expression at line " << yylineno << std::endl;
+                                            } else {
+                                                DEBUG_REDUCE("expr -> expr / expr");
+                                                $$ = emit_arith_op(divv, $1, $3);
+                                                }
+                                            }
+
+    | expr MOD expr
+                                            {
+                                            if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                std::cout << "Illegal use of '%' with non-numeric expression at line " << yylineno << std::endl;
+                                            } else {
+                                                DEBUG_REDUCE("expr -> expr % expr");
+                                                $$ = emit_arith_op(mod, $1, $3);
+                                                }
+                                            }
+    | expr GREATER expr {
+                                                DEBUG_REDUCE("expr -> expr > expr");
+       
+                                                if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                    std::cout << "Illegal use of '>' with non-numeric expression at line " << yylineno << std::endl;
+                                                   
+                                                }
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->sym = newtemp();
-
                                                     $$->truelist.push_back(nextquad());
                                                     $$->falselist.push_back(nextquad() + 1);
-
-                                                    emit(if_less, $1, $3, NULL, 0, yylineno);
+                                                    emit(if_greater, $1, $3, NULL, 0, yylineno);
                                                     emit(jump, NULL, NULL, NULL, 0, yylineno);
+      }
+		                                                                                                    
+    | expr GREATER_EQUAL expr {
+                                                DEBUG_REDUCE("expr -> expr >= expr");
+
+                                                if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                    std::cout << "Illegal use of '>=' with non-numeric expression at line " << yylineno << std::endl;
                                                     
-                                                }
-    | expr LESS_EQUAL expr                    { DEBUG_REDUCE("expr -> expr <= expr");  
+                                                } 
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->sym = newtemp();
+                                                    $$->truelist.push_back(nextquad());
+                                                    $$->falselist.push_back(nextquad() + 1);
+                                                    emit(if_greatereq, $1, $3, NULL, 0, yylineno);
+                                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
+                                                                                    }                                
+    | expr LESS_EQUAL expr                      { DEBUG_REDUCE("expr -> expr <= expr");
+                                                if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                    std::cout << " Illegal use of '<' with non-numeric expression at line " << yylineno << std::endl;
+                                
+                                                }  
                                                 $$ = newexpr(boolexpr_e);
                                                 $$->sym = newtemp();
                                                 $$->truelist.push_back(nextquad());
@@ -247,83 +294,87 @@ expr:
 
 
 term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        { $$ = $2; 
-        // Pass the expr unchanged
-        DEBUG_REDUCE("term -> (expr)"); }
+                                                    { $$ = $2; 
+                                                    // Pass the expr unchanged
+                                                    DEBUG_REDUCE("term -> (expr)"); }
     | MINUS expr%prec UMINUS {
-        DEBUG_REDUCE("term -> -expr");
-      
-        $$ = newexpr(arithexpr_e);
-        $$->sym = newtemp();
-        emit(uminus, newexpr_constnum(0), $2, $$, 0, yylineno);}
+                                                    DEBUG_REDUCE("term -> -expr");
+                                                    check_arith($2, "unary minus");
+                                                    $$ = newexpr(arithexpr_e);
+                                                    $$->sym = newtemp();
+                                                    emit(uminus,  $2,NULL, $$, 0, yylineno);}
 
     | NOT expr
-        { 
-        DEBUG_REDUCE("term -> not expr");
-        expr* b = to_boolexpr($2);
-        $$ = newexpr(boolexpr_e);
-        $$->truelist = b->falselist;   
-        $$->falselist = b->truelist;
+                                                    { 
+                                                    DEBUG_REDUCE("term -> not expr");
+                                                    expr* b = to_boolexpr($2);
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->truelist = b->falselist;   
+                                                    $$->falselist = b->truelist;
     }
     | PLUS_PLUS lvalue
-        {temrs_error($2,"++");
-        if($2->type == tableitem_e) {
-													$$ = emit_iftableitem($2);
-													emit(add, $$, newexpr_constnum(1), $$, nextquad(), yylineno);
-													emit(add, $2, $2->index, $$, nextquad(), yylineno);
-												}
-									else {
-													emit(add, $2, newexpr_constnum(1), $2,nextquad(), yylineno);
-													$$ = newexpr(arithexpr_e);
-													$$->sym = newtemp();
-													emit(assign, $$, $2, NULL, nextquad(), yylineno);
-												}
-                                                 DEBUG_REDUCE("term -> ++lvalue"); }
+                                                    {temrs_error($2,"++lvalue");
+                                                    check_arith($2,"++lvalue");
+                                                    if($2->type == tableitem_e) {
+									                    $$ = emit_iftableitem($2);
+									                    emit(add, $$, newexpr_constnum(1), $$, 0 , yylineno);
+									                    emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+												    }
+									                else {
+													    emit(add, $2, newexpr_constnum(1), $2,0, yylineno);
+													    $$ = newexpr(arithexpr_e);
+													    $$->sym = newtemp();
+													    emit(assign, $$, $2, NULL,0, yylineno);
+												    }
+                                                    DEBUG_REDUCE("term -> ++lvalue"); }
     | lvalue PLUS_PLUS
-        {temrs_error($1,"++"); 
-     
-        $$ = newexpr(arithexpr_e);
-        $$->sym = newtemp();
-        if ($1->type == tableitem_e) {
-            $$ = emit_iftableitem($1); // Get current value
-            expr* newval = newexpr(arithexpr_e);
-            newval->sym = newtemp();
-            emit(add, $$, newexpr_constnum(1), newval, 0, yylineno); // Compute new value
-            emit(tablesetelem, $1, $1->index, newval, 0, yylineno); // Update table
-        } else {
-            emit(assign, $1, NULL, $$, 0, yylineno); // Copy current value
-            emit(add, $1, newexpr_constnum(1), $1, 0, yylineno); // Update lvalue
-        }
-        DEBUG_REDUCE("term -> lvalue++"); }
+                                                    {temrs_error($1,"++"); 
+                                                    check_arith($1,"lvalue++");
+                                                    $$ = newexpr(var_e);
+                                                    $$->sym = newtemp();
+                                                    if ($1->type == tableitem_e) {
+                                                        expr* val = emit_iftableitem($1);
+
+                                                        emit(assign, val, NULL, $$,0, yylineno);
+                                                        emit(add, val, newexpr_constnum(1), val,0, yylineno);
+                                                        emit(tablesetelem, $1, $1->index, val,0, yylineno);
+                                                    } else {
+                                                        emit(assign, $1, NULL, $$, 0, yylineno); // Copy current value
+                                                        emit(add, $1, newexpr_constnum(1), $1, 0, yylineno); // Update lvalue
+                                                    }
+                                                    DEBUG_REDUCE("term -> lvalue++"); }
+
+
     | MINUS_MINUS lvalue
-        {temrs_error($2,"--"); 
-        $$ = newexpr(arithexpr_e);
-        $$->sym = newtemp();
-        if ($2->type == tableitem_e) {
-            expr* val = emit_iftableitem($2);
-            emit(sub, val, newexpr_constnum(1), $$, 0, yylineno);
-            emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
-        } else {
-            emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
-            emit(assign, $2, NULL, $$, 0, yylineno);
-        }
-        DEBUG_REDUCE("term -> --lvalue"); }
+                                                    {temrs_error($2,"--"); 
+
+                                                    if ($2->type == tableitem_e) {
+                                                        expr* val = emit_iftableitem($2);
+                                                        emit(sub, val, newexpr_constnum(1), $$, 0, yylineno);
+                                                        emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+                                                    } else {
+                                                        emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
+                                                        $$ = newexpr(arithexpr_e);
+													    $$->sym = newtemp();
+                                                        emit(assign, $2, NULL, $$, 0, yylineno);
+                                                    }
+                                                    DEBUG_REDUCE("term -> --lvalue"); }
     | lvalue MINUS_MINUS
-        {temrs_error($1,"--"); 
-        
-        $$ = newexpr(arithexpr_e);
-        $$->sym = newtemp();
-        if ($1->type == tableitem_e) {
-            $$ = emit_iftableitem($1);
-            expr* newval = newexpr(arithexpr_e);
-            newval->sym = newtemp();
-            emit(sub, $$, newexpr_constnum(1), newval, 0, yylineno);
-            emit(tablesetelem, $1, $1->index, newval, 0, yylineno);
-        } else {
-            emit(assign, $1, NULL, $$, 0, yylineno);
-            emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
-        }
-        DEBUG_REDUCE("term -> lvalue--"); }
+                                                    {temrs_error($1,"--"); 
+                                                    check_arith($1, "lvalue --");
+                                                    $$ = newexpr(arithexpr_e);
+                                                    $$->sym = newtemp();
+                                                    if ($1->type == tableitem_e) {
+                                                        $$ = emit_iftableitem($1);
+                                                        expr* newval = newexpr(arithexpr_e);
+                                                        newval->sym = newtemp();
+                                                        emit(sub, $$, newexpr_constnum(1), newval, 0, yylineno);
+                                                        emit(tablesetelem, $1, $1->index, newval, 0, yylineno);
+                                                    } else {
+                                                        emit(assign, $1, NULL, $$, 0, yylineno);
+                                                        emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+                                                    }
+                                                    DEBUG_REDUCE("term -> lvalue--"); }
     | primary
         { DEBUG_REDUCE("term -> primary"); 
         $$ = $1;}

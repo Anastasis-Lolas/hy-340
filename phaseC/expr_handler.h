@@ -72,7 +72,8 @@ expr* boolify_expr(expr* e);
 
 
 //
-
+void check_arith(expr* e, std::string op);
+bool check_arithmetic_expr (expr* e) ;
 call_t* methodcall_handler(expr* e, std::string name);
 call_t* normcall_handler(expr* e);
 expr* anonym_call(SymbolTableEntry_T entry, expr* args);

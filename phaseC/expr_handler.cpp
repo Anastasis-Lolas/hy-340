@@ -751,13 +751,30 @@ call_t* methodcall_handler(expr* e, std::string name) {
     temp->name = name;
     return temp;
 }
-void check_arith(expr* e) {
+void check_arith(expr* e , std::string op) {
     if (e->type == constbool_e || e->type == conststring_e ||
         e->type == nil_e || e->type == newtable_e || e->type == programfunc_e ||
         e->type == libraryfunc_e || e->type == boolexpr_e) {
-        printf("Illegal expr used!\n");
+        printf("Illegal expr used in %s\n", op.c_str());
     }
+
 }
+
+bool check_arithmetic_expr (expr* e) {
+	assert(e);
+    if (e->type == constbool_e ||
+        e->type == conststring_e ||
+        e->type == nil_e ||
+        e->type == newtable_e ||
+        e->type == programfunc_e ||
+        e->type == libraryfunc_e ||
+        e->type == boolexpr_e ) {
+        std::cout <<  "ERROR Illegal expr  used in line " << yylineno << std::endl;
+        return false;
+    }
+	return true;
+}
+
 // ignore for now=================================================
 expr* normal_call_handler(std::vector<expr*> args) {             //|
     for (auto it = args.rbegin(); it != args.rend(); ++it) {     //|

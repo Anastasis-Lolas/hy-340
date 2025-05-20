@@ -88,9 +88,10 @@ std::vector<void *>     args;
 
 %right ASSIGN
 
+%left OR 
+
 %left AND
 
-%left OR 
 
 %nonassoc NOT_EQUALS EQUAL
 

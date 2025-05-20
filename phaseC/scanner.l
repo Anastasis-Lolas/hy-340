@@ -3,6 +3,7 @@
 #include <vector>
 #include "parser.hpp"
 #include <cstdio>
+#include <memory>
 
 int mylineno = 1;  // keep track of lines
 
@@ -230,6 +231,7 @@ WHITESPACE          [ \t\n\r\v]+
                                             }
                                         }
                                         ins_token(tokens_list, yylineno, mylineno++, processedStr, "", "STRING", "string");
+                                        yylval.stringValue = new std::string(processedStr);
                                         return STRING;
                                     }
 

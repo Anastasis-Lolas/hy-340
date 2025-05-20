@@ -43,7 +43,7 @@ expr* newexpr(expr_t t);
 expr* newexpr_constnum(double i);
 expr* newexpr_conststring(std::string str);
 expr* newexpr_bool(bool b);
-
+expr* newexpr_nill(void);
 
 void resettemp();
 std::string newtempname();
@@ -73,10 +73,14 @@ expr* boolify_expr(expr* e);
 
 //
 void check_arith(expr* e, std::string op);
-bool check_arithmetic_expr (expr* e) ;
+bool check_arithmetic_expr(expr* e);
 call_t* methodcall_handler(expr* e, std::string name);
 call_t* normcall_handler(expr* e);
 expr* anonym_call(SymbolTableEntry_T entry, expr* args);
 expr* call_handler(expr* e, expr* elist);
+
+// debug
+void print_expr(expr* e);
+void print_expr_list(expr* head);
 
 #endif

@@ -31,6 +31,7 @@ extern unsigned functionLocalOffset;
 extern unsigned formalArgOffset;
 extern unsigned scopeSpaceCounter;
 
+int debug = 0;
 
 void normal_call(SymbolTableEntry_T entry) {
     std::string name;
@@ -579,6 +580,10 @@ expr* newexpr_bool(bool b) {
     return e;
 }
 
+expr* newexpr_nill() {
+    expr* e = newexpr(nil_e);
+    return e;
+}
 
 expr* emit_iftableitem(expr* e) {
     if (e->type != tableitem_e) {
@@ -594,7 +599,7 @@ expr* emit_iftableitem(expr* e) {
 
 expr* newexpr_constnum(double i) {
     expr* e = newexpr(constnum_e);
-
+    e->sym = NULL;
     e->numConst = i;
 
     return e;
@@ -751,28 +756,24 @@ call_t* methodcall_handler(expr* e, std::string name) {
     temp->name = name;
     return temp;
 }
-void check_arith(expr* e , std::string op) {
+void check_arith(expr* e, std::string op) {
     if (e->type == constbool_e || e->type == conststring_e ||
         e->type == nil_e || e->type == newtable_e || e->type == programfunc_e ||
         e->type == libraryfunc_e || e->type == boolexpr_e) {
         printf("Illegal expr used in %s\n", op.c_str());
     }
-
 }
 
-bool check_arithmetic_expr (expr* e) {
-	assert(e);
-    if (e->type == constbool_e ||
-        e->type == conststring_e ||
-        e->type == nil_e ||
-        e->type == newtable_e ||
-        e->type == programfunc_e ||
-        e->type == libraryfunc_e ||
-        e->type == boolexpr_e ) {
-        std::cout <<  "ERROR Illegal expr  used in line " << yylineno << std::endl;
+bool check_arithmetic_expr(expr* e) {
+    assert(e);
+    if (e->type == constbool_e || e->type == conststring_e ||
+        e->type == nil_e || e->type == newtable_e || e->type == programfunc_e ||
+        e->type == libraryfunc_e || e->type == boolexpr_e) {
+        std::cout << "ERROR Illegal expr  used in line " << yylineno
+                  << std::endl;
         return false;
     }
-	return true;
+    return true;
 }
 
 // ignore for now=================================================
@@ -783,5 +784,109 @@ expr* normal_call_handler(std::vector<expr*> args) {             //|
     return nullptr;  //|
 }  //|
 //=================================================================
+
+// debug
+void print_expr_list(expr* head) {
+    std::cout << "Debug print#" << debug++ << std::endl;
+    int i = 0;
+    while (head) {
+        std::cout << "[" << i++ << "] ";
+        print_expr(head);
+        head = head->next;
+    }
+}
+
+void print_expr(expr* e) {
+    if (!e) {
+        std::cout << "expr: null\n";
+        return;
+    }
+
+    std::cout << "expr: {\n";
+
+    std::cout << "  type: ";
+    switch (e->type) {
+        case var_e:
+            std::cout << "var_e";
+            break;
+        case tableitem_e:
+            std::cout << "tableitem_e";
+            break;
+        case programfunc_e:
+            std::cout << "programfunc_e";
+            break;
+        case libraryfunc_e:
+            std::cout << "libraryfunc_e";
+            break;
+        case arithexpr_e:
+            std::cout << "arithexpr_e";
+            break;
+        case boolexpr_e:
+            std::cout << "boolexpr_e";
+            break;
+        case assignexpr_e:
+            std::cout << "assignexpr_e";
+            break;
+        case newtable_e:
+            std::cout << "newtable_e";
+            break;
+        case constnum_e:
+            std::cout << "constnum_e";
+            break;
+        case constbool_e:
+            std::cout << "constbool_e";
+            break;
+        case conststring_e:
+            std::cout << "conststring_e";
+            break;
+        case nil_e:
+            std::cout << "nil_e";
+            break;
+        default:
+            std::cout << "unknown";
+            break;
+    }
+    std::cout << "\n";
+
+    std::cout << "  sym: ";
+    if (e->sym) {
+        if (e->sym->type == USERFUNC || e->sym->type == LIBFUNC) {
+            std::cout << e->sym->value.funcVal->name;
+        } else if (e->sym->value.varVal) {
+            std::cout << e->sym->value.varVal->name;
+        } else {
+            std::cout << "(unnamed)";
+        }
+        std::cout << "\n";
+    } else {
+        std::cout << "null\n";
+    }
+
+    switch (e->type) {
+        case constnum_e:
+            std::cout << "  numConst: " << e->numConst << "\n";
+            break;
+        case conststring_e:
+            std::cout << "  strConst: \"" << e->strConst << "\"\n";
+            break;
+        case constbool_e:
+            std::cout << "  boolConst: " << (e->boolConst ? "true" : "false")
+                      << "\n";
+            break;
+        case tableitem_e:
+            std::cout << "  table index:\n";
+            print_expr(e->index);
+            break;
+        default:
+            break;
+    }
+
+    if (e->next) {
+        std::cout << "  next →\n";
+        print_expr(e->next);
+    }
+
+    std::cout << "}\n";
+}
 
 #endif

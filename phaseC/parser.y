@@ -480,13 +480,13 @@ methodcall:
     ;
 
 elist:
-      /* empty */                           { $$ = nullptr; }
-    | expr elist_tail                       {  $1->next = $2; $$ = $1;    }
+      /* empty */                           { $$ = nullptr;           }
+    | expr elist_tail                       { $1->next = $2; $$ = $1; }
     ;
 
 elist_tail:
-      COMMA expr elist_tail                 { $2->next = $3; $$ = $2;    }
-    | /* empty */                           { $$ = nullptr; }
+      COMMA expr elist_tail                 { $2->next = $3; $$ = $2;   }
+    | /* empty */                           { $$ = nullptr;             }
     ;
 
 objectdef:
@@ -495,7 +495,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate, t, NULL, NULL, nextquad(), yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem, t, newexpr_constnum(i++), $$, nextquad(), yylineno);
+                                                        emit(tablesetelem, t, newexpr_constnum(i++), $elist, nextquad(), yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -550,10 +550,10 @@ funcdef:
 const:
       INTEGER     { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> INTEGER"); }
     | REALCONST   { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> REALCONST"); }
-    | STRING      { $$ = newexpr_conststring(*$1); DEBUG_REDUCE("const -> STRING"); }
-    | NIL         { $$ = newexpr(nil_e); DEBUG_REDUCE("const -> NIL"); }
-    | TRUE        { $$ = newexpr(constbool_e); $$->boolConst = true; DEBUG_REDUCE("const -> TRUE"); }
-    | FALSE       { $$ = newexpr(constbool_e); $$->boolConst = false; DEBUG_REDUCE("const -> FALSE"); }
+    | STRING      {$$ = newexpr_conststring(*$1); delete $1; DEBUG_REDUCE("const -> STRING"); }
+    | NIL         { $$ = newexpr_nill(); DEBUG_REDUCE("const -> NIL"); }
+    | TRUE        { $$ = newexpr_bool(true); DEBUG_REDUCE("const -> TRUE"); }
+    | FALSE       { $$ = newexpr_bool(false); DEBUG_REDUCE("const -> FALSE"); }
     ;
 
 idlist:

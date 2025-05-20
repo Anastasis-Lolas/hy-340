@@ -88,8 +88,10 @@ std::vector<void *>     args;
 
 %right ASSIGN
 
-%left OR 
 %left AND
+
+%left OR 
+
 %nonassoc NOT_EQUALS EQUAL
 
 %nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
@@ -223,7 +225,20 @@ expr:
                                                     emit(if_greater, $1, $3, NULL, 0, yylineno);
                                                     emit(jump, NULL, NULL, NULL, 0, yylineno);
       }
-		                                                                                                    
+	| expr LESS expr {
+                                                DEBUG_REDUCE("expr -> expr < expr");
+       
+                                                if (!check_arithmetic_expr($1) || !check_arithmetic_expr($3)) {
+                                                    std::cout << "Illegal use of '<' with non-numeric expression at line " << yylineno << std::endl;
+                                                   
+                                                }
+                                                    $$ = newexpr(boolexpr_e);
+                                                    $$->sym = newtemp();
+                                                    $$->truelist.push_back(nextquad());
+                                                    $$->falselist.push_back(nextquad() + 1);
+                                                    emit(if_less, $1, $3, NULL, 0, yylineno);
+                                                    emit(jump, NULL, NULL, NULL, 0, yylineno);
+      }                                                                                                  
     | expr GREATER_EQUAL expr {
                                                 DEBUG_REDUCE("expr -> expr >= expr");
 
@@ -302,8 +317,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "unary minus");
                                                     $$ = newexpr(arithexpr_e);
                                                     $$->sym = newtemp();
-                                                    emit(uminus,  $2,NULL, $$, 0, yylineno);}
-
+                                                   emit(uminus, newexpr_constnum(0), $2, $$, 0, yylineno);}
     | NOT expr
                                                     { 
                                                     DEBUG_REDUCE("term -> not expr");
@@ -402,7 +416,7 @@ assignexpr:
             emit(assign, rval, NULL, $1, 0, yylineno);
 
          
-            expr* temp = newexpr(var_e);
+            expr* temp = newexpr(assignexpr_e);
             temp->sym = newtemp();
             emit(assign, $1, NULL, temp, 0, yylineno); // temp = lvalue 
             $$ = temp;

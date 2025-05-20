@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -607,7 +607,7 @@ loopstart :                        {++loopcounter;}
           ;
 loopend   :                        {--loopcounter;}
           ;
-loopstmt  : loopstart stmt loopend {$$ = $2;}
+loopstmt  : loopstart stmt loopend {$2 = new stmt_t(); $$ = $2;}
           ;
 
 whilestart : WHILE {
@@ -680,7 +680,8 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
     patchlabel((int)$5->numConst,$1->test); // loop jump
  
     patchlabel((int)$7->numConst,(int)$2->numConst+1); //closure jump
-    
+
+
     make_stmt($6);
      
     patchlist($6->breakList,nextquad());

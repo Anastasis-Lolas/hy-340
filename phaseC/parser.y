@@ -374,7 +374,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     if ($1->type == tableitem_e) {
                                                         
                                                         expr* val = emit_iftableitem($1);
-                                                        emit(assign, val, NULL, $$,-10, yylineno);
+                                                        emit(assign, val, NULL, $$, -1, yylineno);
                                                         emit(sub, val , newexpr_constnum(1), val, -1, yylineno);
                                                         emit(tablesetelem, $1, $1->index, val, -1, yylineno);
                                                     } else {
@@ -562,8 +562,11 @@ idlist:
 ;
 
 ifprefix 
-: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-    $3 = boolify_expr(to_boolexpr($3));  // Evaluate condition into a temporary
+: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
+{
+    if($3->type == boolexpr_e) {
+       $3 = boolify_expr($3);  // Evaluate condition into a temporary
+    }
     emit(if_eq, $3, newexpr_bool(true), NULL, nextquad() + 2, yylineno);  // Jump to body if true
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
@@ -583,7 +586,7 @@ elseprefix
 
 ifstmt 
 : ifprefix stmt {
-
+        $$ = $2;
        patchlabel((int)$1->numConst, nextquad());
      
   }

@@ -24,6 +24,10 @@ void patchlabel(int quadNo, unsigned label) {
         std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
         return;
     }
+    std::cout << "\033[1;32mChanging label from quad: " << quadNo << " in line "
+              << quad_table[quadNo]->line << " from "
+              << quad_table[quadNo]->label << " to " << label << "\033[0m\n";
+    quad_table[quadNo]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label,
@@ -34,6 +38,12 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label,
         std::cerr << "Error: Memory allocation failed for quad." << std::endl;
         return;
     }
+    if (op == jump)
+        std::cout << "\033[1;31mEmitting quad #" << currQuad << ": "
+                  << iopcode_to_string(op) << " " << expr_to_string(arg1)
+                  << ", " << expr_to_string(arg2) << ", "
+                  << expr_to_string(result) << ", " << label << ", " << line
+                  << "\033[0m\n";
     quadd->op = op;
     quadd->arg1 = arg1;
     quadd->arg2 = arg2;
@@ -245,8 +255,12 @@ void print_quads() {
 }
 
 void patchlist(int list, int label) {
+    std::cout << "\033[1;36m|patchlist| " << label << "\033[0m\n";
     while (list) {
         int next = quad_table[list]->label;
+        std::cout << "\033[1;36mChanging label from quad: " << list
+                  << " in line " << quad_table[list]->line << " from "
+                  << quad_table[list]->label << " to " << label << "\033[0m\n";
         quad_table[list]->label = label;
         list = next;
     }
@@ -312,6 +326,7 @@ void pop_loopcounter(void) {
 }
 
 void backpatch(std::vector<int> list, unsigned label) {
+    std::cout << "\033[1;36mbackpatch labels: " << label << "\033[0m\n";
     for (unsigned quadNo : list) {
         patchlabel(quadNo, label);
     }

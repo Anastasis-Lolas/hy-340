@@ -126,7 +126,7 @@ program:
 
 stmt_list : stmt_list stmt {
                              $$ = stmt_list_handler($1,$2);
-                             DEBUG_REDUCE("stmt -> expr ;"); 
+                             DEBUG_REDUCE("stmt_list -> stmt ;"); 
                            }
             | stmt {$$ = $1;DEBUG_REDUCE("stmt list  -> stmt ;"); }
           ;
@@ -134,7 +134,8 @@ stmt_list : stmt_list stmt {
 stmt:
       expr SEMICOLON      {  
                             $$ = new stmt_t(); make_stmt($$);
-                            boolify_expr($1);
+                            if ($1->type == boolexpr_e)
+                                boolify_expr($1);
                             resettemp();
       
                             DEBUG_REDUCE("stmt -> expr ;"); 
@@ -383,8 +384,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     }
                                                     DEBUG_REDUCE("term -> lvalue--"); }
     | primary
-        { DEBUG_REDUCE("term -> primary"); 
-        $$ = $1;}
+        {$$ = $1; DEBUG_REDUCE("term -> primary"); }
     ;
 
 
@@ -474,11 +474,21 @@ methodcall:
 
 elist:
       /* empty */                           { $$ = nullptr;           }
-    | expr elist_tail                       { $1->next = $2; $$ = $1; }
+    | expr elist_tail                       { 
+                                                if($1->type == boolexpr_e) {
+                                                    $1 = boolify_expr($1);
+                                                } 
+                                                $1->next = $2; $$ = $1; 
+                                            }
     ;
 
 elist_tail:
-      COMMA expr elist_tail                 { $2->next = $3; $$ = $2;   }
+      COMMA expr elist_tail                 { 
+                                                if($2->type == boolexpr_e) {
+                                                    $2 = boolify_expr($2);
+                                                } 
+                                                $2->next = $3; $$ = $2;   
+                                            }
     | /* empty */                           { $$ = nullptr;             }
     ;
 

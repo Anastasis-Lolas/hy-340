@@ -263,17 +263,21 @@ expr:
                                                 emit(if_lesseq, $1, $3, NULL, 0, yylineno);
                                                 emit(jump, NULL, NULL, NULL, 0, yylineno); }
 
-    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr"); 
+    | expr EQUAL expr                         { DEBUG_REDUCE("expr -> expr == expr");
+                                                boolify_expr($1);
+                                                boolify_expr($3);
                                                 $$ = newexpr(boolexpr_e);
-                                                $$->sym = newtemp();
+                                                //$$->sym = newtemp();
                                                 $$->truelist.push_back(nextquad());
                                                 $$->falselist.push_back(nextquad() + 1);
                                                 emit(if_eq, $1, $3, NULL, 0, yylineno);
                                                 emit(jump, NULL, NULL, NULL, 0, yylineno); }
 
     | expr NOT_EQUALS expr                    { DEBUG_REDUCE("expr -> expr != expr");  
+                                                boolify_expr($1);
+                                                boolify_expr($3);
                                                 $$ = newexpr(boolexpr_e);
-                                                $$->sym = newtemp();
+                                                //$$->sym = newtemp();
                                                 $$->truelist.push_back(nextquad());
                                                 $$->falselist.push_back(nextquad() + 1);
                                                 emit(if_noteq, $1, $3, NULL, 0, yylineno);
@@ -281,8 +285,7 @@ expr:
 
     | expr AND {$1 = to_boolexpr($1) ; } M expr                           { 
                                                     DEBUG_REDUCE("expr -> expr and expr");
-                                              
-                                                    $5 = to_boolexpr($5);  
+                                                    //$5 = to_boolexpr($5);  
                                                     backpatch($1->truelist, (unsigned)($4->numConst)); 
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->truelist = $5->truelist;
@@ -292,7 +295,7 @@ expr:
     | expr OR{$1 = to_boolexpr($1) ; }   M expr                            {
                                                    DEBUG_REDUCE("expr -> expr or expr");
                                                    
-                                                    $5 = to_boolexpr($5);
+                                                    //$5 = to_boolexpr($5);
                                                     backpatch($1->falselist, (unsigned)$4->numConst);
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->truelist = merge($1->truelist, $5->truelist);

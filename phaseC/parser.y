@@ -150,7 +150,7 @@ stmt:
                             make_stmt($$); 
                             DEBUG_REDUCE("stmt -> funcdef"); 
                           }
-    | SEMICOLON           {$$= NULL; DEBUG_REDUCE("stmt -> ;"); }
+    | SEMICOLON           {$$ = new stmt_t();make_stmt($$); DEBUG_REDUCE("stmt -> ;"); }
     ;
 
 
@@ -655,10 +655,12 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M expr SEMICOLON {
     $$ = new forloop_t();
     make_loop_t($$);
     $$->test = $5->numConst;
+    if ($6->type == boolexpr_e) {
+        $6 = boolify_expr($6);
+    }
     $$->enter = nextquad();
     emit(if_eq,$6,newexpr_bool(1),0,-1,yylineno);
     
-
 }
 ;
 
@@ -672,14 +674,11 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
  
     patchlabel((int)$7->numConst,(int)$2->numConst+1); //closure jump
 
-
-    make_stmt($6);
-     
     patchlist($6->breakList,nextquad());
     patchlist($6->contList,(int)$2->numConst + 1);
-    
-
-}
+    //make_stmt($6);
+    $$ = $6;
+    }
 ;
 
 

@@ -136,10 +136,7 @@ stmt:
                             if ($1->type == boolexpr_e) {
                             $1 = to_boolexpr($1);}
                             
-                            $$ = new stmt_t();
-                            make_stmt($$);
-                          
-                             resettemp();
+                            resettemp();
       
                             DEBUG_REDUCE("stmt -> expr ;"); 
                           }
@@ -147,15 +144,15 @@ stmt:
     | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
     | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
-    | Break               {$$ = $1;$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> break ;"); }
-    | Continue            {$$ = $1;$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> continue ;"); }
+    | Break               {$$ = $1; DEBUG_REDUCE("stmt -> break ;"); }
+    | Continue            {$$ = $1; DEBUG_REDUCE("stmt -> continue ;"); }
     | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
     | funcdef             {
                             $$ = new stmt_t();
                             make_stmt($$); 
                             DEBUG_REDUCE("stmt -> funcdef"); 
                           }
-    | SEMICOLON           {$$ = new stmt_t(); make_stmt($$); DEBUG_REDUCE("stmt -> ;"); }
+    | SEMICOLON           {$$= NULL; DEBUG_REDUCE("stmt -> ;"); }
     ;
 
 
@@ -335,7 +332,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 													    emit(add, $2, newexpr_constnum(1), $2,0, yylineno);
 													    $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
-													    emit(assign, $$, $2, NULL,0, yylineno);
+													    emit(assign, $2, NULL, $$,0, yylineno);
 												    }
                                                     DEBUG_REDUCE("term -> ++lvalue"); }
     | lvalue PLUS_PLUS
@@ -358,10 +355,10 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
     | MINUS_MINUS lvalue
                                                     {temrs_error($2,"--"); 
-
+                                                    check_arith($2, "--lvalue");
                                                     if ($2->type == tableitem_e) {
-                                                        expr* val = emit_iftableitem($2);
-                                                        emit(sub, val, newexpr_constnum(1), $$, 0, yylineno);
+                                                        $$ = emit_iftableitem($2);
+                                                        emit(sub, $$, newexpr_constnum(1), $$, 0, yylineno);
                                                         emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
                                                     } else {
                                                         emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
@@ -373,14 +370,14 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
     | lvalue MINUS_MINUS
                                                     {temrs_error($1,"--"); 
                                                     check_arith($1, "lvalue --");
-                                                    $$ = newexpr(arithexpr_e);
+                                                    $$ = newexpr(var_e);
                                                     $$->sym = newtemp();
                                                     if ($1->type == tableitem_e) {
-                                                        $$ = emit_iftableitem($1);
-                                                        expr* newval = newexpr(arithexpr_e);
-                                                        newval->sym = newtemp();
-                                                        emit(sub, $$, newexpr_constnum(1), newval, 0, yylineno);
-                                                        emit(tablesetelem, $1, $1->index, newval, 0, yylineno);
+                                                        
+                                                        expr* val = emit_iftableitem($1);
+                                                        emit(assign, val, NULL, $$,0, yylineno);
+                                                        emit(sub, val , newexpr_constnum(1), val, 0, yylineno);
+                                                        emit(tablesetelem, $1, $1->index, val, 0, yylineno);
                                                     } else {
                                                         emit(assign, $1, NULL, $$, 0, yylineno);
                                                         emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
@@ -413,10 +410,10 @@ assignexpr:
             emit(assign, rval, NULL, $1, 0, yylineno);
 
          
-            expr* temp = newexpr(assignexpr_e);
-            temp->sym = newtemp();
-            emit(assign, $1, NULL, temp, 0, yylineno); // temp = lvalue 
-            $$ = temp;
+            $$ = newexpr(assignexpr_e);
+            $$->sym = newtemp();
+            emit(assign, $1, NULL, $$, 0, yylineno); 
+            
         }
     };
 
@@ -604,7 +601,7 @@ loopstart :                        {++loopcounter;}
           ;
 loopend   :                        {--loopcounter;}
           ;
-loopstmt  : loopstart stmt loopend {$2 = new stmt_t(); $$ = $2;}
+loopstmt  : loopstart stmt loopend {$$ = $2;}
           ;
 
 whilestart : WHILE {
@@ -614,13 +611,13 @@ whilestart : WHILE {
 ;
 
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
-   {
-        if ($2->type == boolexpr_e) {
-        $2 = boolify_expr($2);
+{
+    if ($2->type == boolexpr_e) {
+        $2 = to_boolexpr($2);
     }
-    emit(if_eq, $2, newexpr_bool(1), NULL, nextquad() + 2, yylineno); // true -> continue
-    $$ = nextquad(); //jumpc hhere if false
-    emit(jump, NULL, NULL, NULL, 0, yylineno); // false -> out
+    emit(if_eq, $2, newexpr_bool(1), NULL, nextquad() + 2, yylineno); // True -> body
+    $$ = nextquad(); // False jump
+    emit(jump, NULL, NULL, NULL, 0, yylineno); // False -> exit
 };
 
 whilestmt:
@@ -687,6 +684,7 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
 
 }
 ;
+
 
 Break : BREAK SEMICOLON {
 

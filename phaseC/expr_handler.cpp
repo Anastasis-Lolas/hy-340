@@ -653,10 +653,15 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
 
     std::cout << "stmt_list_handler" << std::endl;
     if (result) {
+        std::cout << "[DEBUG] mergelist for  breakList" << std::endl;
         result->breakList = mergelist(s1->breakList, s2->breakList);
+        std::cout << "[DEBUG] mergelist for  contList" << std::endl;
         result->contList = mergelist(s1->contList, s2->contList);
+        std::cout << "[DEBUG] mergelist for  returnList" << std::endl;
         result->returnList = mergelist(s1->returnList, s2->returnList);
     }
+    std::cout << "Exiting stmt_list_handler" << std::endl;
+
     return result;
 }
 

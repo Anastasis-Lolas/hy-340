@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -593,8 +593,9 @@ ifstmt
 | ifprefix stmt elseprefix stmt {
 
       patchlabel((int)$1->numConst, (int)$3->numConst + 1);
-
       patchlabel((int)$3->numConst, nextquad());
+
+      $$ = stmt_list_handler($2, $4);
      
   }
 ;
@@ -652,7 +653,7 @@ N : {
 
     $$ = newexpr(constnum_e);
     $$->numConst = nextquad();
-    emit(jump,NULL,NULL,0,-1,yylineno);
+    emit(jump, NULL, NULL, NULL, 0, yylineno); 
 
 }
 ;
@@ -691,6 +692,9 @@ forstmt: forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
 
     patchlist($6->breakList,nextquad());
     patchlist($6->contList,(int)$2->numConst + 1);
+
+    $6->breakList = 0;
+    $6->contList = 0;
     //make_stmt($6);
     $$ = $6;
     }

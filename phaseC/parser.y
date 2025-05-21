@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-#define DEBUG_REDUCE(msg)
+#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+//#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -128,7 +128,7 @@ stmt_list : stmt_list stmt {
                              $$ = stmt_list_handler($1,$2);
                              DEBUG_REDUCE("stmt -> expr ;"); 
                            }
-            | {$$ = new stmt_t(); make_stmt($$);DEBUG_REDUCE("stmt list  -> empty ;"); }
+            | stmt {$$ = $1;DEBUG_REDUCE("stmt list  -> stmt ;"); }
           ;
 
 stmt:
@@ -141,8 +141,8 @@ stmt:
                             DEBUG_REDUCE("stmt -> expr ;"); 
                           }
     | ifstmt              {$$ = $1; DEBUG_REDUCE("stmt -> ifstmt"); }
-    | whilestmt           {$$ = $1; DEBUG_REDUCE("stmt -> whilestmt"); }
-    | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt"); }
+    | whilestmt           {$$ = new stmt_t();make_stmt($$);  DEBUG_REDUCE("stmt -> whilestmt"); }
+    | forstmt             {$$ = new stmt_t();make_stmt($$);  DEBUG_REDUCE("stmt -> forstmt"); }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
     | Break               {$$ = $1; DEBUG_REDUCE("stmt -> break ;"); }
     | Continue            {$$ = $1; DEBUG_REDUCE("stmt -> continue ;"); }
@@ -626,7 +626,6 @@ whilestmt:
         unsigned loopStart = $1;
         unsigned exitJump = $2;
         stmt_t* body = $3;
-
         emit(jump, nullptr, nullptr, nullptr, loopStart, yylineno);
         patchlabel(exitJump, nextquad());
         patchlist(body->breakList, nextquad());

@@ -650,8 +650,8 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-
-    if (result && result->breakList && result->contList && result->returnList) {
+    std::cout << "stmt_list_handler" << std::endl;
+    if (result) {
         result->breakList = mergelist(s1->breakList, s2->breakList);
         result->contList = mergelist(s1->contList, s2->contList);
         result->returnList = mergelist(s1->returnList, s2->returnList);
@@ -775,6 +775,22 @@ bool check_arithmetic_expr(expr* e) {
     }
     return true;
 }
+
+stmt_t* handle_breaks() {
+    stmt_t* $$ = new stmt_t();
+    make_stmt($$);
+
+    if (loopcounter == 0) {
+        std::cerr << "break statement is outside of the loop \n";
+    } else {
+        $$ = new stmt_t();
+        make_stmt($$);
+        $$->breakList = nextquad();
+        emit(jump, NULL, NULL, NULL, 0, yylineno);
+    }
+    return $$;
+}
+
 
 // ignore for now=================================================
 expr* normal_call_handler(std::vector<expr*> args) {             //|

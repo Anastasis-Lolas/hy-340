@@ -79,6 +79,9 @@ call_t* normcall_handler(expr* e);
 expr* anonym_call(SymbolTableEntry_T entry, expr* args);
 expr* call_handler(expr* e, expr* elist);
 
+//
+stmt_t* handle_breaks();
+
 // debug
 void print_expr(expr* e);
 void print_expr_list(expr* head);

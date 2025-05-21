@@ -134,6 +134,7 @@ stmt_list : stmt_list stmt {
 stmt:
       expr SEMICOLON      {  
                             $$ = new stmt_t(); make_stmt($$);
+                            boolify_expr($1);
                             resettemp();
       
                             DEBUG_REDUCE("stmt -> expr ;"); 

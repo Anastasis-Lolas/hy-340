@@ -73,12 +73,13 @@ void enter_func(int flag, std::string name) {
         // std::cout << "Function name: " << name << std::endl;
     }
     // $funcprefix.iaddress = nextquadlabel();
-    // unsigned funcStartQuad = nextquadlabel();
+    // if_noteq unsigned funcStartQuad = nextquadlabel();
     push_loopcounter();
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
     // logika anti gia yylineno thelei quads ??
-    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, 0, nextquad());
+    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, -1,
+         nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());
     enterscopespace();
@@ -115,7 +116,7 @@ void exit_func(int flag, std::string name, int returnList) {
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
-    emit(funcend, newexpr_conststring(name), nullptr, nullptr, 0, nextquad());
+    emit(funcend, newexpr_conststring(name), nullptr, nullptr, -1, nextquad());
     patchlabel(jump_stack.back(), nextquad());
     jump_stack.pop_back();
     if (returnList) {
@@ -591,7 +592,7 @@ expr* emit_iftableitem(expr* e) {
     } else {
         expr* result = newexpr(var_e);
         result->sym = newtemp();
-        emit(tablegetelem, e, e->index, result, 0, yylineno);
+        emit(tablegetelem, e, e->index, result, -1, yylineno);
         return result;
     }
 }
@@ -608,20 +609,20 @@ expr* newexpr_constnum(double i) {
 expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
     expr* result = newexpr(arithexpr_e);
     result->sym = newtemp();
-    emit(op, e1, e2, result, 0, yylineno);
+    emit(op, e1, e2, result, -1, yylineno);
     return result;
 }
 
 
 expr* emit_assign_expr(expr* lval, expr* rval) {
-    emit(assign, rval, nullptr, lval, 0, yylineno);
+    emit(assign, rval, nullptr, lval, -1, yylineno);
     return lval;  // result of assignment is the lvalue
 }
 
 expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
     expr* result = newexpr(boolexpr_e);
     result->sym = newtemp();
-    emit(op, e1, e2, result, 0, yylineno);
+    emit(op, e1, e2, result, -1, yylineno);
     return result;
 }
 
@@ -669,7 +670,7 @@ expr* boolify_expr(expr* e) {
 
 
     unsigned true_quad = nextquad();
-    emit(assign, newexpr_bool(true), NULL, result, 0, yylineno);
+    emit(assign, newexpr_bool(true), NULL, result, -1, yylineno);
 
 
     unsigned jump_after_true = nextquad();
@@ -677,7 +678,7 @@ expr* boolify_expr(expr* e) {
 
     // quad for assign false se result
     unsigned false_quad = nextquad();
-    emit(assign, newexpr_bool(false), NULL, result, 0, yylineno);
+    emit(assign, newexpr_bool(false), NULL, result, -1, yylineno);
 
     // Backpatch true list in assign true
     backpatch(e->truelist, true_quad);
@@ -728,13 +729,13 @@ expr* call_handler(expr* e, expr* elist) {
 
     // Stack-like access
     for (auto it = args.rbegin(); it != args.rend(); ++it) {
-        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());
+        emit(param, *it, nullptr, nullptr, -1, nextquadlabel());
     }
-    emit(call, func, nullptr, nullptr, 0, nextquadlabel());
+    emit(call, func, nullptr, nullptr, -1, nextquadlabel());
 
     expr* result = newexpr(var_e);
     result->sym = newtemp();
-    emit(getretval, result, nullptr, result, 0, yylineno);
+    emit(getretval, result, nullptr, result, -1, yylineno);
     return result;
 }
 
@@ -793,9 +794,9 @@ stmt_t* handle_breaks() {
 
 
 // ignore for now=================================================
-expr* normal_call_handler(std::vector<expr*> args) {             //|
-    for (auto it = args.rbegin(); it != args.rend(); ++it) {     //|
-        emit(param, *it, nullptr, nullptr, 0, nextquadlabel());  //|
+expr* normal_call_handler(std::vector<expr*> args) {              //|
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {      //|
+        emit(param, *it, nullptr, nullptr, -1, nextquadlabel());  //|
     }  //|
     return nullptr;  //|
 }  //|

@@ -54,14 +54,13 @@ struct forloop_t {
 };
 
 struct lc_stack_t {
-  struct lc_stack_t* next;
-  unsigned  counter;
+    struct lc_stack_t* next;
+    unsigned counter;
 };
 
 extern struct lc_stack_t *lcs_top, *lcs_bottom;
 
- #define loopcounter \
- (lcs_top->counter)
+#define loopcounter (lcs_top->counter)
 
 unsigned nextquadlabel(void);
 
@@ -91,6 +90,11 @@ void pop_loopcounter(void);
 
 void backpatch(std::vector<int> list, unsigned label);
 
-std::vector<int> merge(const std::vector<int>& lst1, const std::vector<int>& lst2);
+std::vector<int> merge(const std::vector<int>& lst1,
+                       const std::vector<int>& lst2);
+
+std::string iopcode_to_string(iopcode op);
+std::string expr_to_string(expr* e);
+std::string safe_expr_to_string(expr* e);
 
 #endif

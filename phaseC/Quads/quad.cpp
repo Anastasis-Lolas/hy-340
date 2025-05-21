@@ -24,7 +24,6 @@ void patchlabel(int quadNo, unsigned label) {
         std::cerr << "Error: Quad " << quadNo << " is null." << std::endl;
         return;
     }
-    quad_table[quadNo]->label = label;
 }
 
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label,
@@ -35,7 +34,6 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label,
         std::cerr << "Error: Memory allocation failed for quad." << std::endl;
         return;
     }
-
     quadd->op = op;
     quadd->arg1 = arg1;
     quadd->arg2 = arg2;
@@ -212,7 +210,7 @@ void print_quads() {
     const int W_ARG1 = 14;
     const int W_ARG2 = 14;
     const int W_LABEL = 8;
-
+    const unsigned int $$ = -1;
     std::cout << "------------------------------- QUAD TABLE "
                  "-------------------------------\n";
     std::cout << std::left << std::setw(W_IDX) << "quad #" << std::setw(W_OP)
@@ -232,7 +230,7 @@ void print_quads() {
         std::string result = safe_expr_to_string(q->result);
         std::string arg1 = safe_expr_to_string(q->arg1);
         std::string arg2 = safe_expr_to_string(q->arg2);
-        std::string label = q->label == 0 ? "" : std::to_string(q->label);
+        std::string label = q->label == $$ ? "" : std::to_string(q->label);
 
         std::cout << std::left << std::setw(W_IDX) << i << std::setw(W_OP)
                   << iopcode_to_string(q->op) << std::setw(W_RES) << result

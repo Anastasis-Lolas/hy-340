@@ -324,14 +324,14 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2,"++lvalue");
                                                     if($2->type == tableitem_e) {
 									                    $$ = emit_iftableitem($2);
-									                    emit(add, $$, newexpr_constnum(1), $$, 0 , yylineno);
-									                    emit(tablesetelem, $2, $2->index, $$, 0, yylineno);
+									                    emit(add, $$, newexpr_constnum(1), $$, -1 , yylineno);
+									                    emit(tablesetelem, $2, $2->index, $$, -1, yylineno);
 												    }
 									                else {
 													    emit(add, $2, newexpr_constnum(1), $2,0, yylineno);
 													    $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
-													    emit(assign, $2, NULL, $$,0, yylineno);
+													    emit(assign, $2, NULL, $$,-1, yylineno);
 												    }
                                                     DEBUG_REDUCE("term -> ++lvalue"); }
     | lvalue PLUS_PLUS
@@ -342,12 +342,12 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     if ($1->type == tableitem_e) {
                                                         expr* val = emit_iftableitem($1);
 
-                                                        emit(assign, val, NULL, $$,0, yylineno);
-                                                        emit(add, val, newexpr_constnum(1), val,0, yylineno);
-                                                        emit(tablesetelem, $1, $1->index, val,0, yylineno);
+                                                        emit(assign, val, NULL, $$,-1, yylineno);
+                                                        emit(add, val, newexpr_constnum(1), val,-1, yylineno);
+                                                        emit(tablesetelem, $1, $1->index, val,-1, yylineno);
                                                     } else {
-                                                        emit(assign, $1, NULL, $$, 0, yylineno); // Copy current value
-                                                        emit(add, $1, newexpr_constnum(1), $1, 0, yylineno); // Update lvalue
+                                                        emit(assign, $1, NULL, $$, -1, yylineno); // Copy current value
+                                                        emit(add, $1, newexpr_constnum(1), $1, -1, yylineno); // Update lvalue
                                                     }
                                                     DEBUG_REDUCE("term -> lvalue++"); }
 
@@ -363,7 +363,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                         emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
                                                         $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
-                                                        emit(assign, $2, NULL, $$, 0, yylineno);
+                                                        emit(assign, $2, NULL, $$, -1, yylineno);
                                                     }
                                                     DEBUG_REDUCE("term -> --lvalue"); }
     | lvalue MINUS_MINUS
@@ -374,12 +374,12 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     if ($1->type == tableitem_e) {
                                                         
                                                         expr* val = emit_iftableitem($1);
-                                                        emit(assign, val, NULL, $$,0, yylineno);
-                                                        emit(sub, val , newexpr_constnum(1), val, 0, yylineno);
-                                                        emit(tablesetelem, $1, $1->index, val, 0, yylineno);
+                                                        emit(assign, val, NULL, $$,-10, yylineno);
+                                                        emit(sub, val , newexpr_constnum(1), val, -1, yylineno);
+                                                        emit(tablesetelem, $1, $1->index, val, -1, yylineno);
                                                     } else {
-                                                        emit(assign, $1, NULL, $$, 0, yylineno);
-                                                        emit(sub, $1, newexpr_constnum(1), $1, 0, yylineno);
+                                                        emit(assign, $1, NULL, $$, -1, yylineno);
+                                                        emit(sub, $1, newexpr_constnum(1), $1, -1, yylineno);
                                                     }
                                                     DEBUG_REDUCE("term -> lvalue--"); }
     | primary
@@ -401,17 +401,17 @@ assignexpr:
         }
 
         if ($1->type == tableitem_e) {
-            emit(tablesetelem, $1, $1->index, rval, 0, yylineno);
+            emit(tablesetelem, $1, $1->index, rval, -1, yylineno);
             $$ = emit_iftableitem($1);
             $$->type = assignexpr_e;
         } else {
             // assign rval in lvalue
-            emit(assign, rval, NULL, $1, 0, yylineno);
+            emit(assign, rval, NULL, $1, -1, yylineno);
 
          
             $$ = newexpr(assignexpr_e);
             $$->sym = newtemp();
-            emit(assign, $1, NULL, $$, 0, yylineno); 
+            emit(assign, $1, NULL, $$, -1, yylineno); 
             
         }
     };
@@ -486,9 +486,9 @@ objectdef:
       LEFT_BRACKET elist RIGHT_BRACKET          {
                                                     expr* t = newexpr(newtable_e);
                                                     t->sym = newtemp();
-                                                    emit(tablecreate, t, NULL, NULL, 0, yylineno);
+                                                    emit(tablecreate, t, NULL, NULL, -1, yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem, t, newexpr_constnum(i++), $elist, 0, yylineno);
+                                                        emit(tablesetelem, t, newexpr_constnum(i++), $elist, -1, yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -498,7 +498,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate, t, NULL, NULL, 0, yylineno);
                                                     while($2){
-                                                        emit(tablesetelem, t, $2->index, $2, 0, yylineno);
+                                                        emit(tablesetelem, t, $2->index, $2, -1, yylineno);
                                                         $2 = $2->next;
                                                     }
                                                     $$= t;
@@ -632,21 +632,18 @@ whilestmt:
 
         emit(jump, nullptr, nullptr, nullptr, loopStart, yylineno);
 
-        
         patchlabel(falseJump, nextquad());
 
-        if (body) patchlist(body->breakList, nextquad());
+        patchlist(body->breakList, nextquad());
 
-        if (body) patchlist(body->contList, loopStart);
+        patchlist(body->contList, loopStart);
 
-        if (body) {
-            body->breakList = 0;
-            body->contList = 0;
-        }   
+        body->breakList = 0;
+        body->contList = 0;
+
 
         $$ = body;
     };
-
 
 N : {
 

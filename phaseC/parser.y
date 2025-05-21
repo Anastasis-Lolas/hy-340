@@ -133,20 +133,18 @@ stmt_list : stmt_list stmt {
 
 stmt:
       expr SEMICOLON      {  
-                            if ($1->type == boolexpr_e) {
-                            $1 = to_boolexpr($1);}
-                            
+                            $$ = new stmt_t(); make_stmt($$);
                             resettemp();
       
                             DEBUG_REDUCE("stmt -> expr ;"); 
                           }
-    | ifstmt              {$$ = $1; DEBUG_REDUCE("stmt -> ifstmt"); }
-    | whilestmt           {$$ = new stmt_t();make_stmt($$);  DEBUG_REDUCE("stmt -> whilestmt"); }
-    | forstmt             {$$ = new stmt_t();make_stmt($$);  DEBUG_REDUCE("stmt -> forstmt"); }
+    | ifstmt              {$$ = $1; DEBUG_REDUCE("stmt -> ifstmt");     }
+    | whilestmt           {$$ = $1;  DEBUG_REDUCE("stmt -> whilestmt");  }
+    | forstmt             {$$ = $1; DEBUG_REDUCE("stmt -> forstmt");    }
     | returnstmt          {$$ = $1; DEBUG_REDUCE("stmt -> returnstmt"); }
-    | Break               {$$ = $1; DEBUG_REDUCE("stmt -> break ;"); }
+    | Break               {$$ = $1; DEBUG_REDUCE("stmt -> break ;");    }
     | Continue            {$$ = $1; DEBUG_REDUCE("stmt -> continue ;"); }
-    | block               {$$ = $1; DEBUG_REDUCE("stmt -> block"); }
+    | block               {$$ = $1; DEBUG_REDUCE("stmt -> block");      }
     | funcdef             {
                             $$ = new stmt_t();
                             make_stmt($$); 
@@ -613,7 +611,7 @@ whilestart : WHILE {
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS 
 {
     if ($2->type == boolexpr_e) {
-        $2 = to_boolexpr($2);
+        $2 = boolify_expr($2);
     }
     emit(if_eq, $2, newexpr_bool(1), NULL, nextquad() + 2, yylineno); // True -> body
     $$ = nextquad(); // False jump

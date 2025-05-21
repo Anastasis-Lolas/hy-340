@@ -285,7 +285,7 @@ expr:
 
     | expr AND {$1 = to_boolexpr($1) ; } M expr                           { 
                                                     DEBUG_REDUCE("expr -> expr and expr");
-                                                    //$5 = to_boolexpr($5);  
+                                                    $5 = to_boolexpr($5);  
                                                     backpatch($1->truelist, (unsigned)($4->numConst)); 
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->truelist = $5->truelist;
@@ -295,7 +295,7 @@ expr:
     | expr OR{$1 = to_boolexpr($1) ; }   M expr                            {
                                                    DEBUG_REDUCE("expr -> expr or expr");
                                                    
-                                                    //$5 = to_boolexpr($5);
+                                                    $5 = to_boolexpr($5);
                                                     backpatch($1->falselist, (unsigned)$4->numConst);
                                                     $$ = newexpr(boolexpr_e);
                                                     $$->truelist = merge($1->truelist, $5->truelist);

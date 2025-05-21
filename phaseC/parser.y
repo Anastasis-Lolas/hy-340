@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -620,19 +620,33 @@ whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 };
 
 whilestmt:
-    whilestart whilecond loopstmt
-    {
-        unsigned loopStart = $1;
-        unsigned exitJump = $2;
+    whilestart whilecond loopstmt {
+        unsigned int loopStart = $1;
+        unsigned int falseJump = $2;
         stmt_t* body = $3;
+
+        if (!body) {
+            body = new stmt_t();
+            make_stmt(body);
+        }
+
         emit(jump, nullptr, nullptr, nullptr, loopStart, yylineno);
-        patchlabel(exitJump, nextquad());
-        patchlist(body->breakList, nextquad());
-        patchlist(body->contList, loopStart);
+
+        
+        patchlabel(falseJump, nextquad());
+
+        if (body) patchlist(body->breakList, nextquad());
+
+        if (body) patchlist(body->contList, loopStart);
+
+        if (body) {
+            body->breakList = 0;
+            body->contList = 0;
+        }   
 
         $$ = body;
     };
-    
+
 
 N : {
 

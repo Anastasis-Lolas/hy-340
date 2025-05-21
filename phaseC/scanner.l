@@ -119,7 +119,7 @@ WHITESPACE          [ \t\n\r\v]+
 
 
 {INTCONST}                    {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "INT", "int"); yylval.intValue  = atoi(yytext); return INTEGER;}
-{REALCONST}                   {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real"); return REALCONST;}
+{REALCONST}                   {ins_token(tokens_list, yylineno, mylineno++, yytext, "CONST", "REAL", "real");yylval.doubleVal  = atof(yytext); return REALCONST;}
 {IDENT}                       {ins_token(tokens_list, yylineno, mylineno++, yytext, "IDENT", "yytext", "char*"); yylval.stringValue = new std::string(yytext); return IDENT;}
 
 {ASSIGN}                      { ins_token(tokens_list, yylineno, mylineno++, yytext, "OPERATOR", "ASSIGN", "enumerated"); return ASSIGN;} 

@@ -485,9 +485,9 @@ objectdef:
       LEFT_BRACKET elist RIGHT_BRACKET          {
                                                     expr* t = newexpr(newtable_e);
                                                     t->sym = newtemp();
-                                                    emit(tablecreate, t, NULL, NULL, nextquad(), yylineno);
+                                                    emit(tablecreate, t, NULL, NULL, 0, yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem, t, newexpr_constnum(i++), $elist, nextquad(), yylineno);
+                                                        emit(tablesetelem, t, newexpr_constnum(i++), $elist, 0, yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -495,9 +495,9 @@ objectdef:
       | LEFT_BRACKET indexed RIGHT_BRACKET      { 
                                                     expr* t = newexpr(newtable_e);
                                                     t->sym = newtemp();
-                                                    emit(tablecreate, t, NULL, NULL, nextquad(), yylineno);
+                                                    emit(tablecreate, t, NULL, NULL, 0, yylineno);
                                                     while($2){
-                                                        emit(tablesetelem, t, $2->index, $2, nextquad(), yylineno);
+                                                        emit(tablesetelem, t, $2->index, $2, 0, yylineno);
                                                         $2 = $2->next;
                                                     }
                                                     $$= t;

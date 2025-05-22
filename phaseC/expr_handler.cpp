@@ -78,7 +78,7 @@ void enter_func(int flag, std::string name) {
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
     // logika anti gia yylineno thelei quads ??
-    emit(funcstart, newexpr_conststring(name), nullptr, nullptr, -1,
+    emit(funcstart, nullptr, nullptr, newexpr_conststring(name), -1,
          nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());
@@ -116,7 +116,7 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
-    emit(funcend, newexpr_conststring(name), nullptr, nullptr, -1, nextquad());
+    emit(funcend, nullptr, nullptr, newexpr_conststring(name), -1, nextquad());
     patchlabel(jump_stack.back(), nextquad());
     jump_stack.pop_back();
     if (returnList) {

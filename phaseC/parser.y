@@ -762,7 +762,7 @@ returnstmt:
             if(infunction==0){
                 std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
             }  
-            emit(ret, $2, nullptr, nullptr, -1, nextquadlabel());
+            emit(ret,  nullptr, nullptr, $2, -1, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);
             emit(jump, NULL, NULL, NULL, 0, yylineno);

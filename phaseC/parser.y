@@ -314,7 +314,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "unary minus");
                                                     $$ = newexpr(arithexpr_e);
                                                     $$->sym = newtemp();
-                                                   emit(uminus, newexpr_constnum(0), $2, $$, 0, yylineno);}
+                                                   emit(uminus, newexpr_constnum(0), $2, $$, -1, yylineno);}
     | NOT expr
                                                     { 
                                                     DEBUG_REDUCE("term -> not expr");
@@ -332,7 +332,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 									                    emit(tablesetelem, $$, $2->index, $2, -1, yylineno);
 												    }
 									                else {
-													    emit(add, $2, newexpr_constnum(1), $2,0, yylineno);
+													    emit(add, $2, newexpr_constnum(1), $2,-1, yylineno);
 													    $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
 													    emit(assign, $2, NULL, $$,-1, yylineno);
@@ -361,10 +361,10 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "--lvalue");
                                                     if ($2->type == tableitem_e) {
                                                         $$ = emit_iftableitem($2);
-                                                        emit(sub, $$, newexpr_constnum(1), $$, 0, yylineno);
-                                                        emit(tablesetelem, $$, $2->index, $2, 0, yylineno);
+                                                        emit(sub, $$, newexpr_constnum(1), $$, -1, yylineno);
+                                                        emit(tablesetelem, $$, $2->index, $2, -1, yylineno);
                                                     } else {
-                                                        emit(sub, $2, newexpr_constnum(1), $2, 0, yylineno);
+                                                        emit(sub, $2, newexpr_constnum(1), $2, -1, yylineno);
                                                         $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
                                                         emit(assign, $2, NULL, $$, -1, yylineno);
@@ -509,7 +509,7 @@ objectdef:
       | LEFT_BRACKET indexed RIGHT_BRACKET      { 
                                                     expr* t = newexpr(newtable_e);
                                                     t->sym = newtemp();
-                                                    emit(tablecreate,  NULL, NULL, t, 0, yylineno);
+                                                    emit(tablecreate,  NULL, NULL, t, -1, yylineno);
                                                     while($2){
                                                         emit(tablesetelem, $2, $2->index, t, -1, yylineno);
                                                         $2 = $2->next;
@@ -537,6 +537,8 @@ indexedelem:
 
 block:
       LEFT_BRACE { scope++; } stmt_list RIGHT_BRACE {$$=$3; exit_block(); DEBUG_REDUCE("block -> {stmt_list}"); }
+      |  LEFT_BRACE{scope++;} RIGHT_BRACE {exit_block(); $$=new stmt_t();make_stmt($$); DEBUG_REDUCE("block -> {}");   }
+    
     ;
     
 
@@ -749,7 +751,7 @@ returnstmt:
             if(infunction==0){
                 std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
             }  
-            emit(ret, nullptr, nullptr, nullptr, 0, nextquadlabel());
+            emit(ret, nullptr, nullptr, nullptr, -1, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);
             emit(jump, NULL, NULL, NULL, 0, yylineno);
@@ -761,7 +763,7 @@ returnstmt:
             if(infunction==0){
                 std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
             }  
-            emit(ret, $2, nullptr, nullptr, 0, nextquadlabel());
+            emit(ret, $2, nullptr, nullptr, -1, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);
             emit(jump, NULL, NULL, NULL, 0, yylineno);

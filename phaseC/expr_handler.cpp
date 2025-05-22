@@ -570,6 +570,7 @@ expr* newexpr(expr_t t) {
 
 expr* newexpr_conststring(std::string str) {
     expr* e = newexpr(conststring_e);
+    e->sym = NULL;
     e->strConst = str;
     return e;
 }
@@ -651,16 +652,11 @@ stmt_t* stmt_list_handler(stmt_t* s1, stmt_t* s2) {
     stmt_t* result = new stmt_t();
     make_stmt(result);
 
-    std::cout << "stmt_list_handler" << std::endl;
     if (result) {
-        std::cout << "[DEBUG] mergelist for  breakList" << std::endl;
         result->breakList = mergelist(s1->breakList, s2->breakList);
-        std::cout << "[DEBUG] mergelist for  contList" << std::endl;
         result->contList = mergelist(s1->contList, s2->contList);
-        std::cout << "[DEBUG] mergelist for  returnList" << std::endl;
         result->returnList = mergelist(s1->returnList, s2->returnList);
     }
-    std::cout << "Exiting stmt_list_handler" << std::endl;
 
     return result;
 }
@@ -736,11 +732,11 @@ expr* call_handler(expr* e, expr* elist) {
     for (auto it = args.rbegin(); it != args.rend(); ++it) {
         emit(param, *it, nullptr, nullptr, -1, nextquadlabel());
     }
-    emit(call, func, nullptr, nullptr, -1, nextquadlabel());
+    emit(call, nullptr, nullptr, func, -1, nextquadlabel());
 
     expr* result = newexpr(var_e);
     result->sym = newtemp();
-    emit(getretval, result, nullptr, result, -1, yylineno);
+    emit(getretval, nullptr, nullptr, result, -1, yylineno);
     return result;
 }
 

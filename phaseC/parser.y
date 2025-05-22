@@ -404,7 +404,7 @@ assignexpr:
         }
 
         if ($1->type == tableitem_e) {
-            emit(tablesetelem, rval, $1->index, $1, -1, yylineno);
+            emit(tablesetelem, $1->index,  rval, $1, -1, yylineno);
             $$ = emit_iftableitem($1);
             $$->type = assignexpr_e;
         } else {

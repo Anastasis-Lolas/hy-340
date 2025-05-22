@@ -86,7 +86,7 @@ void enter_func(int flag, std::string name) {
     resetformalargsoffset();
     deactivate_scope(scopeList, scope);
 }
-void exit_func(int flag, std::string name, int returnList) {
+SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
     int offset, totalLocals;
     SymbolTableEntry_T entry = nullptr;
     if (flag == 0) {
@@ -123,6 +123,7 @@ void exit_func(int flag, std::string name, int returnList) {
         patchlist(returnList, nextquad() - 1);
     }
     infunction--;
+    return entry;
 }
 
 
@@ -206,7 +207,7 @@ SymbolTableEntry_T add_ident(std::string name) {
                 return entry;
             } else {
                 // print error message function-same name as variable
-                std::cout << "Error at line " << yylineno
+                std::cerr << "Error at line " << yylineno
                           << ": Cannot access variable with name: " << name
                           << " and scope: " << entry->value.varVal->scope
                           << " inside scope: " << scope << std::endl;
@@ -570,7 +571,6 @@ expr* newexpr(expr_t t) {
 
 expr* newexpr_conststring(std::string str) {
     expr* e = newexpr(conststring_e);
-    e->sym = NULL;
     e->strConst = str;
     return e;
 }
@@ -771,7 +771,7 @@ bool check_arithmetic_expr(expr* e) {
     if (e->type == constbool_e || e->type == conststring_e ||
         e->type == nil_e || e->type == newtable_e || e->type == programfunc_e ||
         e->type == libraryfunc_e || e->type == boolexpr_e) {
-        std::cout << "ERROR Illegal expr  used in line " << yylineno
+        std::cerr << "ERROR Illegal expr  used in line " << yylineno
                   << std::endl;
         return false;
     }

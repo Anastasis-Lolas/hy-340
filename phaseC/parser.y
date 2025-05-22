@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -424,8 +424,8 @@ primary:
     | call                                  { DEBUG_REDUCE("primary -> call");      }
     | objectdef                             { DEBUG_REDUCE("primary -> objectdef"); }
     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-                                            {$$ = newexpr(programfunc_e); DEBUG_REDUCE("primary -> (funcdef)"); }                                 
-    | const                                 { DEBUG_REDUCE("primary -> const");     }
+                                            {$$ = newexpr(programfunc_e); $$->sym = $2; DEBUG_REDUCE("primary -> (funcdef)"); }                                 
+    | const                                 { DEBUG_REDUCE("primary -> const");  }
     ;
 
 lvalue:
@@ -505,7 +505,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate,  NULL, NULL, t,-1, yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem, $elist, newexpr_constnum(i++), t, -1, yylineno);
+                                                        emit(tablesetelem,newexpr_constnum(i++), $elist,  t, -1, yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -518,7 +518,7 @@ objectdef:
                                                         emit(tablesetelem, $2, $2->index, t, -1, yylineno);
                                                         $2 = $2->next;
                                                     }
-                                                    $$= t;
+                                                    $$ = t;
                                                     DEBUG_REDUCE("objectdef -> indexed ");  
                                                 }
     ;
@@ -549,13 +549,13 @@ block:
 funcdef:
       FUNCTION {enter_func(0, "");}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args);}
-            block {exit_func(0, "", $7->returnList); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            block {$$ = exit_func(0, "", $7->returnList); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT {enter_func(1, *$2);}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
             {scope--; add_function(*$2, args);}
             block
-            {exit_func(1, *$2, $8->returnList); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+            {$$ = exit_func(1, *$2, $8->returnList); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;
 
 

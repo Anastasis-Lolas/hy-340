@@ -445,15 +445,19 @@ member:
 call:
         lvalue callsuffix   {
                                 $1 = emit_iftableitem($1);
-                                expr* funcToCall = $1;
                                 if($2->method){
-                                    expr* self = newexpr(var_e);
-                                    self = member_item($1, $2->name);
+                                    std::cout<<"\033[1;32mbold TRUE\033[0m\n";
+                                    expr* self = $1;
+                                    self = member_item(self, $2->name);
+                                    $1 = emit_iftableitem(self);
                                     self->next = $2->elist;
                                     $2->elist = self;
+                                }else
+                                {
+                                    std::cout<<"\033[1;31mbold FALSE\033[0m\n";
                                 }
 
-                                $$ = call_handler(funcToCall, $2->elist);
+                                $$ = call_handler($1, $2->elist);
                                 DEBUG_REDUCE("call -> lvalue callsuffix"); 
                             }
     | call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {$$ = call_handler($1, $3); DEBUG_REDUCE("call -> call(elist)"); }

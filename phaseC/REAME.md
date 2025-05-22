@@ -1,4 +1,4 @@
-# Alpha Language Compiler – Phase 2 
+# Alpha Language Compiler – Phase 3 
 
 ## Authors  
 Anastasios Lolas csd5197
@@ -13,34 +13,42 @@ Paraskevi Mourelatou csd5149
 
 # Description
 
+### What We Support:
 
-# Project Overview
-The parser:
-- Tables initialized once at the start. 
-- Tracks and prints the grammar rules.
-- Constructs and updates a symbol table as identifiers appear.
-- Prints the Final symbol table with each scope. 
+- arithmetic expressions
+- boolean expressions (AND, OR, NOT)
+- if-else and loops, 
+- Function calls
+- Method calls 
+- Expression evaluation with short-circuiting for booleans
 
-# symtable.h and symtablehash.cpp  
-Implements a hash table for storing symbols (variables, functions).  
-- Uses buckets and each bucket is a linked list of hashNode entries. 
-- Fast insert and lookup by identifier name. To be precise, the SymTable_lookup function searches
-  for a symbol in the hash table and returns it only if it is currently active. 
-- Stores symbol (type, scope, line).
 
-# scopelist.cpp  
-Tracks symbols by scope using a vector of lists.  
-- Each index = one scope level.  
-- Allows scope-based lookups and visibility control.  
-- Initializes library functions at global scope.
+# Project code Overview
 
-# expr_handler.cpp  
-The main Link between parser and symbol managment functions
-- it tracks scope, line, and function numbering.  
-- adds new variables/functions with correct type and scope.  
-- Handles local and :: keywords and also ++ -- and assign checks (functions shouldn't use them)
-- it prevents illegal shadowings and redefinitions .  
-- Provides debugging prints and the main printFullSymtable function.
+
+# quads.cpp and quads.h  
+Handles generation and storage of intermediate code (quads).
+- defines the structure of quads and  opcodes
+- generates quads with emit function.
+- provides functions to patch labels (patchlabel), manage lists for control flow (patchlist, mergelist) and loops.
+
+
+# expression.h
+- defines the expr structure.
+- Stores expression data, including symbol table entries, constants,
+   and True/False lists for boolean expressions.
+- Supports call structures (call_t) 
+
+
+
+# expr_handler.cpp and expr_handler.h
+The main Link between parser and symbol managment functions and also the core for expression management 
+
+- it inncludes functions to create and change expressions (e.g., newexpr, emit_assign_exp) 
+- Support function calls, method calls and anonymous functions
+- type checking and error handling for operations.  
+- we connect expressions to symbols in the symbol table using symEntr_to_expr();
+- Boolean expressions (like in AND, OR, and NOT) we use short-circuit logic, with expr* to_boolexpr(expr* e);
 
 
 

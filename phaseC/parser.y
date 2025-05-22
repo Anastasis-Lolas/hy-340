@@ -314,7 +314,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "unary minus");
                                                     $$ = newexpr(arithexpr_e);
                                                     $$->sym = newtemp();
-                                                   emit(uminus, newexpr_constnum(0), $2, $$, -1, yylineno);}
+                                                   emit(uminus, NULL, $2, $$, -1, yylineno);}
     | NOT expr
                                                     { 
                                                     DEBUG_REDUCE("term -> not expr");
@@ -446,17 +446,12 @@ call:
         lvalue callsuffix   {
                                 $1 = emit_iftableitem($1);
                                 if($2->method){
-                                    std::cout<<"\033[1;32mbold TRUE\033[0m\n";
                                     expr* self = $1;
                                     self = member_item(self, $2->name);
                                     $1 = emit_iftableitem(self);
                                     self->next = $2->elist;
                                     $2->elist = self;
-                                }else
-                                {
-                                    std::cout<<"\033[1;31mbold FALSE\033[0m\n";
                                 }
-
                                 $$ = call_handler($1, $2->elist);
                                 DEBUG_REDUCE("call -> lvalue callsuffix"); 
                             }
@@ -505,7 +500,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate,  NULL, NULL, t,-1, yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem,newexpr_constnum(i++), $elist,  t, -1, yylineno);
+                                                        emit(tablesetelem, newexpr_constnum(i++), $elist,  t, -1, yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -515,7 +510,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate,  NULL, NULL, t, -1, yylineno);
                                                     while($2){
-                                                        emit(tablesetelem, $2, $2->index, t, -1, yylineno);
+                                                        emit(tablesetelem, $2->index, $2, t, -1, yylineno);
                                                         $2 = $2->next;
                                                     }
                                                     $$ = t;

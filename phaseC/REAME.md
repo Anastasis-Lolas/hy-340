@@ -21,7 +21,7 @@ Paraskevi Mourelatou csd5149
 - Function calls
 - Method calls 
 - Expression evaluation with short-circuiting for booleans
-
+- Array implementation
 
 # Project code Overview
 

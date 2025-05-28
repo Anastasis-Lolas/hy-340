@@ -146,11 +146,16 @@ std::string expr_to_string(expr* e) {
 
     // if sym failed
     switch (e->type) {
-        case constnum_e:
+        case constdouble_e:
             if (e->numConst == static_cast<int>(e->numConst)) {
                 return std::to_string(static_cast<int>(e->numConst));
             }
             return std::to_string(e->numConst);
+        case intnum_e:
+            if (e->numInt == static_cast<int>(e->numInt)) {
+                return std::to_string(static_cast<int>(e->numInt));
+            }
+            return std::to_string(e->numInt);
         case conststring_e:
             return "\"" + e->strConst + "\"";
         case constbool_e:

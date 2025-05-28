@@ -90,7 +90,7 @@ void make_operand(expr *e, vmarg *arg) {
                     arg->type = formal_a;
                     break;
                 default:
-                    printf("Error: Invalid symbol type for operand\n");
+                    printf("Error1: Invalid symbol type for operand\n");
             }
             break;
         }
@@ -129,7 +129,8 @@ void make_operand(expr *e, vmarg *arg) {
             break;
         }
         default:
-            printf("Error: Invalid symbol type for operand\n");
+            std::cerr << "Error: Invalid symbol type for operand\n";
+            assert(0);
     }
 }
 
@@ -422,7 +423,6 @@ void generate_OR(quad *q) {
 }
 
 void generate_AND(quad *q) {
-    
     q->taddress = nextinstructionlabel();
 
     instruction *t = new instruction();
@@ -458,7 +458,8 @@ void generate_AND(quad *q) {
 
     if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);}
+    vm_emit(t);
+}
 
 void generate_PARAM(quad *q) {
     q->taddress = nextinstructionlabel();
@@ -583,7 +584,6 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 
-
 void generate_instructions() {
     for (unsigned int i = 0; i < quad_table.size(); ++i) {
         quad *q = quad_table[i];
@@ -678,7 +678,7 @@ void generate_instructions() {
                 break;
             case funcend:
                 std::cout << " -> Skipping generate_FUNCEND\n";
-                 generate_FUNCEND(q);
+                generate_FUNCEND(q);
                 break;
             case tablecreate:
                 std::cout << " -> Calling generate_NEWTABLE\n";

@@ -407,13 +407,13 @@ assignexpr:
         if ($1->type == tableitem_e) {
             emit(tablesetelem,$1->index, rval, $1,   -1, yylineno);
             $$ = emit_iftableitem($1);
-            $$->type = assignexpr_e;
+            $$->type = var_e;
         } else {
             // assign rval in lvalue
             emit(assign, rval, NULL, $1, -1, yylineno);
 
          
-            $$ = newexpr(assignexpr_e);
+            $$ = newexpr(var_e);
             $$->sym = newtemp();
             emit(assign, $1, NULL, $$, -1, yylineno); 
             

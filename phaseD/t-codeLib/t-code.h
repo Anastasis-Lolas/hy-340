@@ -84,6 +84,7 @@ typedef struct incomplete_jump {
 
 void vm_emit(instruction*);
 void add_incomplete_jump(unsigned instrNo, unsigned iaddress);
+void patch_incomplete_jumps();
 void make_operand(expr* e, vmarg* arg);
 
 unsigned nextinstructionlabel();
@@ -99,6 +100,7 @@ void make_numberoperand(vmarg* arg, double val);
 void make_booloperand(vmarg* arg, unsigned val);
 void make_retvaloperand(vmarg* arg);
 void reset_operand(vmarg* arg);
+
 
 void generate(vmopcode op, quad* quad);
 void generate_relational(vmopcode op, quad* quad);

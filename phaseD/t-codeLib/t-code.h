@@ -1,7 +1,7 @@
 #include <iostream> 
 #include <cassert>
 #include "../Quads/quad.h" 
-
+#include "../Symtable/TableEntry/SymbolTableEntry.h"
 
 enum vmopcode {
     assign_v,
@@ -26,13 +26,20 @@ enum vmopcode {
     getretval_v,
     funcstart_v,
     funcend_v,
+    call_func_v,
     tablecreate_v,
     jump_v,
+    jeq_v,
+    jne_v,
+    jgt_v,
+    jge_v,
+    jlt_v,
+    jle_v,
     tablegetelem_v,
     tablesetelem_v
 };
 
-enum vmarg_t {
+typedef enum vmarg_t {
     global_a,
     local_a,
     formal_a,
@@ -42,8 +49,10 @@ enum vmarg_t {
     userfunc_a,
     libfunc_a,
     retval_a,
+    label_a,
     nil_a,
-};
+    undef_a,
+}vmarg_t;
 
 typedef struct vmarg{
     vmarg_t     type;
@@ -67,10 +76,11 @@ typedef struct incomplete_jump {
 incomplete_jump * ij_head  = (incomplete_jump *)0;
 unsigned          ij_total = 0;
 
-void vm_emit(vmopcode op , vmarg * arg1 ,vmarg * arg2,vmarg * result , unsigned srcLine);
+void vm_emit(instruction * );
 void add_incomplete_jump(unsigned instrNo,unsigned iaddress);
 void make_operand(expr * e, vmarg * arg);
 
+unsigned nextinstructionlabel();
 
 unsigned consts_newstring   (std::string s);
 unsigned consts_newnumber   (double n);
@@ -81,17 +91,19 @@ unsigned userfunc_newfunc   (SymbolTableEntry_T sym);
 void make_numberoperand (vmarg * arg , double val);
 void make_booloperand   (vmarg * arg , unsigned val);
 void make_retvaloperand (vmarg * arg);
+void reset_operand      (vmarg * arg);
 
-void generate(void);
+void generate(vmopcode op,quad * quad);
+void generate_relational (vmopcode op,quad * quad);
 
 extern void generate_ADD(quad*);
 extern void generate_SUB(quad*);
 extern void generate_DIV(quad*);
 extern void generate_MOD(quad*);
-extern void generate_NENTABLE(quad*);
+extern void generate_NEWTABLE(quad*);
 extern void generate_TABLEGETELEM(quad*);
 extern void generate_ASSIGN(quad*);
-extern void generate_NOP(quad*);
+extern void generate_NOP();
 extern void generate_JUMP(quad*);
 extern void generate_IF_EQ(quad*);
 extern void generate_IF_NOTEQ(quad*);

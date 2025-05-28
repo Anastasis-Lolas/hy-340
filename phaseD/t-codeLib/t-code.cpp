@@ -102,7 +102,7 @@ void make_operand(expr *e, vmarg *arg) {
                     arg->type = formal_a;
                     break;
                 default:
-                    assert(0);
+                    printf("Error: Invalid symbol type for operand\n");
             }
             break;
         }
@@ -141,7 +141,7 @@ void make_operand(expr *e, vmarg *arg) {
             break;
         }
         default:
-            assert(0);
+             printf("Error: Invalid symbol type for operand\n");
     }
 }
 
@@ -206,8 +206,12 @@ void reset_operand(vmarg *arg) {
 unsigned nextinstructionlabel() { return currInst; }
 
 void generate(vmopcode op, quad *quad) {
-    instruction *t = (instruction *)malloc(sizeof(instruction));
+    instruction *t = new instruction();
     t->opcode = op;
+
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
 
     if (quad->arg1) make_operand(quad->arg1, t->arg1);
 
@@ -221,9 +225,45 @@ void generate(vmopcode op, quad *quad) {
     vm_emit(t);
 }
 
+std::string vmopcode_to_string(vmopcode op) {
+    switch (op) {
+        case assign_v:        return "assign";
+        case add_v:           return "add";
+        case sub_v:           return "sub";
+        case mul_v:           return "mul";
+        case div_v:           return "div";
+        case mod_v:           return "mod";
+        case uminus_v:        return "uminus";
+        case and_v:           return "and";
+        case or_v:            return "or";
+        case not_v:           return "not";
+        case jeq_v:           return "jeq";
+        case jne_v:           return "jne";
+        case jle_v:           return "jle";
+        case jge_v:           return "jge";
+        case jlt_v:           return "jlt";
+        case jgt_v:           return "jgt";
+        case call_v:          return "call";
+        case pusharg_v:       return "pusharg";
+        case funcenter_v:     return "funcenter";
+        case funcexit_v:      return "funcexit";
+        case newtable_v:      return "newtable";
+        case tablegetelem_v:  return "tablegetelem";
+        case tablesetelem_v:  return "tablesetelem";
+        case jump_v:          return "jump";
+        case ret_v:           return "ret";
+        case nop_v:           return "nop";
+        default:              return "unknown_op";
+    }
+}
+
 void generate_relational(vmopcode op, quad *q) {
-    instruction *t = (instruction *)malloc(sizeof(instruction));
+    instruction *t = new instruction();
     t->opcode = op;
+
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
 
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
@@ -238,7 +278,10 @@ void generate_relational(vmopcode op, quad *q) {
     }
 
     q->taddress = nextinstructionlabel();
+    std::cout << "  -> Assigned taddress to quad: " << q->taddress << "\n";
+
     vm_emit(t);
+    std::cout << "  -> Instruction emitted\n";
 }
 
 
@@ -251,6 +294,7 @@ void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
+
 void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
     t->opcode = not_v;
@@ -262,13 +306,14 @@ void generate_NOP(quad *) {
     vm_emit(t);
 }
 
-
 void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad *q) { generate_relational(jne_v, q); }
 void generate_IF_GREATER(quad *q) { generate_relational(jgt_v, q); }
 void generate_IF_GREATEREQ(quad *q) { generate_relational(jge_v, q); }
+
 void generate_IF_LESS(quad *q) { generate_relational(jlt_v, q); }
+
 void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
 
 
@@ -504,7 +549,7 @@ void generate_instructions() {
                 break;
             case if_less:
                 std::cout << " -> Calling generate_IF_LESS\n";
-                //generate_IF_LESS(q);
+                generate_IF_LESS(q);
                 break;
             case if_greater:
                 std::cout << " -> Calling generate_IF_GREATER\n";
@@ -529,8 +574,8 @@ void generate_instructions() {
                 std::cout << " -> Skipping function start (not implemented)\n";
                 break;
             case funcend:
-                std::cout << " -> Calling generate_FUNCEND\n";
-                generate_FUNCEND(q);
+                std::cout << " -> Skipping generate_FUNCEND\n";
+                //generate_FUNCEND(q);
                 break;
             case tablecreate:
                 std::cout << " -> Calling generate_NEWTABLE\n";
@@ -566,7 +611,7 @@ void print_instructions() {
         }
 
         std::cout << "Instruction " << i << ": "
-                  << "Opcode: " << inst->opcode;
+                  << "Opcode: " << vmopcode_to_string(inst->opcode);
 
         if (inst->arg1)
             std::cout << ", Arg1: " << inst->arg1->val;

@@ -133,6 +133,6 @@ void generate_instructions();
 void generate_AND(quad*);
 void generate_OR(quad*);
 void generate_RETURN(quad*);
-
+std::string vmopcode_to_string(vmopcode op);
 void print_instructions(void);
 #endif

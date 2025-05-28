@@ -78,7 +78,6 @@ void enter_func(int flag, std::string name) {
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
     // logika anti gia yylineno thelei quads ??
-    std::cout << "\033[1;31m nextquad: " << nextquad() << " \033[0m\n";
     emit(funcstart, nullptr, nullptr, newexpr(programfunc_e), -1, nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());

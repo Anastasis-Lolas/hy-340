@@ -808,8 +808,8 @@ int main(int argc, char** argv) {
     print_const_doubles();
     std::cout<<"print_const_ints:\n";
     print_const_ints();
-    std::cout<<"print_funcstack:\n";
-    print_funcstack();
+    std::cout<<"print_libfuncs:\n";
+    print_libfuncs();
     void free_instructions();
     return 0;
 }

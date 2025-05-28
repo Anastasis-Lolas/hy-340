@@ -601,13 +601,104 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 
+// void generate_instructions() {
+//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
+//         quad *q = quad_table[i];
+//         if (!q) continue;
+//         generators[q->op](q);
+//     }
+// }
 void generate_instructions() {
     for (unsigned int i = 0; i < quad_table.size(); ++i) {
         quad *q = quad_table[i];
         if (!q) continue;
-        generators[q->op](q);
+
+        switch (q->op) {
+            case assign:
+                generate_ASSIGN(q);
+                break;
+            case add:
+                generate_ADD(q);
+                break;
+            case sub:
+                generate_SUB(q);
+                break;
+            case mul:
+                generate_MUL(q);
+                break;
+            case divv:
+                generate_DIV(q);
+                break;
+            case mod:
+                generate_MOD(q);
+                break;
+            case uminus:
+                generate_UMINUS(q);
+                break;
+            case and_op:
+                generate_AND(q);
+                break;
+            case or_op:
+                generate_OR(q);
+                break;
+            case not_op:
+                generate_NOT(q);
+                break;
+            case if_eq:
+                generate_IF_EQ(q);
+                break;
+            case if_noteq:
+                generate_IF_NOTEQ(q);
+                break;
+            case if_lesseq:
+                generate_IF_LESSEQ(q);
+                break;
+            case if_greatereq:
+                generate_IF_GREATEREQ(q);
+                break;
+            case if_less:
+                generate_IF_LESS(q);
+                break;
+            case if_greater:
+                generate_IF_GREATER(q);
+                break;
+            case call:
+                generate_CALL(q);
+                break;
+            case param:
+                generate_PARAM(q);
+                break;
+            case ret:
+                generate_RETURN(q);
+                break;
+            case getretval:
+                generate_GETRETVAL(q);
+                break;
+            case funcstart:
+                generate_FUNCSTART(q);
+                break;
+            case funcend:
+                generate_FUNCEND(q);
+                break;
+            case tablecreate:
+                generate_NEWTABLE(q);
+                break;
+            case jump:
+                generate_JUMP(q);
+                break;
+            case tablegetelem:
+                generate_TABLEGETELEM(q);
+                break;
+            case tablesetelem:
+                generate_TABLESETELEM(q);
+                break;
+            default:
+                std::cerr << "Unknown quad opcode! Aborting.\n";
+                assert(0);
+        }
     }
 }
+
 
 void free_instructions() {
     for (auto inst : instruction_table) {

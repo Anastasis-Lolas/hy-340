@@ -128,7 +128,8 @@ void generate_FUNCSTART(quad*);
 void generate_RETURN(quad*);
 void generate_FUNCEND(quad*);
 void generate_FUNCSTART(quad*);
-
+void generate_UMINUS(quad*);
+void generate_TABLESETELEM(quad*);
 
 void generate_instructions();
 void generate_AND(quad*);
@@ -139,5 +140,6 @@ void print_instructions(void);
 void print_const_strings(void);
 void print_const_doubles(void);
 void print_const_ints(void);
-
+void print_funcstack(void);
+std::string func_to_string(const userfunc& f);
 #endif

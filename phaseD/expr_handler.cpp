@@ -78,8 +78,8 @@ void enter_func(int flag, std::string name) {
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
     // logika anti gia yylineno thelei quads ??
-    emit(funcstart, nullptr, nullptr, newexpr_conststring(name), -1,
-         nextquad());
+    std::cout << "\033[1;31m nextquad: " << nextquad() << " \033[0m\n";
+    emit(funcstart, nullptr, nullptr, newexpr(programfunc_e), -1, nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());
     enterscopespace();
@@ -116,6 +116,8 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
+    // emit(funcend, nullptr, nullptr,newexpr(programfunc_e),  -1,
+    // nextquad());
     emit(funcend, nullptr, nullptr, newexpr_conststring(name), -1, nextquad());
     patchlabel(jump_stack.back(), nextquad());
     jump_stack.pop_back();
@@ -574,6 +576,7 @@ expr* newexpr(expr_t t) {
 
 expr* newexpr_conststring(std::string str) {
     expr* e = newexpr(conststring_e);
+    e->sym = NULL;
     e->strConst = str;
     return e;
 }

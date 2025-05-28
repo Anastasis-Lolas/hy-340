@@ -5,13 +5,13 @@
 
 
 enum iopcode {
-    assign,
     add,
     sub,
-    mul,
     divv,
     mod,
+    assign,
     uminus,
+    mul,
     and_op,
     or_op,
     not_op,

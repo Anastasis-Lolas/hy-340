@@ -16,15 +16,31 @@ incomplete_jump *ij_head = (incomplete_jump *)0;
 unsigned ij_total = 0;
 
 
-generator_func_t generators[] = {
-    generate_ADD,          generate_SUB,       generate_DIV,
-    generate_MOD,          generate_NEWTABLE,  generate_TABLEGETELEM,
-    generate_ASSIGN,       generate_NOP,       generate_JUMP,
-    generate_IF_EQ,        generate_IF_NOTEQ,  generate_IF_GREATER,
-    generate_IF_GREATEREQ, generate_IF_LESS,   generate_IF_LESSEQ,
-    generate_NOT,          generate_PARAM,     generate_CALL,
-    generate_GETRETVAL,    generate_FUNCSTART, generate_RETURN,
-    generate_FUNCEND
+generator_func_t generators[] = {generate_ADD,
+                                 generate_SUB,
+                                 generate_DIV,
+                                 generate_MOD,
+                                 generate_ASSIGN,
+                                 generate_UMINUS,
+                                 generate_NOP,
+                                 generate_AND,
+                                 generate_OR,
+                                 generate_NOT,
+                                 generate_IF_EQ,
+                                 generate_IF_NOTEQ,
+                                 generate_IF_LESS,
+                                 generate_IF_GREATER,
+                                 generate_CALL,
+                                 generate_PARAM,
+                                 generate_RETURN,
+                                 generate_GETRETVAL,
+                                 generate_FUNCSTART,
+                                 generate_FUNCEND,
+                                 generate_NEWTABLE,
+                                 generate_JUMP,
+                                 generate_TABLEGETELEM,
+                                 generate_TABLESETELEM
+
 
 };
 
@@ -309,6 +325,7 @@ void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
+void generate_UMINUS(quad *q) { ; }
 
 void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
@@ -588,118 +605,7 @@ void generate_instructions() {
     for (unsigned int i = 0; i < quad_table.size(); ++i) {
         quad *q = quad_table[i];
         if (!q) continue;
-
-        std::cout << "Generating code for quad[" << i << "]: ";
-
-        switch (q->op) {
-            case assign:
-                std::cout << " -> Calling generate_ASSIGN\n";
-                generate_ASSIGN(q);
-                break;
-            case add:
-                std::cout << " -> Calling generate_ADD\n";
-                generate_ADD(q);
-                break;
-            case sub:
-                std::cout << " -> Calling generate_SUB\n";
-                generate_SUB(q);
-                break;
-            case mul:
-                std::cout << " -> Calling generate_MUL\n";
-                generate_MUL(q);
-                break;
-            case divv:
-                std::cout << " -> Calling generate_DIV\n";
-                generate_DIV(q);
-                break;
-            case mod:
-                std::cout << " -> Calling generate_MOD\n";
-                generate_MOD(q);
-                break;
-            case uminus:
-                std::cout << " -> Skipping uminus (not implemented)\n";
-                break;
-            case and_op:
-                std::cout << " -> Calling generate_AND\n";
-                generate_AND(q);
-                break;
-            case or_op:
-                std::cout << " -> Calling generate_OR\n";
-                generate_OR(q);
-                break;
-            case not_op:
-                std::cout << " -> Calling generate_NOT\n";
-                generate_NOT(q);
-                break;
-
-            case if_eq:
-                std::cout << " -> Calling generate_IF_EQ\n";
-                generate_IF_EQ(q);
-                break;
-            case if_noteq:
-                std::cout << " -> Calling generate_IF_NOTEQ\n";
-                generate_IF_NOTEQ(q);
-                break;
-            case if_lesseq:
-                std::cout << " -> Calling generate_IF_LESSEQ\n";
-                generate_IF_LESSEQ(q);
-                break;
-            case if_greatereq:
-                std::cout << " -> Calling generate_IF_GREATEREQ\n";
-                generate_IF_GREATEREQ(q);
-                break;
-            case if_less:
-                std::cout << " -> Calling generate_IF_LESS\n";
-                generate_IF_LESS(q);
-                break;
-            case if_greater:
-                std::cout << " -> Calling generate_IF_GREATER\n";
-                generate_IF_GREATER(q);
-                break;
-            case call:
-                std::cout << " -> Calling generate_CALL\n";
-                generate_CALL(q);
-                break;
-            case param:
-                std::cout << " -> Calling generate_PARAM\n";
-                generate_PARAM(q);
-                break;
-            case ret:
-                generate_RETURN(q);
-                std::cout << " -> return (not implemented)\n";
-                break;
-            case getretval:
-                std::cout << " -> Calling generate_GETRETVAL\n";
-                generate_GETRETVAL(q);
-                break;
-            case funcstart:
-                generate_FUNCSTART(q);
-                std::cout << " -> Calling generate_FUNCSTART\n";
-                break;
-            case funcend:
-                std::cout << " -> Skipping generate_FUNCEND\n";
-                generate_FUNCEND(q);
-                break;
-            case tablecreate:
-                std::cout << " -> Calling generate_NEWTABLE\n";
-                generate_NEWTABLE(q);
-                break;
-            case jump:
-                std::cout << " -> Calling generate_JUMP\n";
-                generate_JUMP(q);
-                break;
-            case tablegetelem:
-                std::cout << " -> Calling generate_TABLEGETELEM\n";
-                generate_TABLEGETELEM(q);
-                break;
-            case tablesetelem:
-                std::cout << " -> Calling generate_TABLESETELEM\n";
-                generate_TABLESETELEM(q);
-                break;
-            default:
-                std::cerr << "Unknown quad opcode! Aborting.\n";
-                assert(0);
-        }
+        generators[q->op](q);
     }
 }
 
@@ -757,4 +663,14 @@ void print_const_ints(void) {
     for (unsigned i = 0; i < int_vec_consts.size(); i++) {
         std::cout << i << " : " << int_vec_consts[i] << std::endl;
     }
+}
+void print_funcstack(void) {
+    for (unsigned i = 0; i < funcstack.size(); i++) {
+        std::cout << i << " : " << func_to_string(funcstack[i]) << std::endl;
+    }
+}
+
+std::string func_to_string(const userfunc &f) {
+    return "Function: " + f.id + ", Address: " + std::to_string(f.address) +
+           ", Local Size: " + std::to_string(f.localSize);
 }

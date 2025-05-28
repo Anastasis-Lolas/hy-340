@@ -22,7 +22,7 @@ extern int              yylex(void);
 extern unsigned int     scope;
 extern unsigned int     currQuad;
 std::vector<void *>     args;
-
+extern std::vector<quad*> quad_table;
 
 //#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
 #define DEBUG_REDUCE(msg)
@@ -544,14 +544,24 @@ block:
 
 funcdef:
       FUNCTION M {enter_func(0, "");}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args, $2->numConst);}
-            block {$$ = exit_func(0, "", $8->returnList); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args, $2->numConst + 1);}
+            block {
+                    $$ = exit_func(0, "", $8->returnList); 
+                    quad_table[$$->value.funcVal->funcIndex]->result->sym = $$;
+                    //assert(quad_table[$$->value.funcVal->funcIndex]->result);
+                    DEBUG_REDUCE("funcdef -> function(idlist) block"); 
+                  }
                                           
     | FUNCTION IDENT M {enter_func(1, *$2);}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            {scope--; add_function(*$2, args, $3->numConst);}
+            {scope--; add_function(*$2, args, $3->numConst + 1);}
             block
-            {$$ = exit_func(1, *$2, $9->returnList); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
+            {
+                $$ = exit_func(1, *$2, $9->returnList); 
+                quad_table[$$->value.funcVal->funcIndex]->result->sym = $$;
+                DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); 
+
+            }
     ;
 
 
@@ -792,11 +802,15 @@ int main(int argc, char** argv) {
         
     generate_instructions();
     //print_instructions();
+    std::cout<<"print_const_strings:\n";
     print_const_strings();
+    std::cout<<"print_const_doubles:\n";
     print_const_doubles();
+    std::cout<<"print_const_ints:\n";
     print_const_ints();
+    std::cout<<"print_funcstack:\n";
+    print_funcstack();
     void free_instructions();
-
     return 0;
 }
 

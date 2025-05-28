@@ -278,10 +278,8 @@ void generate_relational(vmopcode op, quad *q) {
     }
 
     q->taddress = nextinstructionlabel();
-    std::cout << "  -> Assigned taddress to quad: " << q->taddress << "\n";
 
     vm_emit(t);
-    std::cout << "  -> Instruction emitted\n";
 }
 
 
@@ -638,4 +636,22 @@ void free_instructions() {
     }
     instruction_table.clear();
     currInst = 0;
+}
+
+
+void print_const_strings(void){
+
+    for(unsigned i = 0 ; i <  string_vec_consts.size(); i++){
+        std::cout << i << " : " <<  string_vec_consts[i] <<std::endl;
+    }
+}
+void print_const_doubles(void){
+     for(unsigned i = 0 ; i <  double_vec_consts.size(); i++){
+        std::cout << i << " : " <<  double_vec_consts[i] <<std::endl;
+    }
+}
+void print_const_ints(void){
+     for(unsigned i = 0 ; i <  int_vec_consts.size(); i++){
+        std::cout << i << " : " <<  int_vec_consts[i] <<std::endl;
+    }
 }

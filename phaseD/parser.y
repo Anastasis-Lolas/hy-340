@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -791,7 +791,10 @@ int main(int argc, char** argv) {
     print_quads();
         
     generate_instructions();
-    print_instructions();
+    //print_instructions();
+    print_const_strings();
+    print_const_doubles();
+    print_const_ints();
     void free_instructions();
 
     return 0;

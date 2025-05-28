@@ -135,4 +135,8 @@ void generate_OR(quad*);
 void generate_RETURN(quad*);
 std::string vmopcode_to_string(vmopcode op);
 void print_instructions(void);
+void print_const_strings(void);
+void print_const_doubles(void);
+void print_const_ints(void);
+
 #endif

@@ -421,6 +421,45 @@ void generate_OR(quad *q) {
     vm_emit(t);
 }
 
+void generate_AND(quad *q) {
+    
+    q->taddress = nextinstructionlabel();
+
+    instruction *t = new instruction();
+
+    t->opcode = jeq_v;
+
+    if (q->arg1) make_operand(q->arg1, t->arg1);
+
+    make_booloperand(t->arg2, true);
+
+    t->result->type = label_a;
+    t->result->val = nextinstructionlabel() + 4;
+    vm_emit(t);
+
+    if (q->arg2) make_operand(q->arg2, t->arg1);
+
+    t->result->val = nextinstructionlabel() + 3;
+    vm_emit(t);
+
+    t->opcode = assign_v;
+    make_booloperand(t->arg1, false);
+
+    if (t->arg2) reset_operand(t->arg2);
+
+    if (q->result) make_operand(q->result, t->result);
+
+    vm_emit(t);
+
+    t->opcode = assign_v;
+    make_booloperand(t->arg1, true);
+
+    if (t->arg2) reset_operand(t->arg2);
+
+    if (q->result) make_operand(q->result, t->result);
+
+    vm_emit(t);}
+
 void generate_PARAM(quad *q) {
     q->taddress = nextinstructionlabel();
     instruction *t = new instruction();
@@ -536,6 +575,8 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
     funcstack.push_back(*f);
     return funcstack.size() - 1;
 }
+
+
 
 void generate_instructions() {
     for (unsigned int i = 0; i < quad_table.size(); ++i) {

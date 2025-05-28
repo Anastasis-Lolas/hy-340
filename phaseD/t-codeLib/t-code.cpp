@@ -536,3 +536,176 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
     funcstack.push_back(*f);
     return funcstack.size() - 1;
 }
+
+void generate_instructions() {
+    for (unsigned int i = 0; i < quad_table.size(); ++i) {
+        quad *q = quad_table[i];
+        if (!q) continue;
+
+        std::cout << "Generating code for quad[" << i << "]: ";
+
+        switch (q->op) {
+            case assign:
+                std::cout << " -> Calling generate_ASSIGN\n";
+                generate_ASSIGN(q);
+                break;
+            case add:
+                std::cout << " -> Calling generate_ADD\n";
+                generate_ADD(q);
+                break;
+            case sub:
+                std::cout << " -> Calling generate_SUB\n";
+                generate_SUB(q);
+                break;
+            case mul:
+                std::cout << " -> Calling generate_MUL\n";
+                generate_MUL(q);
+                break;
+            case divv:
+                std::cout << " -> Calling generate_DIV\n";
+                generate_DIV(q);
+                break;
+            case mod:
+                std::cout << " -> Calling generate_MOD\n";
+                generate_MOD(q);
+                break;
+            case uminus:
+                std::cout << " -> Skipping uminus (not implemented)\n";
+                break;
+            case and_op:
+                std::cout << " -> Calling generate_AND\n";
+                generate_AND(q);
+                break;
+            case or_op:
+                std::cout << " -> Calling generate_OR\n";
+                generate_OR(q);
+                break;
+            case not_op:
+                std::cout << " -> Calling generate_NOT\n";
+                generate_NOT(q);
+                break;
+
+            case if_eq:
+                std::cout << " -> Calling generate_IF_EQ\n";
+                generate_IF_EQ(q);
+                break;
+            case if_noteq:
+                std::cout << " -> Calling generate_IF_NOTEQ\n";
+                generate_IF_NOTEQ(q);
+                break;
+            case if_lesseq:
+                std::cout << " -> Calling generate_IF_LESSEQ\n";
+                generate_IF_LESSEQ(q);
+                break;
+            case if_greatereq:
+                std::cout << " -> Calling generate_IF_GREATEREQ\n";
+                generate_IF_GREATEREQ(q);
+                break;
+            case if_less:
+                std::cout << " -> Calling generate_IF_LESS\n";
+                generate_IF_LESS(q);
+                break;
+            case if_greater:
+                std::cout << " -> Calling generate_IF_GREATER\n";
+                generate_IF_GREATER(q);
+                break;
+            case call:
+                std::cout << " -> Calling generate_CALL\n";
+                generate_CALL(q);
+                break;
+            case param:
+                std::cout << " -> Calling generate_PARAM\n";
+                generate_PARAM(q);
+                break;
+            case ret:
+                std::cout << " -> Skipping return (not implemented)\n";
+                break;
+            case getretval:
+                std::cout << " -> Calling generate_GETRETVAL\n";
+                generate_GETRETVAL(q);
+                break;
+            case funcstart:
+                std::cout << " -> Skipping function start (not implemented)\n";
+                break;
+            case funcend:
+                std::cout << " -> Skipping generate_FUNCEND\n";
+                // generate_FUNCEND(q);
+                break;
+            case tablecreate:
+                std::cout << " -> Calling generate_NEWTABLE\n";
+                generate_NEWTABLE(q);
+                break;
+            case jump:
+                std::cout << " -> Calling generate_JUMP\n";
+                generate_JUMP(q);
+                break;
+            case tablegetelem:
+                std::cout << " -> Calling generate_TABLEGETELEM\n";
+                generate_TABLEGETELEM(q);
+                break;
+            case tablesetelem:
+                std::cout << " -> Calling generate_TABLESETELEM\n";
+                generate_TABLESETELEM(q);
+                break;
+            default:
+                std::cerr << "Unknown quad opcode! Aborting.\n";
+                assert(0);
+        }
+    }
+}
+
+void free_instructions() {
+    for (auto inst : instruction_table) {
+        if (inst) free(inst);
+    }
+    instruction_table.clear();
+    currInst = 0;
+}
+
+// prints
+
+void print_instructions() {
+    for (unsigned int i = 0; i < instruction_table.size(); ++i) {
+        instruction *inst = instruction_table[i];
+        if (!inst) {
+            std::cout << "Instruction " << i << ": null pointer" << std::endl;
+            continue;
+        }
+
+        std::cout << "Instruction " << i << ": "
+                  << "Opcode: " << vmopcode_to_string(inst->opcode);
+
+        if (inst->arg1)
+            std::cout << ", Arg1: " << inst->arg1->val;
+        else
+            std::cout << ", Arg1: null";
+
+        if (inst->arg2)
+            std::cout << ", Arg2: " << inst->arg2->val;
+        else
+            std::cout << ", Arg2: null";
+
+        if (inst->result)
+            std::cout << ", Result: " << inst->result->val;
+        else
+            std::cout << ", Result: null";
+
+        std::cout << ", SrcLine: " << inst->srcLine << std::endl;
+    }
+}
+
+void print_const_strings(void) {
+    for (unsigned i = 0; i < string_vec_consts.size(); i++) {
+        std::cout << i << " : " << string_vec_consts[i] << std::endl;
+    }
+}
+void print_const_doubles(void) {
+    for (unsigned i = 0; i < double_vec_consts.size(); i++) {
+        std::cout << i << " : " << double_vec_consts[i] << std::endl;
+    }
+}
+void print_const_ints(void) {
+    for (unsigned i = 0; i < int_vec_consts.size(); i++) {
+        std::cout << i << " : " << int_vec_consts[i] << std::endl;
+    }
+}

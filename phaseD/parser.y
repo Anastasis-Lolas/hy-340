@@ -24,8 +24,8 @@ extern unsigned int     currQuad;
 std::vector<void *>     args;
 
 
-#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
-//#define DEBUG_REDUCE(msg)
+//#define DEBUG_REDUCE(msg) std::cout << "Reduced: " << msg << " (line " << yylineno << ")\n"
+#define DEBUG_REDUCE(msg)
 
 %}
 %code requires {
@@ -33,6 +33,7 @@ std::vector<void *>     args;
     #include "Quads/expression.h"
     #include "Quads/quad.h"
     #include "expr_handler.h"
+    #include "t-codeLib/t-code.h"
 }
 
 %start program
@@ -788,6 +789,14 @@ int main(int argc, char** argv) {
     //print_args(args);
    // printFullSymTable(oSymTable); 
     print_quads();
+        
+    generate_instructions();
+    //print_instructions();
+    print_const_strings();
+    print_const_doubles();
+    print_const_ints();
+    void free_instructions();
+
     return 0;
 }
 

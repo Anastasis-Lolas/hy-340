@@ -5,7 +5,8 @@ std::vector<std::string> string_vec_consts;
 std::vector<double> double_vec_consts;
 std::vector<std::string> lig_strvec_consts;
 std::vector<int> int_vec_consts;
-std::vector<SymbolTableEntry_T> newfunc_vec_consts;
+std::vector<userfunc> funcstack;
+std::vector<int> labstack;
 extern std::vector<quad *> quad_table;
 
 std::vector<instruction *> instruction_table;
@@ -65,17 +66,6 @@ unsigned libfuncs_newused(std::string s) {
     return lig_strvec_consts.size() - 1;
 }
 
-unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
-    for (int i = 0; i < newfunc_vec_consts.size(); i++) {
-        if (newfunc_vec_consts[i] == sym) {
-            return i;
-        }
-    }
-
-    newfunc_vec_consts.push_back(sym);
-    return newfunc_vec_consts.size() - 1;
-}
-
 void make_operand(expr *e, vmarg *arg) {
     switch (e->type) {
         case var_e:
@@ -84,8 +74,6 @@ void make_operand(expr *e, vmarg *arg) {
         case boolexpr_e:
         case newtable_e: {
             assert(e->sym);
-
-
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -368,29 +356,97 @@ void generate_CALL(quad *q) {
 }
 
 void generate_GETRETVAL(quad *q) {
-    q->taddress = nextinstructionlabel();
+    assert(q);
+
     instruction *t = new instruction();
-
     t->opcode = assign_v;
+    q->taddress = nextinstructionlabel();
+    t->srcLine = q->line;  // ? q->taddress;
+    t->arg1 = new vmarg();
 
-    if (q->result) make_operand(q->result, t->result);
+    if (q->result) {
+        t->result = new vmarg();
+        make_operand(q->result, t->result);
+    } else {
+        t->result = nullptr;
+    }
+
     make_retvaloperand(t->arg1);
 
     vm_emit(t);
 }
 
-void generate_FUNCSTART(quad *q) {}
+void generate_RETURN(quad *q) {
+    assert(q);
+    instruction *t = new instruction();
+    t->opcode = assign_v;
+    q->taddress = nextinstructionlabel();  // ?
+    t->srcLine = q->line;                  // ? q->taddress;
 
-void generate_RETURN(quad *q) {}
+    if (q->result) {
+        t->arg1 = new vmarg();
+        make_operand(q->result, t->arg1);
+    } else {
+        t->arg1 = nullptr;
+    }
+
+    t->arg2 = nullptr;
+    t->result = nullptr;
+
+    vm_emit(t);
+}
 
 
 void generate_FUNCEND(quad *q) {
     // SymTableEntry f = pop(funcstack);
     // backpatch(f.returnList, nextinstructionlabel());
-    q->taddress = nextinstructionlabel();
+    assert(q);
+
+    q->taddress = nextinstructionlabel();  // ?
+
     instruction *t = new instruction();
     t->opcode = funcexit_v;
-    make_operand(q->result, t->result);
+    t->srcLine = q->line;  // ? q->taddress;
+    t->arg1 = nullptr;
+    t->arg2 = nullptr;
+
+    if (q->result) make_operand(q->result, t->result);
+    t->result = new vmarg();
+    t->result->type = label_a;
+    t->result->val = labstack.back();
+    labstack.pop_back();
+    vm_emit(t);
+}
+void generate_FUNCSTART(quad *q) {
+    assert(q);
+    SymbolTableEntry_T f = q->result->sym;
+
+    // f->taddress = nextinstructionlabel(); // ?
+    q->taddress = nextinstructionlabel();  // ?
+    instruction *t = new instruction();
+    t->opcode = funcenter_v;
+    t->srcLine = q->line;  // ? q->taddress;
+    t->arg1 = nullptr;
+    t->arg2 = nullptr;
+    if (q->result) make_operand(q->result, t->result);
+    labstack.push_back(funcstack.size() - 1);
 
     vm_emit(t);
+}
+
+
+unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
+    assert(sym);
+    assert(sym->type == USERFUNC);
+    for (unsigned int i = 0; i < funcstack.size(); ++i) {
+        if (funcstack[i].id == sym->value.funcVal->name) {
+            return i;
+        }
+    }
+    userfunc *f = new userfunc();
+    f->address = sym->value.funcVal->funcIndex;
+    f->localSize = sym->value.funcVal->totalLocals;
+    f->id = sym->value.funcVal->name;
+    funcstack.push_back(*f);
+    return funcstack.size() - 1;
 }

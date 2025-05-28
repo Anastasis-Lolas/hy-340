@@ -19,6 +19,7 @@ typedef struct Function {
     unsigned int line;
     unsigned int offset;
     unsigned int totalLocals;
+    unsigned int funcIndex;
 } Function;
 
 enum SymbolType { GLOBAL, LLOCAL, FORMAL, USERFUNC, LIBFUNC };

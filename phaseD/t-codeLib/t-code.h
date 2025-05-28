@@ -125,5 +125,6 @@ void generate_GETRETVAL(quad*);
 void generate_FUNCSTART(quad*);
 void generate_RETURN(quad*);
 void generate_FUNCEND(quad*);
+void generate_FUNCSTART(quad*);
 
 #endif

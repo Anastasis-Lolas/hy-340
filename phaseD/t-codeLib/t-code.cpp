@@ -171,6 +171,17 @@ void add_incomplete_jump(unsigned instrNo, unsigned iaddress) {
     incjumps_vec.push_back(new_inc);
 }
 
+void patch_incomplete_jumps(){
+
+    for(unsigned i = 0 ; i < incjumps_vec.size();i++){
+        if(incjumps_vec[i]->iaddress == nextquadlabel()){
+            instruction_table[incjumps_vec[i]->instrNo]->result->val = nextinstructionlabel();
+        }else{
+            instruction_table[incjumps_vec[i]->instrNo]->result->val = quad_table[incjumps_vec[i]->iaddress]->taddress;
+        }
+    }
+}
+
 void make_numberoperand(vmarg *arg, double val) {
     arg->val = consts_newdouble(val);
     arg->type = number_a;
@@ -381,7 +392,32 @@ void generate_GETRETVAL(quad *q) {
 
 void generate_FUNCSTART(quad *q) {}
 
-void generate_RETURN(quad *q) {}
+void generate_RETURN(quad *q) {
+
+    q->taddress = nextinstructionlabel();
+
+    instruction * t = new instruction();
+
+    t->opcode = assign_v;
+
+    make_retvaloperand(t->result);
+
+    if(q->arg1) make_operand(q->arg1 , t->arg1);
+
+    vm_emit(t);
+
+    // f = top(funcstack);
+    // append(f.returnlist,nextinstructionlabel());
+
+    t->opcode = jump_v;
+
+    reset_operand(t->arg1);
+    reset_operand(t->arg2);
+
+    t->result->type = label_a;
+
+    vm_emit(t);
+}
 
 
 void generate_FUNCEND(quad *q) {

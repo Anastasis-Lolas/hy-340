@@ -83,7 +83,7 @@ void make_operand(expr *e, vmarg *arg) {
         case newtable_e: {
             assert(e->sym);
            
-            arg->val = final_var;
+            arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
                     arg->type = global_a;

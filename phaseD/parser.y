@@ -33,6 +33,7 @@ std::vector<void *>     args;
     #include "Quads/expression.h"
     #include "Quads/quad.h"
     #include "expr_handler.h"
+    #include "t-codeLib/t-code.h"
 }
 
 %start program
@@ -788,6 +789,11 @@ int main(int argc, char** argv) {
     //print_args(args);
    // printFullSymTable(oSymTable); 
     print_quads();
+        
+    generate_instructions();
+    print_instructions();
+    void free_instructions();
+
     return 0;
 }
 

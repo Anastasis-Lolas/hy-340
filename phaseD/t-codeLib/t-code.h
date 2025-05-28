@@ -126,4 +126,11 @@ void generate_FUNCSTART(quad*);
 void generate_RETURN(quad*);
 void generate_FUNCEND(quad*);
 
+
+void generate_instructions();
+void generate_AND(quad*);
+void generate_OR(quad*);
+void generate_RETURN(quad*);
+
+void print_instructions(void);
 #endif

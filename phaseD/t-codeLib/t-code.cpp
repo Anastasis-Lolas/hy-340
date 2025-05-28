@@ -11,6 +11,10 @@ extern std::vector<quad *> quad_table;
 std::vector<instruction *> instruction_table;
 unsigned int currInst = 0;
 
+incomplete_jump* ij_head =  (incomplete_jump*)0;
+unsigned ij_total = 0;
+
+
 generator_func_t generators[] = {
     generate_ADD,          generate_SUB,       generate_DIV,
     generate_MOD,          generate_NEWTABLE,  generate_TABLEGETELEM,
@@ -393,4 +397,164 @@ void generate_FUNCEND(quad *q) {
     make_operand(q->result, t->result);
 
     vm_emit(t);
+}
+
+
+void generate_AND(quad *q) {}
+
+void generate_instructions() {
+    for (unsigned int i = 0; i < quad_table.size(); ++i) {
+        quad *q = quad_table[i];
+        if (!q) continue;
+
+        std::cout << "Generating code for quad[" << i << "]: ";
+
+        switch (q->op) {
+            case assign:
+                std::cout << " -> Calling generate_ASSIGN\n";
+                generate_ASSIGN(q);
+                break;
+            case add:
+                std::cout << " -> Calling generate_ADD\n";
+                generate_ADD(q);
+                break;
+            case sub:
+                std::cout << " -> Calling generate_SUB\n";
+                generate_SUB(q);
+                break;
+            case mul:
+                std::cout << " -> Calling generate_MUL\n";
+                generate_MUL(q);
+                break;
+            case divv:
+                std::cout << " -> Calling generate_DIV\n";
+                generate_DIV(q);
+                break;
+            case mod:
+                std::cout << " -> Calling generate_MOD\n";
+                generate_MOD(q);
+                break;
+            case uminus:
+                std::cout << " -> Skipping uminus (not implemented)\n";
+                break;
+            case and_op:
+                std::cout << " -> Calling generate_AND\n";
+                generate_AND(q);
+                break;
+            case or_op:
+                std::cout << " -> Calling generate_OR\n";
+                generate_OR(q);
+                break;
+            case not_op:
+                std::cout << " -> Calling generate_NOT\n";
+                generate_NOT(q);
+                break;
+
+            case if_eq:
+                std::cout << " -> Calling generate_IF_EQ\n";
+                generate_IF_EQ(q);
+                break;
+            case if_noteq:
+                std::cout << " -> Calling generate_IF_NOTEQ\n";
+                generate_IF_NOTEQ(q);
+                break;
+            case if_lesseq:
+                std::cout << " -> Calling generate_IF_LESSEQ\n";
+                generate_IF_LESSEQ(q);
+                break;
+            case if_greatereq:
+                std::cout << " -> Calling generate_IF_GREATEREQ\n";
+                generate_IF_GREATEREQ(q);
+                break;
+            case if_less:
+                std::cout << " -> Calling generate_IF_LESS\n";
+                //generate_IF_LESS(q);
+                break;
+            case if_greater:
+                std::cout << " -> Calling generate_IF_GREATER\n";
+                generate_IF_GREATER(q);
+                break;
+            case call:
+                std::cout << " -> Calling generate_CALL\n";
+                generate_CALL(q);
+                break;
+            case param:
+                std::cout << " -> Calling generate_PARAM\n";
+                generate_PARAM(q);
+                break;
+            case ret:
+                std::cout << " -> Skipping return (not implemented)\n";
+                break;
+            case getretval:
+                std::cout << " -> Calling generate_GETRETVAL\n";
+                generate_GETRETVAL(q);
+                break;
+            case funcstart:
+                std::cout << " -> Skipping function start (not implemented)\n";
+                break;
+            case funcend:
+                std::cout << " -> Calling generate_FUNCEND\n";
+                generate_FUNCEND(q);
+                break;
+            case tablecreate:
+                std::cout << " -> Calling generate_NEWTABLE\n";
+                generate_NEWTABLE(q);
+                break;
+            case jump:
+                std::cout << " -> Calling generate_JUMP\n";
+                generate_JUMP(q);
+                break;
+            case tablegetelem:
+                std::cout << " -> Calling generate_TABLEGETELEM\n";
+                generate_TABLEGETELEM(q);
+                break;
+            case tablesetelem:
+                std::cout << " -> Calling generate_TABLESETELEM\n";
+                generate_TABLESETELEM(q);
+                break;
+            default:
+                std::cerr << "Unknown quad opcode! Aborting.\n";
+                assert(0);
+        }
+    }
+}
+
+
+
+void print_instructions() {
+    for (unsigned int i = 0; i < instruction_table.size(); ++i) {
+        instruction *inst = instruction_table[i];
+        if (!inst) {
+            std::cout << "Instruction " << i << ": null pointer" << std::endl;
+            continue;
+        }
+
+        std::cout << "Instruction " << i << ": "
+                  << "Opcode: " << inst->opcode;
+
+        if (inst->arg1)
+            std::cout << ", Arg1: " << inst->arg1->val;
+        else
+            std::cout << ", Arg1: null";
+
+        if (inst->arg2)
+            std::cout << ", Arg2: " << inst->arg2->val;
+        else
+            std::cout << ", Arg2: null";
+
+        if (inst->result)
+            std::cout << ", Result: " << inst->result->val;
+        else
+            std::cout << ", Result: null";
+
+        std::cout << ", SrcLine: " << inst->srcLine << std::endl;
+    }
+}
+
+void free_instructions() {
+    for (auto inst : instruction_table) {
+        if (inst) free(inst);
+    }
+    instruction_table.clear();
+    currInst = 0;
 }

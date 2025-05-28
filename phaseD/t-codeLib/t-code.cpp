@@ -16,33 +16,15 @@ incomplete_jump *ij_head = (incomplete_jump *)0;
 unsigned ij_total = 0;
 
 
-generator_func_t generators[] = {generate_ADD,
-                                 generate_SUB,
-                                 generate_DIV,
-                                 generate_MOD,
-                                 generate_ASSIGN,
-                                 generate_UMINUS,
-                                 generate_NOP,
-                                 generate_AND,
-                                 generate_OR,
-                                 generate_NOT,
-                                 generate_IF_EQ,
-                                 generate_IF_NOTEQ,
-                                 generate_IF_LESS,
-                                 generate_IF_GREATER,
-                                 generate_CALL,
-                                 generate_PARAM,
-                                 generate_RETURN,
-                                 generate_GETRETVAL,
-                                 generate_FUNCSTART,
-                                 generate_FUNCEND,
-                                 generate_NEWTABLE,
-                                 generate_JUMP,
-                                 generate_TABLEGETELEM,
-                                 generate_TABLESETELEM
-
-
-};
+generator_func_t generators[] = {
+    generate_ADD,       generate_SUB,          generate_DIV,
+    generate_MOD,       generate_ASSIGN,       generate_UMINUS,
+    generate_NOP,       generate_AND,          generate_OR,
+    generate_NOT,       generate_IF_EQ,        generate_IF_NOTEQ,
+    generate_IF_LESS,   generate_IF_GREATER,   generate_CALL,
+    generate_PARAM,     generate_RETURN,       generate_GETRETVAL,
+    generate_FUNCSTART, generate_FUNCEND,      generate_NEWTABLE,
+    generate_JUMP,      generate_TABLEGETELEM, generate_TABLESETELEM};
 
 unsigned consts_newstring(std::string s) {
     for (unsigned int i = 0; i < string_vec_consts.size(); ++i) {

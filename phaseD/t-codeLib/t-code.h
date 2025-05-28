@@ -140,6 +140,6 @@ void print_instructions(void);
 void print_const_strings(void);
 void print_const_doubles(void);
 void print_const_ints(void);
-void print_funcstack(void);
-std::string func_to_string(const userfunc& f);
+void print_userfuncs(void);
+void print_libfuncs(void);
 #endif

@@ -90,6 +90,7 @@ unsigned nextinstructionlabel();
 
 unsigned consts_newstring(std::string s);
 unsigned consts_newnumber(double n);
+unsigned consts_newint(int a);
 unsigned libfuncs_newused(std::string s);
 unsigned userfunc_newfunc(SymbolTableEntry_T sym);
 

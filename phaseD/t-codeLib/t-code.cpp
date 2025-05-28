@@ -5,6 +5,7 @@ std::vector<std::string> string_vec_consts;
 std::vector<double> double_vec_consts;
 std::vector<std::string> lig_strvec_consts;
 std::vector<SymbolTableEntry_T> newfunc_vec_consts;
+std::vector<int> int_vec_consts;
 extern std::vector<quad *> quad_table;
 
 std::vector<instruction *> instruction_table;
@@ -30,6 +31,16 @@ unsigned consts_newstring(std::string s) {
     }
     string_vec_consts.push_back(s);
     return string_vec_consts.size() - 1;
+}
+
+unsigned consts_newint(int a){
+    for (unsigned int i = 0; i < int_vec_consts.size(); ++i) {
+        if (int_vec_consts[i] == a) {
+            return i;
+        }
+    }
+    int_vec_consts.push_back(a);
+    return int_vec_consts.size() - 1;
 }
 
 unsigned consts_newnumber(double n) {
@@ -71,13 +82,7 @@ void make_operand(expr *e, vmarg *arg) {
         case boolexpr_e:
         case newtable_e: {
             assert(e->sym);
-            unsigned final_var;
-            if (e->sym->type == GLOBAL || e->sym->type == LLOCAL ||
-                e->sym->type == FORMAL) {
-                final_var = e->sym->value.varVal->offset;
-            } else {
-                final_var = e->sym->value.funcVal->offset;
-            }
+           
             arg->val = final_var;
             switch (e->sym->type) {
                 case GLOBAL:

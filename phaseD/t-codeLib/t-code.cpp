@@ -152,7 +152,10 @@ void make_operand(expr *e, vmarg *arg) {
 
 
 void vm_emit(instruction *t) {
-    instruction *new_inst = (instruction *)malloc(sizeof(instruction));
+    instruction *new_inst = new instruction();
+    new_inst->arg1 = new vmarg();
+    new_inst->arg2 = new vmarg();
+    new_inst->result = new vmarg();
 
     if (!new_inst) {
         std::cerr << "Failed !" << std::endl;
@@ -356,6 +359,10 @@ void generate_NOT(quad *q) {
 
     t->opcode = jeq_v;
 
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
+
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
     make_booloperand(t->arg2, false);
@@ -407,6 +414,10 @@ void generate_OR(quad *q) {
 
     t->opcode = jeq_v;
 
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
+
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
     make_booloperand(t->arg2, true);
@@ -445,6 +456,10 @@ void generate_AND(quad *q) {
     instruction *t = new instruction();
 
     t->opcode = jeq_v;
+
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
 
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
@@ -497,6 +512,9 @@ void generate_CALL(quad *q) {
     instruction *t = new instruction();
     t->opcode = call_v;
 
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
     vm_emit(t);
@@ -664,13 +682,16 @@ void print_const_ints(void) {
         std::cout << i << " : " << int_vec_consts[i] << std::endl;
     }
 }
-void print_funcstack(void) {
-    for (unsigned i = 0; i < funcstack.size(); i++) {
-        std::cout << i << " : " << func_to_string(funcstack[i]) << std::endl;
+
+void print_libfuncs(void) {
+    for (unsigned i = 0; i < lig_strvec_consts.size(); i++) {
+        std::cout << i << " : " << lig_strvec_consts[i] << std::endl;
     }
 }
-
-std::string func_to_string(const userfunc &f) {
-    return "Function: " + f.id + ", Address: " + std::to_string(f.address) +
-           ", Local Size: " + std::to_string(f.localSize);
+void print_userfuncs(void) {
+    for (unsigned i = 0; i < funcstack.size(); i++) {
+        std::cout << i << " : " << funcstack[i].id << ", "
+                  << "Address: " << funcstack[i].address
+                  << ", Local Size: " << funcstack[i].localSize << std::endl;
+    }
 }

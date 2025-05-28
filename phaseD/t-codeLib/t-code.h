@@ -39,17 +39,17 @@ enum vmopcode {
 };
 
 typedef enum vmarg_t {
+    label_a,
     global_a,
-    local_a,
     formal_a,
-    bool_a,
-    string_a,
+    local_a,
     number_a,
+    string_a,
+    bool_a,
+    nil_a,
     userfunc_a,
     libfunc_a,
     retval_a,
-    label_a,
-    nil_a,
     undef_a,
 } vmarg_t;
 
@@ -65,6 +65,13 @@ typedef struct instruction {
     vmarg* arg2;
     unsigned srcLine;
 } instruction;
+
+struct userfunc {
+    unsigned address;
+    unsigned localSize;
+    std::string id;
+};
+
 
 typedef struct incomplete_jump {
     unsigned instrNo;
@@ -82,7 +89,7 @@ void make_operand(expr* e, vmarg* arg);
 unsigned nextinstructionlabel();
 
 unsigned consts_newstring(std::string s);
-unsigned consts_newnumber(double n);
+unsigned consts_newdouble(double n);
 unsigned consts_newint(int a);
 unsigned libfuncs_newused(std::string s);
 unsigned userfunc_newfunc(SymbolTableEntry_T sym);

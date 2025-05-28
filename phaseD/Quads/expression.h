@@ -17,7 +17,7 @@ enum expr_t {
     assignexpr_e,
     newtable_e,
 
-    constnum_e,
+    constdouble_e,
     intnum_e,
     constbool_e,
     conststring_e,
@@ -30,10 +30,10 @@ typedef struct expr {
     SymbolTableEntry_T sym;
     expr* index;
     double numConst;
-    int    numInt;
+    int numInt;
     std::string strConst;
     bool boolConst;
-    std::vector<int> truelist;  
+    std::vector<int> truelist;
     std::vector<int> falselist;
     expr* next;
 

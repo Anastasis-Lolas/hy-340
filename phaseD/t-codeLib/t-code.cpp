@@ -45,7 +45,6 @@ unsigned consts_newint(int a) {
 }
 
 
-
 unsigned consts_newdouble(double n) {
     for (unsigned int i = 0; i < double_vec_consts.size(); ++i) {
         if (double_vec_consts[i] == n) {
@@ -86,7 +85,7 @@ void make_operand(expr *e, vmarg *arg) {
         case newtable_e: {
             assert(e->sym);
 
-           
+
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -114,8 +113,13 @@ void make_operand(expr *e, vmarg *arg) {
             break;
         }
 
-        case constnum_e: {
+        case constdouble_e: {
             arg->val = consts_newdouble(e->numConst);
+            arg->type = number_a;
+            break;
+        }
+        case intnum_e: {
+            arg->val = consts_newint(e->numInt);
             arg->type = number_a;
             break;
         }
@@ -375,9 +379,9 @@ void generate_GETRETVAL(quad *q) {
     vm_emit(t);
 }
 
-void generate_FUNCSTART(quad * q){}
+void generate_FUNCSTART(quad *q) {}
 
-void generate_RETURN(quad * q){}
+void generate_RETURN(quad *q) {}
 
 
 void generate_FUNCEND(quad *q) {
@@ -390,4 +394,3 @@ void generate_FUNCEND(quad *q) {
 
     vm_emit(t);
 }
-

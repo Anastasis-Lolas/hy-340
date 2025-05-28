@@ -607,6 +607,13 @@ expr* newexpr_constnum(double i) {
     return e;
 }
 
+expr* newexpr_intnum(int i){
+    expr * e = newexpr(intnum_e);
+    e->sym = NULL;
+    e->numInt = i;
+    return e;
+}
+
 expr* emit_arith_op(iopcode op, expr* e1, expr* e2) {
     expr* result = newexpr(arithexpr_e);
     result->sym = newtemp();

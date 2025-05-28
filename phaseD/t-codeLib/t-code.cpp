@@ -5,9 +5,7 @@ std::vector<std::string> string_vec_consts;
 std::vector<double> double_vec_consts;
 std::vector<std::string> lig_strvec_consts;
 std::vector<int> int_vec_consts;
-
 std::vector<SymbolTableEntry_T> newfunc_vec_consts;
-std::vector<int> int_vec_consts;
 extern std::vector<quad *> quad_table;
 
 std::vector<instruction *> instruction_table;
@@ -36,8 +34,6 @@ unsigned consts_newstring(std::string s) {
 }
 
 
-unsigned consts_newint(int a){
-
 unsigned consts_newint(int a) {
     for (unsigned int i = 0; i < int_vec_consts.size(); ++i) {
         if (int_vec_consts[i] == a) {
@@ -49,7 +45,6 @@ unsigned consts_newint(int a) {
 }
 
 
-unsigned consts_newnumber(double n) {
 
 unsigned consts_newdouble(double n) {
     for (unsigned int i = 0; i < double_vec_consts.size(); ++i) {
@@ -170,7 +165,6 @@ void add_incomplete_jump(unsigned instrNo, unsigned iaddress) {
     new_inc->iaddress = iaddress;
 
     incjumps_vec.push_back(new_inc);
-    ij_total++;
 }
 
 void make_numberoperand(vmarg *arg, double val) {
@@ -254,7 +248,7 @@ void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad *q) { generate_relational(jne_v, q); }
 void generate_IF_GREATER(quad *q) { generate_relational(jgt_v, q); }
-void generate_IF_GREATER_EQ(quad *q) { generate_relational(jge_v, q); }
+void generate_IF_GREATEREQ(quad *q) { generate_relational(jge_v, q); }
 void generate_IF_LESS(quad *q) { generate_relational(jlt_v, q); }
 void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
 
@@ -381,6 +375,9 @@ void generate_GETRETVAL(quad *q) {
     vm_emit(t);
 }
 
+void generate_FUNCSTART(quad * q){}
+
+void generate_RETURN(quad * q){}
 
 
 void generate_FUNCEND(quad *q) {

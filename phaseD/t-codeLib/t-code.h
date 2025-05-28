@@ -72,8 +72,8 @@ typedef struct incomplete_jump {
     incomplete_jump* next;
 } incomplete_jump;
 
-incomplete_jump* ij_head = (incomplete_jump*)0;
-unsigned ij_total = 0;
+// incomplete_jump* ij_head = (incomplete_jump*)0;
+// unsigned ij_total = 0;
 
 void vm_emit(instruction*);
 void add_incomplete_jump(unsigned instrNo, unsigned iaddress);

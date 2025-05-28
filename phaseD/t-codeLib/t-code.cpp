@@ -4,6 +4,8 @@ std::vector<incomplete_jump *> incjumps_vec;
 std::vector<std::string> string_vec_consts;
 std::vector<double> double_vec_consts;
 std::vector<std::string> lig_strvec_consts;
+std::vector<int> int_vec_consts;
+
 std::vector<SymbolTableEntry_T> newfunc_vec_consts;
 std::vector<int> int_vec_consts;
 extern std::vector<quad *> quad_table;
@@ -33,7 +35,11 @@ unsigned consts_newstring(std::string s) {
     return string_vec_consts.size() - 1;
 }
 
+<<<<<<< HEAD
 unsigned consts_newint(int a){
+=======
+unsigned consts_newint(int a) {
+>>>>>>> upstream/main
     for (unsigned int i = 0; i < int_vec_consts.size(); ++i) {
         if (int_vec_consts[i] == a) {
             return i;
@@ -43,7 +49,11 @@ unsigned consts_newint(int a){
     return int_vec_consts.size() - 1;
 }
 
+<<<<<<< HEAD
 unsigned consts_newnumber(double n) {
+=======
+unsigned consts_newdouble(double n) {
+>>>>>>> upstream/main
     for (unsigned int i = 0; i < double_vec_consts.size(); ++i) {
         if (double_vec_consts[i] == n) {
             return i;
@@ -82,7 +92,10 @@ void make_operand(expr *e, vmarg *arg) {
         case boolexpr_e:
         case newtable_e: {
             assert(e->sym);
+<<<<<<< HEAD
            
+=======
+>>>>>>> upstream/main
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -109,8 +122,9 @@ void make_operand(expr *e, vmarg *arg) {
             arg->type = string_a;
             break;
         }
+
         case constnum_e: {
-            arg->val = consts_newnumber(e->numConst);
+            arg->val = consts_newdouble(e->numConst);
             arg->type = number_a;
             break;
         }
@@ -164,7 +178,7 @@ void add_incomplete_jump(unsigned instrNo, unsigned iaddress) {
 }
 
 void make_numberoperand(vmarg *arg, double val) {
-    arg->val = consts_newnumber(val);
+    arg->val = consts_newdouble(val);
     arg->type = number_a;
 }
 
@@ -222,15 +236,15 @@ void generate_relational(vmopcode op, quad *q) {
 void generate_ADD(quad *q) { generate(add_v, q); }
 void generate_SUB(quad *q) { generate(sub_v, q); }
 void generate_MUL(quad *q) { generate(mul_v, q); }
-void generate_DIV(quad *q) { generate(divv_v, q); }
+void generate_DIV(quad *q) { generate(div_v, q); }
 void generate_MOD(quad *q) { generate(mod_v, q); }
-void generate_NEWTABLE(quad *q) { generate(tablecreate_v, q); }
+void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
 void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
-    t->opcode = not_op_v;
+    t->opcode = not_v;
     // ??
     t->arg1 = nullptr;
     t->arg2 = nullptr;
@@ -342,7 +356,7 @@ void generate_OR(quad *q) {
 void generate_PARAM(quad *q) {
     q->taddress = nextinstructionlabel();
     instruction *t = new instruction();
-    t->opcode = param_v;
+    t->opcode = pusharg_v;
 
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
@@ -352,7 +366,7 @@ void generate_PARAM(quad *q) {
 void generate_CALL(quad *q) {
     q->taddress = nextinstructionlabel();
     instruction *t = new instruction();
-    t->opcode = call_func_v;
+    t->opcode = call_v;
 
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
@@ -370,3 +384,17 @@ void generate_GETRETVAL(quad *q) {
 
     vm_emit(t);
 }
+<<<<<<< HEAD
+=======
+
+void generate_FUNCEND(quad *q) {
+    // SymTableEntry f = pop(funcstack);
+    // backpatch(f.returnList, nextinstructionlabel());
+    q->taddress = nextinstructionlabel();
+    instruction *t = new instruction();
+    t->opcode = funcexit_v;
+    make_operand(q->result, t->result);
+
+    vm_emit(t);
+}
+>>>>>>> upstream/main

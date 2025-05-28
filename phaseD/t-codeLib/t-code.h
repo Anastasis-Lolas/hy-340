@@ -1,7 +1,13 @@
-#include <iostream> 
+#ifndef T_CODE_HEADER
+#define T_CODE_HEADER
+
 #include <cassert>
-#include "../Quads/quad.h" 
+#include <iostream>
+
+#include "../Quads/quad.h"
 #include "../Symtable/TableEntry/SymbolTableEntry.h"
+
+typedef void (*generator_func_t)(quad*);
 
 enum vmopcode {
     assign_v,
@@ -52,69 +58,71 @@ typedef enum vmarg_t {
     label_a,
     nil_a,
     undef_a,
-}vmarg_t;
+} vmarg_t;
 
-typedef struct vmarg{
-    vmarg_t     type;
-    unsigned    val;
-}vmarg;
+typedef struct vmarg {
+    vmarg_t type;
+    unsigned val;
+} vmarg;
 
-typedef struct instruction{
-    vmopcode    opcode;
-    vmarg *     result;
-    vmarg *     arg1;
-    vmarg *     arg2;
-    unsigned    srcLine; 
-}instruction;
+typedef struct instruction {
+    vmopcode opcode;
+    vmarg* result;
+    vmarg* arg1;
+    vmarg* arg2;
+    unsigned srcLine;
+} instruction;
 
-typedef struct incomplete_jump { 
-    unsigned            instrNo;
-    unsigned            iaddress;
-    incomplete_jump*    next;
-}incomplete_jump;
+typedef struct incomplete_jump {
+    unsigned instrNo;
+    unsigned iaddress;
+    incomplete_jump* next;
+} incomplete_jump;
 
-incomplete_jump * ij_head  = (incomplete_jump *)0;
-unsigned          ij_total = 0;
+incomplete_jump* ij_head = (incomplete_jump*)0;
+unsigned ij_total = 0;
 
-void vm_emit(instruction * );
-void add_incomplete_jump(unsigned instrNo,unsigned iaddress);
-void make_operand(expr * e, vmarg * arg);
+void vm_emit(instruction*);
+void add_incomplete_jump(unsigned instrNo, unsigned iaddress);
+void make_operand(expr* e, vmarg* arg);
 
 unsigned nextinstructionlabel();
 
-unsigned consts_newstring   (std::string s);
-unsigned consts_newnumber   (double n);
-unsigned libfuncs_newused   (std::string s);
-unsigned userfunc_newfunc   (SymbolTableEntry_T sym);
+unsigned consts_newstring(std::string s);
+unsigned consts_newnumber(double n);
+unsigned libfuncs_newused(std::string s);
+unsigned userfunc_newfunc(SymbolTableEntry_T sym);
 
 
-void make_numberoperand (vmarg * arg , double val);
-void make_booloperand   (vmarg * arg , unsigned val);
-void make_retvaloperand (vmarg * arg);
-void reset_operand      (vmarg * arg);
+void make_numberoperand(vmarg* arg, double val);
+void make_booloperand(vmarg* arg, unsigned val);
+void make_retvaloperand(vmarg* arg);
+void reset_operand(vmarg* arg);
 
-void generate(vmopcode op,quad * quad);
-void generate_relational (vmopcode op,quad * quad);
+void generate(vmopcode op, quad* quad);
+void generate_relational(vmopcode op, quad* quad);
 
-extern void generate_ADD(quad*);
-extern void generate_SUB(quad*);
-extern void generate_DIV(quad*);
-extern void generate_MOD(quad*);
-extern void generate_NEWTABLE(quad*);
-extern void generate_TABLEGETELEM(quad*);
-extern void generate_ASSIGN(quad*);
-extern void generate_NOP();
-extern void generate_JUMP(quad*);
-extern void generate_IF_EQ(quad*);
-extern void generate_IF_NOTEQ(quad*);
-extern void generate_IF_GREATER(quad*);
-extern void generate_IF_GREATEREQ(quad*);
-extern void generate_IF_LESS(quad*);
-extern void generate_IF_LESSEQ(quad*);
-extern void generate_NOT(quad*);
-extern void generate_PARAM(quad*);
-extern void generate_CALL(quad*);
-extern void generate_GETRETVAL(quad*);
-extern void generate_FUNCSTART(quad*);
-extern void generate_RETURN(quad*);
-extern void generate_FUNCEND(quad*);
+void generate_ADD(quad*);
+void generate_SUB(quad*);
+void generate_DIV(quad*);
+void generate_MOD(quad*);
+void generate_NEWTABLE(quad*);
+void generate_TABLEGETELEM(quad*);
+void generate_ASSIGN(quad*);
+void generate_NOP(quad*);
+void generate_JUMP(quad*);
+void generate_IF_EQ(quad*);
+void generate_IF_NOTEQ(quad*);
+void generate_IF_GREATER(quad*);
+void generate_IF_GREATEREQ(quad*);
+void generate_IF_LESS(quad*);
+void generate_IF_LESSEQ(quad*);
+void generate_NOT(quad*);
+void generate_PARAM(quad*);
+void generate_CALL(quad*);
+void generate_GETRETVAL(quad*);
+void generate_FUNCSTART(quad*);
+void generate_RETURN(quad*);
+void generate_FUNCEND(quad*);
+
+#endif

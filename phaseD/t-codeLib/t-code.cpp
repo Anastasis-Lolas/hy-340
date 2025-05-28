@@ -465,6 +465,10 @@ void generate_PARAM(quad *q) {
     instruction *t = new instruction();
     t->opcode = pusharg_v;
 
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
+
     if (q->arg1) make_operand(q->arg1, t->arg1);
 
     vm_emit(t);
@@ -532,9 +536,9 @@ void generate_FUNCEND(quad *q) {
     instruction *t = new instruction();
     t->opcode = funcexit_v;
     t->srcLine = q->line;  // ? q->taddress;
-    t->arg1 = nullptr;
-    t->arg2 = nullptr;
-
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
     if (q->result) make_operand(q->result, t->result);
     t->result = new vmarg();
     t->result->type = label_a;
@@ -542,6 +546,7 @@ void generate_FUNCEND(quad *q) {
     labstack.pop_back();
     vm_emit(t);
 }
+
 void generate_FUNCSTART(quad *q) {
     assert(q);
     SymbolTableEntry_T f = q->result->sym;
@@ -551,8 +556,9 @@ void generate_FUNCSTART(quad *q) {
     instruction *t = new instruction();
     t->opcode = funcenter_v;
     t->srcLine = q->line;  // ? q->taddress;
-    t->arg1 = nullptr;
-    t->arg2 = nullptr;
+    t->arg1 = new vmarg();
+    t->arg2 = new vmarg();
+    t->result = new vmarg();
     if (q->result) make_operand(q->result, t->result);
     labstack.push_back(funcstack.size() - 1);
 
@@ -659,18 +665,20 @@ void generate_instructions() {
                 generate_PARAM(q);
                 break;
             case ret:
-                std::cout << " -> Skipping return (not implemented)\n";
+                generate_RETURN(q);
+                std::cout << " -> return (not implemented)\n";
                 break;
             case getretval:
                 std::cout << " -> Calling generate_GETRETVAL\n";
                 generate_GETRETVAL(q);
                 break;
             case funcstart:
-                std::cout << " -> Skipping function start (not implemented)\n";
+                generate_FUNCSTART(q);
+                std::cout << " -> Calling generate_FUNCSTART\n";
                 break;
             case funcend:
                 std::cout << " -> Skipping generate_FUNCEND\n";
-                // generate_FUNCEND(q);
+                 generate_FUNCEND(q);
                 break;
             case tablecreate:
                 std::cout << " -> Calling generate_NEWTABLE\n";

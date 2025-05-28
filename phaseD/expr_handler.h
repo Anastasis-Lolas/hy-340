@@ -19,8 +19,8 @@ extern ScopeList_T scopeList;
 void init_tables();
 std::string create_func_name(void);
 void add_function(std::string name, std::vector<void*> args,
-                  unsigned int taddress);
-void add_anon_function(std::vector<void*> args, unsigned int taddress);
+                  unsigned int funcIndex);
+void add_anon_function(std::vector<void*> args, unsigned int funcIndex);
 SymbolTableEntry_T add_ident(std::string name);
 SymbolTableEntry_T add_local_dent(std::string name);
 SymbolTableEntry_T handle_namespace_dent(std::string name);

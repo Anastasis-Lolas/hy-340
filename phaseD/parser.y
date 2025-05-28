@@ -544,12 +544,12 @@ block:
 
 funcdef:
       FUNCTION M {enter_func(0, "");}
-            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args, $2->->numConst);}
+            LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {scope--;add_anon_function(args, $2->numConst);}
             block {$$ = exit_func(0, "", $8->returnList); DEBUG_REDUCE("funcdef -> function(idlist) block"); }
                                           
     | FUNCTION IDENT M {enter_func(1, *$2);}
             LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS 
-            {scope--; add_function(*$2, args, $3->->numConst);}
+            {scope--; add_function(*$2, args, $3->numConst);}
             block
             {$$ = exit_func(1, *$2, $9->returnList); DEBUG_REDUCE("funcdef -> function IDENT(idlist) block"); }
     ;

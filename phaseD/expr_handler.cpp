@@ -128,7 +128,7 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
 
 
 void add_function(std::string name, std::vector<void*> args,
-                  unsigned int taddress) {
+                  unsigned int funcIndex) {
     SymbolTableEntry_T entry = nullptr;
     int offset = 0;
     scopeoffsetstack.push_back(currscopeoffset());
@@ -163,12 +163,12 @@ void add_function(std::string name, std::vector<void*> args,
 
     // offset = find_offset(scopeList, scope);
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
-    entry->value.funcVal->funcIndex = taddress;
+    entry->value.funcVal->funcIndex = funcIndex;
     add_entry(scopeList, entry, scope);
 
     SymTable_put(oSymTable, name, entry);
 }
-void add_anon_function(std::vector<void*> args, unsigned int taddress) {
+void add_anon_function(std::vector<void*> args, unsigned int funcIndex) {
     SymbolTableEntry_T entry = nullptr;
     int offset = 0;
     std::string name = anonym_funcs.back();
@@ -178,7 +178,7 @@ void add_anon_function(std::vector<void*> args, unsigned int taddress) {
 
     // offset = find_offset(scopeList, scope);
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
-    entry->value.funcVal->funcIndex = taddress;
+    entry->value.funcVal->funcIndex = funcIndex;
     add_entry(scopeList, entry, scope);
     SymTable_put(oSymTable, name, entry);
 }

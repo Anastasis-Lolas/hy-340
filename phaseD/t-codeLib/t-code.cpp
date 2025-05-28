@@ -21,7 +21,8 @@ generator_func_t generators[] = {
     generate_MOD,       generate_ASSIGN,       generate_UMINUS,
     generate_NOP,       generate_AND,          generate_OR,
     generate_NOT,       generate_IF_EQ,        generate_IF_NOTEQ,
-    generate_IF_LESS,   generate_IF_GREATER,   generate_CALL,
+    generate_IF_LESS,   generate_IF_GREATER,
+    generate_IF_GREATEREQ,   generate_CALL,    generate_IF_LESSEQ,
     generate_PARAM,     generate_RETURN,       generate_GETRETVAL,
     generate_FUNCSTART, generate_FUNCEND,      generate_NEWTABLE,
     generate_JUMP,      generate_TABLEGETELEM, generate_TABLESETELEM};
@@ -310,7 +311,25 @@ void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
-void generate_UMINUS(quad *q) { ; }
+void generate_UMINUS(quad *q) { 
+    q->taddress = nextinstructionlabel();
+    instruction * instr  = new instruction();
+    instr->opcode = mul_v;
+    instr->srcLine = q->line;
+
+    // arg1 = -1
+    instr->arg1 = new vmarg();
+    make_numberoperand(instr->arg1, -1.0);
+
+
+    instr->arg2 = new vmarg();
+    make_operand(q->arg1, instr->arg2);
+
+
+    instr->result = new vmarg();
+    make_operand(q->result, instr->result);
+
+    vm_emit(instr);}
 
 void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
@@ -497,7 +516,7 @@ void generate_CALL(quad *q) {
     t->arg1 = new vmarg();
     t->arg2 = new vmarg();
     t->result = new vmarg();
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    if (q->result) make_operand(q->result, t->result);
 
     vm_emit(t);
 }
@@ -582,6 +601,8 @@ void generate_FUNCSTART(quad *q) {
 
     vm_emit(t);
 }
+
+
 
 
 unsigned userfunc_newfunc(SymbolTableEntry_T sym) {

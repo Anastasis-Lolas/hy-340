@@ -328,11 +328,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2,"++lvalue");
                                                     if($2->type == tableitem_e) {
 									                    $$ = emit_iftableitem($2);
-									                    emit(add, $$, newexpr_intnum(1), $$, -1 , yylineno);
+									                    emit(add, $$, newexpr_constdouble(1), $$, -1 , yylineno);
 									                    emit(tablesetelem,$2->index, $$,  $2, -1, yylineno);
 												    }
 									                else {
-													    emit(add, $2, newexpr_intnum(1), $2,-1, yylineno);
+													    emit(add, $2, newexpr_constdouble(1), $2,-1, yylineno);
 													    $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
 													    emit(assign, $2, NULL, $$,-1, yylineno);
@@ -347,11 +347,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                         expr* val = emit_iftableitem($1);
 
                                                         emit(assign, val, NULL, $$,-1, yylineno);
-                                                        emit(add, val, newexpr_intnum(1), val,-1, yylineno);
+                                                        emit(add, val, newexpr_constdouble(1), val,-1, yylineno);
                                                         emit(tablesetelem,$1->index, val,  $1,-1, yylineno);
                                                     } else {
                                                         emit(assign, $1, NULL, $$, -1, yylineno); // Copy current value
-                                                        emit(add, $1, newexpr_intnum(1), $1, -1, yylineno); // Update lvalue
+                                                        emit(add, $1, newexpr_constdouble(1), $1, -1, yylineno); // Update lvalue
                                                     }
                                                     DEBUG_REDUCE("term -> lvalue++"); }
 
@@ -361,10 +361,10 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "--lvalue");
                                                     if ($2->type == tableitem_e) {
                                                         $$ = emit_iftableitem($2);
-                                                        emit(sub, $$, newexpr_intnum(1), $$, -1, yylineno);
+                                                        emit(sub, $$, newexpr_constdouble(1), $$, -1, yylineno);
                                                         emit(tablesetelem, $2->index, $$,  $2, -1, yylineno);
                                                     } else {
-                                                        emit(sub, $2, newexpr_intnum(1), $2, -1, yylineno);
+                                                        emit(sub, $2, newexpr_constdouble(1), $2, -1, yylineno);
                                                         $$ = newexpr(arithexpr_e);
 													    $$->sym = newtemp();
                                                         emit(assign, $2, NULL, $$, -1, yylineno);
@@ -379,11 +379,11 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                         
                                                         expr* val = emit_iftableitem($1);
                                                         emit(assign, val, NULL, $$, -1, yylineno);
-                                                        emit(sub, val , newexpr_intnum(1), val, -1, yylineno);
+                                                        emit(sub, val , newexpr_constdouble(1), val, -1, yylineno);
                                                         emit(tablesetelem, $1->index, val,  $1, -1, yylineno);
                                                     } else {
                                                         emit(assign, $1, NULL, $$, -1, yylineno);
-                                                        emit(sub, $1, newexpr_intnum(1), $1, -1, yylineno);
+                                                        emit(sub, $1, newexpr_constdouble(1), $1, -1, yylineno);
                                                     }
                                                     DEBUG_REDUCE("term -> lvalue--"); }
     | primary
@@ -500,7 +500,7 @@ objectdef:
                                                     t->sym = newtemp();
                                                     emit(tablecreate,  NULL, NULL, t,-1, yylineno);
                                                     for (int i = 0; $elist; $elist = $elist->next)
-                                                        emit(tablesetelem, newexpr_intnum(i++), $elist,  t, -1, yylineno);
+                                                        emit(tablesetelem, newexpr_constdouble(i++), $elist,  t, -1, yylineno);
                                                     $$ = t;
                                                     DEBUG_REDUCE("objectdef -> {elist}"); 
                                                 }
@@ -555,8 +555,8 @@ funcdef:
 
 
 const:
-      INTEGER     { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> INTEGER"); }
-    | REALCONST   { $$ = newexpr(constnum_e); $$->numConst = $1;  DEBUG_REDUCE("const -> REALCONST"); }
+      INTEGER     { $$ = newexpr_intnum($1);   DEBUG_REDUCE("const -> INTEGER"); }
+    | REALCONST   { $$ = newexpr(constdouble_e); $$->numConst = $1;  DEBUG_REDUCE("const -> REALCONST"); }
     | STRING      {$$ = newexpr_conststring(*$1); delete $1; DEBUG_REDUCE("const -> STRING"); }
     | NIL         { $$ = newexpr_nill(); DEBUG_REDUCE("const -> NIL"); }
     | TRUE        { $$ = newexpr_bool(true); DEBUG_REDUCE("const -> TRUE"); }
@@ -582,7 +582,7 @@ ifprefix
        $3 = boolify_expr($3);  // Evaluate condition into a temporary
     }
     emit(if_eq, $3, newexpr_bool(true), NULL, nextquad() + 2, yylineno);  // Jump to body if true
-    $$ = newexpr(constnum_e);
+    $$ = newexpr(constdouble_e);
     $$->numConst = nextquad();
     emit(jump, NULL, NULL, NULL, 0, yylineno);  // Jump to skip body if false
 }
@@ -591,7 +591,7 @@ ifprefix
 elseprefix 
 : ELSE {
 
-    $$ = newexpr(constnum_e);
+    $$ = newexpr(constdouble_e);
     $$->numConst = nextquad();        
     emit(jump, NULL, NULL, NULL, 0, yylineno);
 
@@ -665,7 +665,7 @@ whilestmt:
 
 N : {
 
-    $$ = newexpr(constnum_e);
+    $$ = newexpr(constdouble_e);
     $$->numConst = nextquad();
     emit(jump, NULL, NULL, NULL, 0, yylineno); 
 
@@ -674,7 +674,7 @@ N : {
 
 M : {
 
-    $$ = newexpr(constnum_e);
+    $$ = newexpr(constdouble_e);
     $$->numConst = nextquad();
 
 }

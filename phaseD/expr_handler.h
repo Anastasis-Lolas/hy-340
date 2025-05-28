@@ -41,7 +41,7 @@ void normal_call(SymbolTableEntry_T entry);
 
 expr* newexpr(expr_t t);
 expr* newexpr_intnum(int i);
-expr* newexpr_constnum(double i);
+expr* newexpr_constdouble(double i);
 expr* newexpr_conststring(std::string str);
 expr* newexpr_bool(bool b);
 expr* newexpr_nill(void);

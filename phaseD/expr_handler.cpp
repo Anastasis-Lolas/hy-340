@@ -599,16 +599,16 @@ expr* emit_iftableitem(expr* e) {
 }
 
 
-expr* newexpr_constnum(double i) {
-    expr* e = newexpr(constnum_e);
+expr* newexpr_constdouble(double i) {
+    expr* e = newexpr(constdouble_e);
     e->sym = NULL;
     e->numConst = i;
 
     return e;
 }
 
-expr* newexpr_intnum(int i){
-    expr * e = newexpr(intnum_e);
+expr* newexpr_intnum(int i) {
+    expr* e = newexpr(intnum_e);
     e->sym = NULL;
     e->numInt = i;
     return e;
@@ -855,8 +855,11 @@ void print_expr(expr* e) {
         case newtable_e:
             std::cout << "newtable_e";
             break;
-        case constnum_e:
-            std::cout << "constnum_e";
+        case constdouble_e:
+            std::cout << "constdouble_e";
+            break;
+        case intnum_e:
+            std::cout << "intnum_e";
             break;
         case constbool_e:
             std::cout << "constbool_e";
@@ -888,7 +891,10 @@ void print_expr(expr* e) {
     }
 
     switch (e->type) {
-        case constnum_e:
+        case intnum_e:
+            std::cout << "  numConst: " << e->numConst << "\n";
+            break;
+        case constdouble_e:
             std::cout << "  numConst: " << e->numConst << "\n";
             break;
         case conststring_e:

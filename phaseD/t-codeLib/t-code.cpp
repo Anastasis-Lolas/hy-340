@@ -35,11 +35,10 @@ unsigned consts_newstring(std::string s) {
     return string_vec_consts.size() - 1;
 }
 
-<<<<<<< HEAD
+
 unsigned consts_newint(int a){
-=======
+
 unsigned consts_newint(int a) {
->>>>>>> upstream/main
     for (unsigned int i = 0; i < int_vec_consts.size(); ++i) {
         if (int_vec_consts[i] == a) {
             return i;
@@ -49,11 +48,10 @@ unsigned consts_newint(int a) {
     return int_vec_consts.size() - 1;
 }
 
-<<<<<<< HEAD
+
 unsigned consts_newnumber(double n) {
-=======
+
 unsigned consts_newdouble(double n) {
->>>>>>> upstream/main
     for (unsigned int i = 0; i < double_vec_consts.size(); ++i) {
         if (double_vec_consts[i] == n) {
             return i;
@@ -92,10 +90,8 @@ void make_operand(expr *e, vmarg *arg) {
         case boolexpr_e:
         case newtable_e: {
             assert(e->sym);
-<<<<<<< HEAD
+
            
-=======
->>>>>>> upstream/main
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -384,8 +380,8 @@ void generate_GETRETVAL(quad *q) {
 
     vm_emit(t);
 }
-<<<<<<< HEAD
-=======
+
+
 
 void generate_FUNCEND(quad *q) {
     // SymTableEntry f = pop(funcstack);
@@ -397,4 +393,4 @@ void generate_FUNCEND(quad *q) {
 
     vm_emit(t);
 }
->>>>>>> upstream/main
+

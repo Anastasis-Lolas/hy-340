@@ -611,8 +611,6 @@ void generate_FUNCEND(quad *q) {
     t->arg2 = new vmarg();
     t->result = new vmarg();
     if (q->result) {
-        std::cout << "generate_FUNCEND: q->result is not null: "
-                  << q->result->type << std::endl;
         // make_operand(q->result, t->result);
         t->result->val = labstack.back();
         labstack.pop_back();

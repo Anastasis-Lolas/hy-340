@@ -1,4 +1,5 @@
 #include "t-code.h"
+#include <iomanip>
 
 std::vector<incomplete_jump *> incjumps_vec;
 std::vector<std::string> string_vec_consts;
@@ -136,9 +137,7 @@ void make_operand(expr *e, vmarg *arg) {
 
 void vm_emit(instruction *t) {
     instruction *new_inst = new instruction();
-    new_inst->arg1 = new vmarg();
-    new_inst->arg2 = new vmarg();
-    new_inst->result = new vmarg();
+
 
     if (!new_inst) {
         std::cerr << "Failed !" << std::endl;
@@ -169,10 +168,10 @@ void add_incomplete_jump(unsigned instrNo, unsigned iaddress) {
 void patch_incomplete_jumps() {
     for (unsigned i = 0; i < incjumps_vec.size(); i++) {
         if (incjumps_vec[i]->iaddress == nextquadlabel()) {
-            instruction_table[incjumps_vec[i]->instrNo]->result->val =
+            instruction_table[incjumps_vec[i]->instrNo]->result.val =
                 nextinstructionlabel();
         } else {
-            instruction_table[incjumps_vec[i]->instrNo]->result->val =
+            instruction_table[incjumps_vec[i]->instrNo]->result.val =
                 quad_table[incjumps_vec[i]->iaddress]->taddress;
         }
     }
@@ -201,17 +200,16 @@ void generate(vmopcode op, quad *quad) {
     instruction *t = new instruction();
     t->opcode = op;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+   
 
-    if (quad->arg1) make_operand(quad->arg1, t->arg1);
+    if (quad->arg1) make_operand(quad->arg1, &t->arg1);
 
-    if (quad->arg2) make_operand(quad->arg2, t->arg2);
+    if (quad->arg2) make_operand(quad->arg2, &t->arg2);
 
-    if (quad->result) make_operand(quad->result, t->result);
+    if (quad->result) make_operand(quad->result, &t->result);
 
     t->srcLine = quad->line;
+
     quad->taddress = nextinstructionlabel();
 
     vm_emit(t);
@@ -277,28 +275,35 @@ std::string vmopcode_to_string(vmopcode op) {
 }
 
 void generate_relational(vmopcode op, quad *q) {
-    instruction *t = new instruction();
-    t->opcode = op;
+    instruction t;
+    t.opcode     = op;
+    t.arg1       = vmarg();  
+    t.arg2       = vmarg();  
+    t.result     = vmarg();
+    t.srcLine    = q->line;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+    if (q->arg1) make_operand(q->arg1, &t.arg1);
+    if (q->arg2) make_operand(q->arg2, &t.arg2);
 
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    // mark as label
+    t.result.type = label_a;
 
-    if (q->arg2) make_operand(q->arg2, t->arg2);
-
-    t->result->type = label_a;
-
-    if (q->label < nextquad()) {
-        t->result->val = quad_table[q->label]->taddress;
+    if (q->label < quad_table.size()) {
+        
+        if (quad_table[q->label]->taddress != (unsigned)-1) {
+            // backward jump: target already has taddress
+            t.result.val = quad_table[q->label]->taddress;
+        } else {
+            // forward jump: patch later
+            t.result.val = 0;
+            add_incomplete_jump(nextinstructionlabel(), q->label);
+        }
     } else {
-        add_incomplete_jump(nextinstructionlabel(), q->label);
+        std::cerr << "Invalid jump label " << q->label << "\n";
     }
 
     q->taddress = nextinstructionlabel();
-
-    vm_emit(t);
+    vm_emit(&t);
 }
 
 
@@ -311,6 +316,7 @@ void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
+
 void generate_UMINUS(quad *q) {
     q->taddress = nextinstructionlabel();
     instruction *instr = new instruction();
@@ -318,16 +324,13 @@ void generate_UMINUS(quad *q) {
     instr->srcLine = q->line;
 
     // arg1 = -1
-    instr->arg1 = new vmarg();
-    make_numberoperand(instr->arg1, -1.0);
+
+    make_numberoperand(&instr->arg1, -1.0);
 
 
-    instr->arg2 = new vmarg();
-    make_operand(q->arg1, instr->arg2);
 
-
-    instr->result = new vmarg();
-    make_operand(q->result, instr->result);
+    make_operand(q->arg1, &instr->arg2);
+    make_operand(q->result, &instr->result);
 
     vm_emit(instr);
 }
@@ -336,47 +339,39 @@ void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
     t->opcode = not_v;
     // ??
-    t->arg1 = nullptr;
-    t->arg2 = nullptr;
-    t->result = nullptr;
+    t->arg1.type = undef_a;
+    t->arg2.type = undef_a;
+    t->result.type = undef_a;
 
-    vm_emit(t);
+    vm_emit(t); 
 }
 
-void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
+//void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
+
+instruction* new_jump_inst(quad *q, vmopcode op) {
+    instruction *instr = new instruction();
+    instr->opcode   = op;
+    instr->srcLine  = q->line;
+
+    // record this quad's instruction index
+    q->taddress = nextinstructionlabel();
+
+    // initialize label operand to undef, then queue for patch
+    instr->result.type = label_a;
+    instr->result.val  = 0;
+    add_incomplete_jump(q->taddress, q->label);
+
+    // unused args
+    instr->arg1.type = undef_a;
+    instr->arg2.type = undef_a;
+
+    return instr;
+}
 
 
-// instruction* new_jump_inst(quad *q, vmopcode op) {
-//     instruction *instr = new instruction();
-//     instr->opcode = op;
-
-//     instr->arg1 = new vmarg();
-//     instr->arg2 = new vmarg();
-//     instr->result = new vmarg();
-
-//     instr->srcLine = q->line;
-//     q->taddress = nextinstructionlabel();
-
-//     // No need to make_operand on resul
-//     if (q->label < quad_table.size() && quad_table[q->label]) {
-//         instr->result->val = quad_table[q->label]->taddress;
-//     } else {
-//         instr->result->val = 0; // placeholder
-//         add_incomplete_jump(nextinstructionlabel(), q->label);
-//     }
-//     instr->result->type = label_a;
-
-//     // set unused operands to undef
-//     instr->arg1->type = undef_a;
-//     instr->arg2->type = undef_a;
-
-//     return instr;
-// }
-
-
-// void generate_JUMP(quad *q) {
-//     vm_emit(new_jump_inst(q, jump_v));
-// }
+void generate_JUMP(quad *q) {
+    vm_emit(new_jump_inst(q, jump_v));
+}
 
 
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
@@ -533,11 +528,9 @@ void generate_PARAM(quad *q) {
     instruction *t = new instruction();
     t->opcode = pusharg_v;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+   
 
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    if (q->arg1) make_operand(q->arg1, &t->arg1);
 
     vm_emit(t);
 }
@@ -547,10 +540,7 @@ void generate_CALL(quad *q) {
     instruction *t = new instruction();
     t->opcode = call_v;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
-    if (q->result) make_operand(q->result, t->result);
+    if (q->result) make_operand(q->result, &t->result);
 
     vm_emit(t);
 }
@@ -562,16 +552,14 @@ void generate_GETRETVAL(quad *q) {
     t->opcode = assign_v;
     q->taddress = nextinstructionlabel();
     t->srcLine = q->line;  // ? q->taddress;
-    t->arg1 = new vmarg();
+    
 
     if (q->result) {
-        t->result = new vmarg();
-        make_operand(q->result, t->result);
-    } else {
-        t->result = nullptr;
-    }
+    
+        make_operand(q->result, &t->result);
+    } 
 
-    make_retvaloperand(t->arg1);
+    make_retvaloperand(&t->arg1);
 
     vm_emit(t);
 }
@@ -584,14 +572,17 @@ void generate_RETURN(quad *q) {
     t->srcLine = q->line;                  // ? q->taddress;
 
     if (q->result) {
-        t->arg1 = new vmarg();
-        make_operand(q->result, t->arg1);
+
+        make_operand(q->result, &t->arg1);
     } else {
-        t->arg1 = nullptr;
+        t->arg1.type = undef_a;
+        t->arg1.val = 0;
     }
 
-    t->arg2 = nullptr;
-    t->result = nullptr;
+    t->arg2.type = undef_a;
+    t->arg2.val = 0;
+    t->result.type = undef_a;
+    t->result.val = 0;
 
     vm_emit(t);
 }
@@ -607,18 +598,16 @@ void generate_FUNCEND(quad *q) {
     instruction *t = new instruction();
     t->opcode = funcexit_v;
     t->srcLine = q->line;  // ? q->taddress;
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+
     if (q->result) {
         // make_operand(q->result, t->result);
-        t->result->val = labstack.back();
+        t->result.val = labstack.back();
         labstack.pop_back();
-        t->result->type = userfunc_a;
+        t->result.type = userfunc_a;
     }
-    t->result = new vmarg();
-    t->result->type = label_a;
-    t->result->val = labstack.back();
+
+    t->result.type = label_a;
+    t->result.val = labstack.back();
     labstack.pop_back();
     vm_emit(t);
 }
@@ -632,10 +621,8 @@ void generate_FUNCSTART(quad *q) {
     instruction *t = new instruction();
     t->opcode = funcenter_v;
     t->srcLine = q->line;  // ? q->taddress;
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
-    if (q->result) make_operand(q->result, t->result);
+
+    if (q->result) make_operand(q->result, &t->result);
     labstack.push_back(funcstack.size() - 1);
 
     vm_emit(t);
@@ -659,110 +646,130 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 
-void generate_instructions() {
-    for (unsigned int i = 0; i < quad_table.size(); ++i) {
-        quad *q = quad_table[i];
-        if (!q) continue;
-        if (q->op < 0 ||
-            q->op >= sizeof(generators) / sizeof(generator_func_t)) {
-            std::cerr << "Unknown quad opcode! Aborting.\n";
-            assert(0);
-        }
-        generators[q->op](q);
-    }
-}
-/*
-void generate_instructions() {
-    for (unsigned int i = 0; i < quad_table.size(); ++i) {
-        quad *q = quad_table[i];
-        if (!q) continue;
+// void generate_instructions() {
+//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
+//         quad *q = quad_table[i];
+//         if (!q) continue;
+//         if (q->op < 0 ||
+//             q->op >= sizeof(generators) / sizeof(generator_func_t)) {
+//             std::cerr << "Unknown quad opcode! Aborting.\n";
+//             assert(0);
+//         }
+//         generators[q->op](q);
+//     }
+// }
 
-        switch (q->op) {
-            case assign:
-                generate_ASSIGN(q);
-                break;
-            case add:
-                generate_ADD(q);
-                break;
-            case sub:
-                generate_SUB(q);
-                break;
-            case mul:
-                generate_MUL(q);
-                break;
-            case divv:
-                generate_DIV(q);
-                break;
-            case mod:
-                generate_MOD(q);
-                break;
-            case uminus:
-                generate_UMINUS(q);
-                break;
-            case and_op:
-                generate_AND(q);
-                break;
-            case or_op:
-                generate_OR(q);
-                break;
-            case not_op:
-                generate_NOT(q);
-                break;
-            case if_eq:
-                generate_IF_EQ(q);
-                break;
-            case if_noteq:
-                generate_IF_NOTEQ(q);
-                break;
-            case if_lesseq:
-                generate_IF_LESSEQ(q);
-                break;
-            case if_greatereq:
-                generate_IF_GREATEREQ(q);
-                break;
-            case if_less:
-                generate_IF_LESS(q);
-                break;
-            case if_greater:
-                generate_IF_GREATER(q);
-                break;
-            case call:
-                generate_CALL(q);
-                break;
-            case param:
-                generate_PARAM(q);
-                break;
-            case ret:
-                generate_RETURN(q);
-                break;
-            case getretval:
-                generate_GETRETVAL(q);
-                break;
-            case funcstart:
-                generate_FUNCSTART(q);
-                break;
-            case funcend:
-                generate_FUNCEND(q);
-                break;
-            case tablecreate:
-                generate_NEWTABLE(q);
-                break;
-            case jump:
-                generate_JUMP(q);
-                break;
-            case tablegetelem:
-                generate_TABLEGETELEM(q);
-                break;
-            case tablesetelem:
-                generate_TABLESETELEM(q);
-                break;
-            default:
-                std::cerr << "Unknown quad opcode! Aborting.\n";
-                assert(0);
-        }
-    }
+
+void generate_instructions() {
+  // pre‐initialize all taddress to “not set”:
+  for (auto &q : quad_table)
+    q->taddress = (unsigned)-1;
+
+  for (auto *q : quad_table) {
+    if (!q) continue;
+    // now q->taddress marks “this quad’s instr idx”:
+    q->taddress = nextinstructionlabel();
+
+    // dispatch to generate_*()
+    generators[q->op](q);
+  }
+
+  patch_incomplete_jumps();
 }
-*/
+
+// void generate_instructions() {
+//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
+//         quad *q = quad_table[i];
+//         if (!q) continue;
+//         q->taddress = nextinstructionlabel();
+
+//         switch (q->op) {
+//             case assign:
+//                 generate_ASSIGN(q);
+//                 break;
+//             case add:
+//                 generate_ADD(q);
+//                 break;
+//             case sub:
+//                 generate_SUB(q);
+//                 break;
+//             case mul:
+//                 generate_MUL(q);
+//                 break;
+//             case divv:
+//                 generate_DIV(q);
+//                 break;
+//             case mod:
+//                 generate_MOD(q);
+//                 break;
+//             case uminus:
+//                 generate_UMINUS(q);
+//                 break;
+//             case and_op:
+//                 generate_AND(q);
+//                 break;
+//             case or_op:
+//                 generate_OR(q);
+//                 break;
+//             case not_op:
+//                 generate_NOT(q);
+//                 break;
+//             case if_eq:
+//                 generate_IF_EQ(q);
+//                 break;
+//             case if_noteq:
+//                 generate_IF_NOTEQ(q);
+//                 break;
+//             case if_lesseq:
+//                 generate_IF_LESSEQ(q);
+//                 break;
+//             case if_greatereq:
+//                 generate_IF_GREATEREQ(q);
+//                 break;
+//             case if_less:
+//                 generate_IF_LESS(q);
+//                 break;
+//             case if_greater:
+//                 generate_IF_GREATER(q);
+//                 break;
+//             case call:
+//                 generate_CALL(q);
+//                 break;
+//             case param:
+//                 generate_PARAM(q);
+//                 break;
+//             case ret:
+//                 generate_RETURN(q);
+//                 break;
+//             case getretval:
+//                 generate_GETRETVAL(q);
+//                 break;
+//             case funcstart:
+//                 generate_FUNCSTART(q);
+//                 break;
+//             case funcend:
+//                 generate_FUNCEND(q);
+//                 break;
+//             case tablecreate:
+//                 generate_NEWTABLE(q);
+//                 break;
+//             case jump:
+//                 generate_JUMP(q);
+//                 break;
+//             case tablegetelem:
+//                 generate_TABLEGETELEM(q);
+//                 break;
+//             case tablesetelem:
+//                 generate_TABLESETELEM(q);
+//                 break;
+//             default:
+//                 std::cerr << "Unknown quad opcode! Aborting.\n";
+//                 assert(0);
+//         }
+//     }
+//     patch_incomplete_jumps();
+// }
+
 
 void free_instructions() {
     for (auto inst : instruction_table) {
@@ -774,45 +781,76 @@ void free_instructions() {
 
 // prints
 void print_instructions() {
-    std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
+     std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
                               "number_a",   "string_a",  "bool_a",   "nil_a",
                               "userfunc_a", "libfunc_a", "retval_a", "undef_a"};
 
-    std::cout << "\n========= DEBUG PRINT: INSTRUCTIONS =========\n";
+    // Καθορισμός πλάτους για κάθε στήλη - μπορείς να τα προσαρμόσεις
+    const int col_num_width = 4;      // Για τον αριθμό της εντολής
+    const int col_opcode_width = 15;  // Για το όνομα του opcode
+    const int col_arg_width = 20;     // Για κάθε όρισμα (result, arg1, arg2)
+    const int col_srcline_width = 10; // Για το SrcLine
+
+    std::cout << "\n========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
+    // Εκτύπωση επικεφαλίδων πίνακα
+    std::cout << std::left << std::setw(col_num_width) << "No."
+              << std::left << std::setw(col_opcode_width) << "Opcode"
+              << std::left << std::setw(col_arg_width) << "Result"
+              << std::left << std::setw(col_arg_width) << "Arg1"
+              << std::left << std::setw(col_arg_width) << "Arg2"
+              << std::left << std::setw(col_srcline_width) << "SrcLine"
+              << std::endl;
+
+    int total_width_for_separator = col_num_width + col_opcode_width + (col_arg_width * 3) + col_srcline_width;
+    std::cout << std::string(total_width_for_separator, '-') << std::endl;
+
+
     for (unsigned int i = 0; i < instruction_table.size(); ++i) {
         instruction *inst = instruction_table[i];
         if (!inst) {
-            std::cout << i << ": null pointer\n";
+            std::cout << std::left << std::setw(col_num_width) << i
+                      << ": null pointer\n";
             continue;
         }
 
-        std::cout << i << ":\t" << vmopcode_to_string(inst->opcode) << "\t";
+        std::cout << std::left << std::setw(col_num_width) << i << " "; // Χρησιμοποιούμε κενό αντί για ':' για καλύτερη στοίχιση με setw
+        std::cout << std::left << std::setw(col_opcode_width) << vmopcode_to_string(inst->opcode);
 
-        if (inst->result && inst->result->type != undef_a) {
-            std::cout << argCodes[inst->result->type] << ":"
-                      << inst->result->val << "\t";
+        std::string result_str = " ";
+        if ( inst->result.type != undef_a) {
+            result_str = argCodes[inst->result.type] + ":" + std::to_string(inst->result.val);
+        } else if ( inst->result.type == undef_a) { // Ξεχωριστή περίπτωση για undef_a
+             result_str = argCodes[inst->result.type]; // Τύπωσε μόνο τον τύπο undef_a
         } else {
-            std::cout << "unused_result ";
+             result_str = "unused_result";
         }
+        std::cout << std::left << std::setw(col_arg_width) << result_str;
 
-        if (inst->arg1 && inst->arg1->type != undef_a) {
-            std::cout << argCodes[inst->arg1->type] << ":" << inst->arg1->val
-                      << "\t";
+        std::string arg1_str = " ";
+        if ( inst->arg1.type != undef_a) {
+            arg1_str = argCodes[inst->arg1.type] + ":" + std::to_string(inst->arg1.val);
+        } else if ( inst->arg1.type == undef_a) {
+            arg1_str = argCodes[inst->arg1.type];
         } else {
-            std::cout << "unused_arg1\t";
+            arg1_str = "unused_arg1";
         }
+        std::cout << std::left << std::setw(col_arg_width) << arg1_str;
 
-        if (inst->arg2 && inst->arg2->type != undef_a) {
-            std::cout << argCodes[inst->arg2->type] << ":" << inst->arg2->val
-                      << "\t";
+        std::string arg2_str = " ";
+        if ( inst->arg2.type != undef_a) {
+            arg2_str = argCodes[inst->arg2.type] + ":" + std::to_string(inst->arg2.val);
+        } else if ( inst->arg2.type == undef_a) {
+            arg2_str = argCodes[inst->arg2.type];
         } else {
-            std::cout << "unused_arg2\t";
+            arg2_str = "unused_arg2";
         }
+        std::cout << std::left << std::setw(col_arg_width) << arg2_str;
 
-        std::cout << "SrcLine: " << inst->srcLine << "\n";
+        std::cout << std::left << std::setw(col_srcline_width) << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "")
+                  << "\n";
     }
-    std::cout
-        << "===========================================================\n";
+    std::cout << std::string(total_width_for_separator, '-') << std::endl;
+    std::cout << "=======================================\n";
 }
 
 void print_const_strings(void) {

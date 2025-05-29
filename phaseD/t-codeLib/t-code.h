@@ -60,9 +60,9 @@ typedef struct vmarg {
 
 typedef struct instruction {
     vmopcode opcode;
-    vmarg* result;
-    vmarg* arg1;
-    vmarg* arg2;
+    vmarg result;
+    vmarg arg1;
+    vmarg arg2;
     unsigned srcLine;
 } instruction;
 

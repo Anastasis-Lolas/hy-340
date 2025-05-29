@@ -109,6 +109,7 @@ void generate_ADD(quad*);
 void generate_SUB(quad*);
 void generate_DIV(quad*);
 void generate_MOD(quad*);
+void generate_MUL(quad* q);
 void generate_NEWTABLE(quad*);
 void generate_TABLEGETELEM(quad*);
 void generate_ASSIGN(quad*);
@@ -142,6 +143,6 @@ void print_const_doubles(void);
 void print_const_ints(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
+void generate_binary_readable(std::string outname);
 
-void generate_binary_readable(std::string outname) ;
 #endif

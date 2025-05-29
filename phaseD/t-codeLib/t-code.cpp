@@ -17,14 +17,14 @@ unsigned ij_total = 0;
 
 
 generator_func_t generators[] = {
-    generate_ADD,          generate_SUB,         generate_DIV,
-    generate_MOD,          generate_ASSIGN,      generate_UMINUS,
-    generate_NOP,          generate_AND,         generate_OR,
-    generate_NOT,          generate_IF_EQ,       generate_IF_NOTEQ,
-    generate_IF_LESS,      generate_IF_GREATER,  generate_IF_GREATEREQ,
-    generate_CALL,         generate_IF_LESSEQ,   generate_PARAM,
-    generate_RETURN,       generate_GETRETVAL,   generate_FUNCSTART,
-    generate_FUNCEND,      generate_NEWTABLE,    generate_JUMP,
+    generate_ADD,          generate_SUB,          generate_DIV,
+    generate_MOD,          generate_ASSIGN,       generate_UMINUS,
+    generate_MUL,          generate_AND,          generate_OR,
+    generate_NOT,          generate_IF_EQ,        generate_IF_NOTEQ,
+    generate_IF_LESSEQ,    generate_IF_GREATEREQ, generate_IF_LESS,
+    generate_IF_GREATER,   generate_CALL,         generate_PARAM,
+    generate_RETURN,       generate_GETRETVAL,    generate_FUNCSTART,
+    generate_FUNCEND,      generate_NEWTABLE,     generate_JUMP,
     generate_TABLEGETELEM, generate_TABLESETELEM};
 
 unsigned consts_newstring(std::string s) {
@@ -611,8 +611,6 @@ void generate_FUNCEND(quad *q) {
     t->arg2 = new vmarg();
     t->result = new vmarg();
     if (q->result) {
-        std::cout << "generate_FUNCEND: q->result is not null: "
-                  << q->result->type << std::endl;
         // make_operand(q->result, t->result);
         t->result->val = labstack.back();
         labstack.pop_back();
@@ -661,13 +659,19 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 
-// void generate_instructions() {
-//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
-//         quad *q = quad_table[i];
-//         if (!q) continue;
-//         generators[q->op](q);
-//     }
-// }
+void generate_instructions() {
+    for (unsigned int i = 0; i < quad_table.size(); ++i) {
+        quad *q = quad_table[i];
+        if (!q) continue;
+        if (q->op < 0 ||
+            q->op >= sizeof(generators) / sizeof(generator_func_t)) {
+            std::cerr << "Unknown quad opcode! Aborting.\n";
+            assert(0);
+        }
+        generators[q->op](q);
+    }
+}
+/*
 void generate_instructions() {
     for (unsigned int i = 0; i < quad_table.size(); ++i) {
         quad *q = quad_table[i];
@@ -758,7 +762,7 @@ void generate_instructions() {
         }
     }
 }
-
+*/
 
 void free_instructions() {
     for (auto inst : instruction_table) {

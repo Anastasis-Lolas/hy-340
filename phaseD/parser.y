@@ -801,7 +801,7 @@ int main(int argc, char** argv) {
     print_quads();
         
     generate_instructions();
-    //print_instructions();
+    print_instructions();
     std::cout<<"print_const_strings:\n";
     print_const_strings();
     std::cout<<"print_const_doubles:\n";
@@ -810,7 +810,17 @@ int main(int argc, char** argv) {
     print_const_ints();
     std::cout<<"print_libfuncs:\n";
     print_libfuncs();
+
+
+
+   generate_binary_readable("");
+
+
+
     void free_instructions();
+
+
+
     return 0;
 }
 

@@ -142,4 +142,6 @@ void print_const_doubles(void);
 void print_const_ints(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
+
+void generate_binary_readable(std::string outname) ;
 #endif

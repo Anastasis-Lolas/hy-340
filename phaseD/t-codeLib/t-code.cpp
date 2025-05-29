@@ -343,6 +343,43 @@ void generate_NOP(quad *) {
 }
 
 void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
+
+
+// instruction* new_jump_inst(quad *q, vmopcode op) {
+//     instruction *instr = new instruction();
+//     instr->opcode = op;
+
+//     instr->arg1 = new vmarg();
+//     instr->arg2 = new vmarg();
+//     instr->result = new vmarg();
+
+//     instr->srcLine = q->line;
+//     q->taddress = nextinstructionlabel();
+
+//     // No need to make_operand on resul
+//     if (q->label < quad_table.size() && quad_table[q->label]) {
+//         instr->result->val = quad_table[q->label]->taddress;
+//     } else {
+//         instr->result->val = 0; // placeholder
+//         add_incomplete_jump(nextinstructionlabel(), q->label);
+//     }
+//     instr->result->type = label_a;
+
+//     // set unused operands to undef
+//     instr->arg1->type = undef_a;
+//     instr->arg2->type = undef_a;
+
+//     return instr;
+// }
+
+
+// void generate_JUMP(quad *q) {
+//     vm_emit(new_jump_inst(q, jump_v));
+// }
+
+
+
+
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
 void generate_IF_NOTEQ(quad *q) { generate_relational(jne_v, q); }
 void generate_IF_GREATER(quad *q) { generate_relational(jgt_v, q); }
@@ -354,144 +391,142 @@ void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
 
 
 void generate_NOT(quad *q) {
-    q->taddress = nextinstructionlabel();
+    // q->taddress = nextinstructionlabel();
 
-    instruction *t = new instruction();
+    // instruction *t = new instruction();
 
-    t->opcode = jeq_v;
+    // t->opcode = jeq_v;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+    // t->arg1 = new vmarg();
+    // t->arg2 = new vmarg();
+    // t->result = new vmarg();
 
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    // if (q->arg1) make_operand(q->arg1, t->arg1);
 
-    make_booloperand(t->arg2, false);
+    // make_booloperand(t->arg2, false);
 
-    t->result->type = label_a;
+    // t->result->type = label_a;
 
-    t->result->val = nextinstructionlabel() + 3;
+    // t->result->val = nextinstructionlabel() + 3;
 
-    vm_emit(t);
+    // vm_emit(t);
 
 
-    t->opcode = assign_v;
+    // t->opcode = assign_v;
 
-    make_booloperand(t->arg1, false);
+    // make_booloperand(t->arg1, false);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
+    // if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);
+    // vm_emit(t);
 
-    t->opcode = jump_v;
+    // t->opcode = jump_v;
 
-    if (t->arg1) reset_operand(t->arg1);
+    // if (t->arg1) reset_operand(t->arg1);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    t->result->type = label_a;
-    t->result->val = nextinstructionlabel() + 2;
+    // t->result->type = label_a;
+    // t->result->val = nextinstructionlabel() + 2;
 
-    vm_emit(t);
+    // vm_emit(t);
 
-    t->opcode = assign_v;
+    // t->opcode = assign_v;
 
-    if (t->arg1) make_booloperand(t->arg1, true);
+    // if (t->arg1) make_booloperand(t->arg1, true);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
+    // if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);
+    // vm_emit(t);
 }
 
 
 void generate_OR(quad *q) {
-    q->taddress = nextinstructionlabel();
+    // q->taddress = nextinstructionlabel();
 
-    instruction *t = new instruction();
+    // instruction *t = new instruction();
 
-    t->opcode = jeq_v;
+    // t->opcode = jeq_v;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+    // t->arg1 = new vmarg();
+    // t->arg2 = new vmarg();
+    // t->result = new vmarg();
 
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    // if (q->arg1) make_operand(q->arg1, t->arg1);
 
-    make_booloperand(t->arg2, true);
+    // make_booloperand(t->arg2, true);
 
-    t->result->type = label_a;
-    t->result->val = nextinstructionlabel() + 4;
-    vm_emit(t);
+    // t->result->type = label_a;
+    // t->result->val = nextinstructionlabel() + 4;
+    // vm_emit(t);
 
-    if (q->arg2) make_operand(q->arg2, t->arg1);
+    // if (q->arg2) make_operand(q->arg2, t->arg1);
 
-    t->result->val = nextinstructionlabel() + 3;
-    vm_emit(t);
+    // t->result->val = nextinstructionlabel() + 3;
+    // vm_emit(t);
 
-    t->opcode = assign_v;
-    make_booloperand(t->arg1, false);
+    // t->opcode = assign_v;
+    // make_booloperand(t->arg1, false);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
+    // if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);
+    // vm_emit(t);
 
-    t->opcode = assign_v;
-    make_booloperand(t->arg1, true);
+    // t->opcode = assign_v;
+    // make_booloperand(t->arg1, true);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
-
-    vm_emit(t);
+    // vm_emit(t);
 }
 
 void generate_AND(quad *q) {
-    q->taddress = nextinstructionlabel();
+    // q->taddress = nextinstructionlabel();
 
-    instruction *t = new instruction();
+    // instruction *t = new instruction();
 
-    t->opcode = jeq_v;
+    // t->opcode = jeq_v;
 
-    t->arg1 = new vmarg();
-    t->arg2 = new vmarg();
-    t->result = new vmarg();
+    // t->arg1 = new vmarg();
+    // t->arg2 = new vmarg();
+    // t->result = new vmarg();
 
-    if (q->arg1) make_operand(q->arg1, t->arg1);
+    // if (q->arg1) make_operand(q->arg1, t->arg1);
 
-    make_booloperand(t->arg2, true);
+    // make_booloperand(t->arg2, true);
 
-    t->result->type = label_a;
-    t->result->val = nextinstructionlabel() + 4;
-    vm_emit(t);
+    // t->result->type = label_a;
+    // t->result->val = nextinstructionlabel() + 4;
+    // vm_emit(t);
 
-    if (q->arg2) make_operand(q->arg2, t->arg1);
+    // if (q->arg2) make_operand(q->arg2, t->arg1);
 
-    t->result->val = nextinstructionlabel() + 3;
-    vm_emit(t);
+    // t->result->val = nextinstructionlabel() + 3;
+    // vm_emit(t);
 
-    t->opcode = assign_v;
-    make_booloperand(t->arg1, false);
+    // t->opcode = assign_v;
+    // make_booloperand(t->arg1, false);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
+    // if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);
+    // vm_emit(t);
 
-    t->opcode = assign_v;
-    make_booloperand(t->arg1, true);
+    // t->opcode = assign_v;
+    // make_booloperand(t->arg1, true);
 
-    if (t->arg2) reset_operand(t->arg2);
+    // if (t->arg2) reset_operand(t->arg2);
 
-    if (q->result) make_operand(q->result, t->result);
+    // if (q->result) make_operand(q->result, t->result);
 
-    vm_emit(t);
+    // vm_emit(t);
 }
 
 void generate_PARAM(quad *q) {
@@ -730,35 +765,43 @@ void free_instructions() {
 }
 
 // prints
-
 void print_instructions() {
+    std::string argCodes[] = {
+        "label_a", "global_a", "formal_a", "local_a", "number_a", "string_a", "bool_a",
+        "nil_a", "userfunc_a", "libfunc_a", "retval_a", "undef_a"
+    };
+
+    std::cout << "\n========= DEBUG PRINT: INSTRUCTIONS =========\n";
     for (unsigned int i = 0; i < instruction_table.size(); ++i) {
-        instruction *inst = instruction_table[i];
+        instruction* inst = instruction_table[i];
         if (!inst) {
-            std::cout << "Instruction " << i << ": null pointer" << std::endl;
+            std::cout << i << ": null pointer\n";
             continue;
         }
 
-        std::cout << "Instruction " << i << ": "
-                  << "Opcode: " << vmopcode_to_string(inst->opcode);
+        std::cout << i << ":\t" << vmopcode_to_string(inst->opcode) << "\t";
 
-        if (inst->arg1)
-            std::cout << ", Arg1: " << inst->arg1->val;
-        else
-            std::cout << ", Arg1: null";
+        if (inst->result && inst->result->type != undef_a) {
+            std::cout << argCodes[inst->result->type] << ":" << inst->result->val << "\t";
+        } else {
+            std::cout << "unused_result ";
+        }
 
-        if (inst->arg2)
-            std::cout << ", Arg2: " << inst->arg2->val;
-        else
-            std::cout << ", Arg2: null";
+        if (inst->arg1 && inst->arg1->type != undef_a) {
+            std::cout << argCodes[inst->arg1->type] << ":" << inst->arg1->val << "\t";
+        } else {
+            std::cout << "unused_arg1\t";
+        }
 
-        if (inst->result)
-            std::cout << ", Result: " << inst->result->val;
-        else
-            std::cout << ", Result: null";
+        if (inst->arg2 && inst->arg2->type != undef_a) {
+            std::cout << argCodes[inst->arg2->type] << ":" << inst->arg2->val << "\t";
+        } else {
+            std::cout << "unused_arg2\t";
+        }
 
-        std::cout << ", SrcLine: " << inst->srcLine << std::endl;
+        std::cout << "SrcLine: " << inst->srcLine << "\n";
     }
+    std::cout << "===========================================================\n";
 }
 
 void print_const_strings(void) {
@@ -789,3 +832,5 @@ void print_userfuncs(void) {
                   << ", Local Size: " << funcstack[i].localSize << std::endl;
     }
 }
+
+void generate_binary_readable(std::string outname) {}

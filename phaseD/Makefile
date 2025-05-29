@@ -15,7 +15,7 @@ PARSER_Y = parser.y
 PARSER_CPP = parser.cpp
 PARSER_H = parser.hpp
 QUAD_CPP = Quads/quad.cpp
-T_CODE_CPP = t-codeLib/t-code.cpp
+T_CODE_CPP = AVM/t-codeLib/t-code.cpp
 EXEC = scanner
 
 TESTS_DIR = tests

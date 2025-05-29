@@ -815,11 +815,11 @@ int main(int argc, char** argv) {
 
 
 
-   generate_binary_readable("");
+   generate_binary_readable("bifile.abc");
 
 
 
-    void free_instructions();
+    //void free_instructions();
 
 
 

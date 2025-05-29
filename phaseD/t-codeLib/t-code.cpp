@@ -9,6 +9,7 @@ std::vector<int> int_vec_consts;
 std::vector<userfunc> funcstack;
 std::vector<int> labstack;
 extern std::vector<quad *> quad_table;
+std::vector<unsigned> final_number_vector; 
 
 std::vector<instruction *> instruction_table;
 unsigned int currInst = 0;
@@ -882,4 +883,113 @@ void print_userfuncs(void) {
     }
 }
 
-void generate_binary_readable(std::string outname) {}
+void generate_binary_readable(const std::string &outname) {
+    //fopen binary file ? 
+    std::ofstream outfile(outname, std::ios::binary | std::ios::trunc);
+    if (!outfile.is_open()) {
+        return;
+    }
+
+    // write the magic number but where ? 
+     unsigned int magic_number = 340200501;
+    outfile.write(reinterpret_cast<const char*>(&magic_number), sizeof(magic_number));
+
+    // Strings 
+       // how many strings we have in this array = number of inputs in the string vector
+       // write down each input
+    unsigned int total_strings = string_vec_consts.size();
+    outfile.write(reinterpret_cast<const char*>(&total_strings), sizeof(total_strings));
+    for (const std::string& s : string_vec_consts) {
+        unsigned int str_len = s.length();
+        outfile.write(reinterpret_cast<const char*>(&str_len), sizeof(unsigned int));
+        outfile.write(s.c_str(), str_len);
+        char null_terminator = '\0';
+        outfile.write(&null_terminator, sizeof(char));
+    }
+
+    
+    // Ints 
+      // how many int values = number of inputs in int vector
+      // write down every value of  every index of the int vector
+    
+      unsigned int total_numbers_int = int_vec_consts.size();
+    outfile.write(reinterpret_cast<const char*>(&total_numbers_int), sizeof(unsigned int));
+    for (int val_int : int_vec_consts) {
+        outfile.write(reinterpret_cast<const char*>(&val_int), sizeof(int));
+    }
+    // Double
+       // same as ints but for double vector
+    unsigned int total_numbers_double = double_vec_consts.size();
+    outfile.write(reinterpret_cast<const char*>(&total_numbers_double), sizeof(unsigned int));
+    for (double d : double_vec_consts) {
+        outfile.write(reinterpret_cast<const char*>(&d), sizeof(double));
+    }
+
+    // User functions
+       // write how many functions we have = No of inputs in the userfunc vector
+       // write down id,iaddress and...
+    unsigned int total_user_funcs = funcstack.size();
+    outfile.write(reinterpret_cast<const char*>(&total_user_funcs), sizeof(unsigned int));
+    for (const userfunc& uf : funcstack) {
+        outfile.write(reinterpret_cast<const char*>(&uf.address), sizeof(unsigned int));
+        outfile.write(reinterpret_cast<const char*>(&uf.localSize), sizeof(unsigned int));
+        unsigned int id_len = uf.id.length();
+        outfile.write(reinterpret_cast<const char*>(&id_len), sizeof(unsigned int));
+        outfile.write(uf.id.c_str(), id_len);
+        char null_terminator_id = '\0';
+        outfile.write(&null_terminator_id, sizeof(char));
+    }
+
+    // lib funcs
+       // find how many lib funcs we use from the lib_str_func vector
+       // which functions -> output = strings ( for example : print,cos etc)
+     unsigned int total_lib_funcs = lig_strvec_consts.size();
+    outfile.write(reinterpret_cast<const char*>(&total_lib_funcs), sizeof(unsigned int));
+    for (const std::string& s_lib : lig_strvec_consts) {
+        unsigned int lib_str_len = s_lib.length();
+        outfile.write(reinterpret_cast<const char*>(&lib_str_len), sizeof(unsigned int));
+        outfile.write(s_lib.c_str(), lib_str_len);
+        char null_terminator_lib = '\0';
+        outfile.write(&null_terminator_lib, sizeof(char));
+    }
+
+    // All of the above : 
+       // We can know the number of inputs for each vector with : <name_of_vector>.size();
+       // we iterate with auto for for the vec and we : <name_of_vector>[i] ----> this is the value 
+    
+
+    // We now have the instruction table
+       // since the print is working right we have the 4 'byte' code but it is not yet encoded 
+       unsigned int total_instructions = instruction_table.size();
+    outfile.write(reinterpret_cast<const char*>(&total_instructions), sizeof(unsigned int));
+    for (const instruction* instr_ptr : instruction_table) {
+        if (!instr_ptr) {
+            continue;
+        }
+
+        uint8_t opcode_byte = static_cast<uint8_t>(instr_ptr->opcode);
+        outfile.write(reinterpret_cast<const char*>(&opcode_byte), sizeof(uint8_t));
+
+        vmarg default_undef_vmarg;
+        default_undef_vmarg.type = undef_a;
+        default_undef_vmarg.val = 0;
+
+        const vmarg* vmarg_operands[3] = {&(instr_ptr->result), &(instr_ptr->arg1), &(instr_ptr->arg2)};
+
+        for (int k = 0; k < 3; ++k) {
+            const vmarg* current_vmarg = vmarg_operands[k];
+            if (current_vmarg && current_vmarg->type != undef_a) {
+                uint8_t type_byte = static_cast<uint8_t>(current_vmarg->type);
+                outfile.write(reinterpret_cast<const char*>(&type_byte), sizeof(uint8_t));
+                outfile.write(reinterpret_cast<const char*>(&current_vmarg->val), sizeof(unsigned int));
+            } else {
+                uint8_t type_byte = static_cast<uint8_t>(default_undef_vmarg.type);
+                outfile.write(reinterpret_cast<const char*>(&type_byte), sizeof(uint8_t));
+                outfile.write(reinterpret_cast<const char*>(&default_undef_vmarg.val), sizeof(unsigned int));
+            }
+        }
+    }
+
+    // stop writing to this folder ?
+    outfile.close();
+}

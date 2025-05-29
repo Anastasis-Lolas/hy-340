@@ -808,6 +808,8 @@ int main(int argc, char** argv) {
     print_const_doubles();
     std::cout<<"print_const_ints:\n";
     print_const_ints();
+    std::cout<<"print_userfuncs:\n";
+    print_userfuncs();
     std::cout<<"print_libfuncs:\n";
     print_libfuncs();
 

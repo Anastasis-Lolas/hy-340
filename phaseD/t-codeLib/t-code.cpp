@@ -17,15 +17,15 @@ unsigned ij_total = 0;
 
 
 generator_func_t generators[] = {
-    generate_ADD,       generate_SUB,          generate_DIV,
-    generate_MOD,       generate_ASSIGN,       generate_UMINUS,
-    generate_NOP,       generate_AND,          generate_OR,
-    generate_NOT,       generate_IF_EQ,        generate_IF_NOTEQ,
-    generate_IF_LESS,   generate_IF_GREATER,
-    generate_IF_GREATEREQ,   generate_CALL,    generate_IF_LESSEQ,
-    generate_PARAM,     generate_RETURN,       generate_GETRETVAL,
-    generate_FUNCSTART, generate_FUNCEND,      generate_NEWTABLE,
-    generate_JUMP,      generate_TABLEGETELEM, generate_TABLESETELEM};
+    generate_ADD,          generate_SUB,         generate_DIV,
+    generate_MOD,          generate_ASSIGN,      generate_UMINUS,
+    generate_NOP,          generate_AND,         generate_OR,
+    generate_NOT,          generate_IF_EQ,       generate_IF_NOTEQ,
+    generate_IF_LESS,      generate_IF_GREATER,  generate_IF_GREATEREQ,
+    generate_CALL,         generate_IF_LESSEQ,   generate_PARAM,
+    generate_RETURN,       generate_GETRETVAL,   generate_FUNCSTART,
+    generate_FUNCEND,      generate_NEWTABLE,    generate_JUMP,
+    generate_TABLEGETELEM, generate_TABLESETELEM};
 
 unsigned consts_newstring(std::string s) {
     for (unsigned int i = 0; i < string_vec_consts.size(); ++i) {
@@ -311,9 +311,9 @@ void generate_NEWTABLE(quad *q) { generate(newtable_v, q); }
 void generate_TABLEGETELEM(quad *q) { generate(tablegetelem_v, q); }
 void generate_TABLESETELEM(quad *q) { generate(tablesetelem_v, q); }
 void generate_ASSIGN(quad *q) { generate(assign_v, q); }
-void generate_UMINUS(quad *q) { 
+void generate_UMINUS(quad *q) {
     q->taddress = nextinstructionlabel();
-    instruction * instr  = new instruction();
+    instruction *instr = new instruction();
     instr->opcode = mul_v;
     instr->srcLine = q->line;
 
@@ -329,7 +329,8 @@ void generate_UMINUS(quad *q) {
     instr->result = new vmarg();
     make_operand(q->result, instr->result);
 
-    vm_emit(instr);}
+    vm_emit(instr);
+}
 
 void generate_NOP(quad *) {
     instruction *t = (instruction *)malloc(sizeof(instruction));
@@ -376,8 +377,6 @@ void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
 // void generate_JUMP(quad *q) {
 //     vm_emit(new_jump_inst(q, jump_v));
 // }
-
-
 
 
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
@@ -611,7 +610,14 @@ void generate_FUNCEND(quad *q) {
     t->arg1 = new vmarg();
     t->arg2 = new vmarg();
     t->result = new vmarg();
-    if (q->result) make_operand(q->result, t->result);
+    if (q->result) {
+        std::cout << "generate_FUNCEND: q->result is not null: "
+                  << q->result->type << std::endl;
+        // make_operand(q->result, t->result);
+        t->result->val = labstack.back();
+        labstack.pop_back();
+        t->result->type = userfunc_a;
+    }
     t->result = new vmarg();
     t->result->type = label_a;
     t->result->val = labstack.back();
@@ -636,8 +642,6 @@ void generate_FUNCSTART(quad *q) {
 
     vm_emit(t);
 }
-
-
 
 
 unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
@@ -766,14 +770,13 @@ void free_instructions() {
 
 // prints
 void print_instructions() {
-    std::string argCodes[] = {
-        "label_a", "global_a", "formal_a", "local_a", "number_a", "string_a", "bool_a",
-        "nil_a", "userfunc_a", "libfunc_a", "retval_a", "undef_a"
-    };
+    std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
+                              "number_a",   "string_a",  "bool_a",   "nil_a",
+                              "userfunc_a", "libfunc_a", "retval_a", "undef_a"};
 
     std::cout << "\n========= DEBUG PRINT: INSTRUCTIONS =========\n";
     for (unsigned int i = 0; i < instruction_table.size(); ++i) {
-        instruction* inst = instruction_table[i];
+        instruction *inst = instruction_table[i];
         if (!inst) {
             std::cout << i << ": null pointer\n";
             continue;
@@ -782,26 +785,30 @@ void print_instructions() {
         std::cout << i << ":\t" << vmopcode_to_string(inst->opcode) << "\t";
 
         if (inst->result && inst->result->type != undef_a) {
-            std::cout << argCodes[inst->result->type] << ":" << inst->result->val << "\t";
+            std::cout << argCodes[inst->result->type] << ":"
+                      << inst->result->val << "\t";
         } else {
             std::cout << "unused_result ";
         }
 
         if (inst->arg1 && inst->arg1->type != undef_a) {
-            std::cout << argCodes[inst->arg1->type] << ":" << inst->arg1->val << "\t";
+            std::cout << argCodes[inst->arg1->type] << ":" << inst->arg1->val
+                      << "\t";
         } else {
             std::cout << "unused_arg1\t";
         }
 
         if (inst->arg2 && inst->arg2->type != undef_a) {
-            std::cout << argCodes[inst->arg2->type] << ":" << inst->arg2->val << "\t";
+            std::cout << argCodes[inst->arg2->type] << ":" << inst->arg2->val
+                      << "\t";
         } else {
             std::cout << "unused_arg2\t";
         }
 
         std::cout << "SrcLine: " << inst->srcLine << "\n";
     }
-    std::cout << "===========================================================\n";
+    std::cout
+        << "===========================================================\n";
 }
 
 void print_const_strings(void) {

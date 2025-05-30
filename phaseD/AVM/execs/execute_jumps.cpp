@@ -1,8 +1,7 @@
 #include "../avm_execute.h"
 
 
-char* typeStrings[] = {"number",   "string",  "bool", "table",
-                       "userfunc", "libfunc", "nil",  "undef"};
+extern avm_memcell stack[AVM_STACKSIZE];
 
 equality_check equal_check_dispatcher[] = {check_eq_number, check_eq_strings};
 
@@ -75,8 +74,9 @@ void execute_jeq(instruction* instr) {
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     else if (rv1->type != rv2->type)
-        avm_error("%s is illegal!", typeStrings[rv1->type],
-                  typeStrings[rv2->type]);
+       avm_error(typeStrings[rv1->type] + std::string(" ") + typeStrings[rv2->type] + " is illegal!");
+
+
     else {
         /* Equality check with dispatching. */
         result = equal_check_dispatcher[rv1->type](rv1, rv2);
@@ -86,5 +86,8 @@ void execute_jeq(instruction* instr) {
 }
 
 
-void execute_jne(instruction*) void execute_jle(instruction*) void execute_jge(
-    instruction*) void execute_jlt(instruction*) void execute_jgt(instruction*)
+void execute_jne(instruction*);
+void execute_jle(instruction*) ;
+void execute_jge(instruction*) ;
+void execute_jlt(instruction*) ;
+void execute_jgt(instruction*);

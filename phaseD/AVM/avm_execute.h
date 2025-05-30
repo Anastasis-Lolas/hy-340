@@ -9,6 +9,13 @@
 #include "avm_helper.h"
 #include "avm_table.h"
 #include "memcell_struct.h"
+#define N 4096
+
+
+
+std::string typeStrings[] = {"number", "string", "bool", "table", "userfunc", "libfunc", "nil",  "undef"};
+
+
 
 
 #define execute_add execute_arithmetic

@@ -8,6 +8,9 @@ std::vector<std::string> string_consts;
 extern std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
+extern avm_memcell stack[AVM_STACKSIZE];
+
+
 
 execute_func_t executeFuncs[] = {
     execute_assign,       execute_add,          execute_sub,

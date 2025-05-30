@@ -41,8 +41,20 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return &retval;
         case number_m:
             reg->type = number_m;
-            reg->data.numVal = consts_getnumber(arg->val);
+            reg->data.numVal = consts_getdouble(arg->val);
             return reg;
+        /*
+        case double_m:
+            reg->type = number_m;
+            reg->data.numVal = consts_getdouble(arg->val);
+            return reg;
+        */
+        /*
+        case int_m:
+            reg->type = number_m;
+            reg->data.numVal = consts_getint(arg->val);
+            return reg;
+        */
         case string_a:
             reg->type = string_m;
             reg->data.strVal = consts_getstring(arg->val);
@@ -70,7 +82,9 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
 }
 
 
-double consts_getnumber(unsigned index) { return number_consts[index]; }
+double consts_getdouble(unsigned index) { return double_consts[index]; }
+
+int consts_getint(unsigned index) { return int_consts[index]; }
 
 std::string consts_getstring(unsigned index) { return string_consts[index]; }
 
@@ -88,7 +102,8 @@ void memclear_table(avm_memcell* m) {
 }
 
 memclear_func_t memclearFuncs[] = {
-    0, /* number */
+    0, /* double */
+    0, /* int */
     memclear_string,
     0, /* bool */
     memclear_table,

@@ -19,6 +19,7 @@ incomplete_jump *ij_head = (incomplete_jump *)0;
 unsigned ij_total = 0;
 
 
+
 generator_func_t generators[] = {
     generate_ADD,          generate_SUB,          generate_DIV,
     generate_MOD,          generate_ASSIGN,       generate_UMINUS,
@@ -109,12 +110,12 @@ void make_operand(expr *e, vmarg *arg) {
 
         case constdouble_e: {
             arg->val = consts_newdouble(e->numConst);
-            arg->type = number_a;
+            arg->type = double_a;
             break;
         }
         case intnum_e: {
             arg->val = consts_newint(e->numInt);
-            arg->type = number_a;
+            arg->type = int_a;
             break;
         }
         case nil_e:
@@ -181,7 +182,7 @@ void patch_incomplete_jumps() {
 
 void make_numberoperand(vmarg *arg, double val) {
     arg->val = consts_newdouble(val);
-    arg->type = number_a;
+    arg->type = double_a;
 }
 
 void make_booloperand(vmarg *arg, unsigned val) {

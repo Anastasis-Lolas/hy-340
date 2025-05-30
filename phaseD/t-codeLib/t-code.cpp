@@ -4,9 +4,8 @@
 
 std::vector<incomplete_jump *> incjumps_vec;
 std::vector<std::string> string_vec_consts;
-std::vector<double> double_vec_consts;
+std::vector<double> num_vec_consts;
 std::vector<std::string> lig_strvec_consts;
-std::vector<int> int_vec_consts;
 std::vector<userfunc> funcstack;
 std::vector<int> labstack;
 extern std::vector<quad *> quad_table;
@@ -17,7 +16,6 @@ unsigned int currInst = 0;
 
 incomplete_jump *ij_head = (incomplete_jump *)0;
 unsigned ij_total = 0;
-
 
 
 generator_func_t generators[] = {
@@ -41,26 +39,14 @@ unsigned consts_newstring(std::string s) {
     return string_vec_consts.size() - 1;
 }
 
-
-unsigned consts_newint(int a) {
-    for (unsigned int i = 0; i < int_vec_consts.size(); ++i) {
-        if (int_vec_consts[i] == a) {
+unsigned consts_newnumber(double n) {
+    for (unsigned int i = 0; i < num_vec_consts.size(); ++i) {
+        if (num_vec_consts[i] == n) {
             return i;
         }
     }
-    int_vec_consts.push_back(a);
-    return int_vec_consts.size() - 1;
-}
-
-
-unsigned consts_newdouble(double n) {
-    for (unsigned int i = 0; i < double_vec_consts.size(); ++i) {
-        if (double_vec_consts[i] == n) {
-            return i;
-        }
-    }
-    double_vec_consts.push_back(n);
-    return double_vec_consts.size() - 1;
+    num_vec_consts.push_back(n);
+    return num_vec_consts.size() - 1;
 }
 
 unsigned libfuncs_newused(std::string s) {
@@ -107,15 +93,9 @@ void make_operand(expr *e, vmarg *arg) {
             arg->type = string_a;
             break;
         }
-
         case constdouble_e: {
-            arg->val = consts_newdouble(e->numConst);
-            arg->type = double_a;
-            break;
-        }
-        case intnum_e: {
-            arg->val = consts_newint(e->numInt);
-            arg->type = int_a;
+            arg->val = consts_newnumber(e->numConst);
+            arg->type = number_a;
             break;
         }
         case nil_e:
@@ -181,8 +161,8 @@ void patch_incomplete_jumps() {
 }
 
 void make_numberoperand(vmarg *arg, double val) {
-    arg->val = consts_newdouble(val);
-    arg->type = double_a;
+    arg->val = consts_newnumber(val);
+    arg->type = number_a;
 }
 
 void make_booloperand(vmarg *arg, unsigned val) {
@@ -615,14 +595,9 @@ void print_const_strings(void) {
         std::cout << i << " : " << string_vec_consts[i] << std::endl;
     }
 }
-void print_const_doubles(void) {
-    for (unsigned i = 0; i < double_vec_consts.size(); i++) {
-        std::cout << i << " : " << double_vec_consts[i] << std::endl;
-    }
-}
-void print_const_ints(void) {
-    for (unsigned i = 0; i < int_vec_consts.size(); i++) {
-        std::cout << i << " : " << int_vec_consts[i] << std::endl;
+void print_const_nums(void) {
+    for (unsigned i = 0; i < num_vec_consts.size(); i++) {
+        std::cout << i << " : " << num_vec_consts[i] << std::endl;
     }
 }
 
@@ -665,23 +640,12 @@ void generate_binary_readable(const std::string &outname) {
         outfile.write(&null_terminator, sizeof(char));
     }
 
-
-    // Ints
-    // how many int values = number of inputs in int vector
-    // write down every value of  every index of the int vector
-
-    unsigned int total_numbers_int = int_vec_consts.size();
-    outfile.write(reinterpret_cast<const char *>(&total_numbers_int),
-                  sizeof(unsigned int));
-    for (int val_int : int_vec_consts) {
-        outfile.write(reinterpret_cast<const char *>(&val_int), sizeof(int));
-    }
     // Double
     // same as ints but for double vector
-    unsigned int total_numbers_double = double_vec_consts.size();
+    unsigned int total_numbers_double = num_vec_consts.size();
     outfile.write(reinterpret_cast<const char *>(&total_numbers_double),
                   sizeof(unsigned int));
-    for (double d : double_vec_consts) {
+    for (double d : num_vec_consts) {
         outfile.write(reinterpret_cast<const char *>(&d), sizeof(double));
     }
 

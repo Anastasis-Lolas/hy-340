@@ -5,8 +5,7 @@
 #define AVM_ENDING_PC codeSize
 
 std::vector<std::string> string_consts;
-std::vector<double> double_consts;
-std::vector<int> int_consts;
+extern std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 
@@ -51,27 +50,14 @@ void read_and_print_avm_binary(const std::string &filename) {
         std::cout << i << ": \"" << s << "\"\n";
     }
 
-    unsigned int total_numbers_int;
-    infile.read(reinterpret_cast<char *>(&total_numbers_int),
-                sizeof(unsigned int));
-    std::cout << "\n--- Integer Constants (Read from file: "
-              << total_numbers_int << ") ---" << std::endl;
-    for (unsigned int i = 0; i < total_numbers_int; ++i) {
-        int val_int;
-        infile.read(reinterpret_cast<char *>(&val_int), sizeof(int));
-        int_consts.push_back(val_int);
-        std::cout << i << ": " << val_int << "\n";
-    }
-
-    unsigned int total_numbers_double;
-    infile.read(reinterpret_cast<char *>(&total_numbers_double),
-                sizeof(unsigned int));
-    std::cout << "\n--- Double Constants (Read from file: "
-              << total_numbers_double << ") ---" << std::endl;
-    for (unsigned int i = 0; i < total_numbers_double; ++i) {
+    unsigned int total_numbers;
+    infile.read(reinterpret_cast<char *>(&total_numbers), sizeof(unsigned int));
+    std::cout << "\n--- Double Constants (Read from file: " << total_numbers
+              << ") ---" << std::endl;
+    for (unsigned int i = 0; i < total_numbers; ++i) {
         double d;
         infile.read(reinterpret_cast<char *>(&d), sizeof(double));
-        double_consts.push_back(d);
+        nums_consts.push_back(d);
         std::cout << i << ": " << d << "\n";
     }
 
@@ -176,15 +162,11 @@ void read_and_print_avm_binary(const std::string &filename) {
 
             switch (arg_to_print->type) {
                 case number_a:
-                    if (arg_to_print->val < double_consts.size()) {
+                    if (arg_to_print->val < nums_consts.size()) {
                         extra_info =
                             " (" +
-                            std::to_string(double_consts[arg_to_print->val]) +
+                            std::to_string(nums_consts[arg_to_print->val]) +
                             ")";
-                    } else if (arg_to_print->val < int_consts.size()) {
-                        extra_info =
-                            " (" +
-                            std::to_string(int_consts[arg_to_print->val]) + ")";
                     }
                     break;
                 case string_a:

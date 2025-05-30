@@ -29,8 +29,7 @@ typedef void (*execute_func_t)(instruction*);
 // externs
 //======
 extern std::vector<std::string> string_consts;
-extern std::vector<double> double_consts;
-extern std::vector<int> int_consts;
+extern std::vector<double> nums_consts;
 extern std::vector<std::string> libfuncs;
 extern std::vector<userfunc> userfuncs;
 

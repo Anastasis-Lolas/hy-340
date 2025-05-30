@@ -44,8 +44,7 @@ typedef enum vmarg_t {
     global_a,
     formal_a,
     local_a,
-    double_a,
-    int_a,
+    number_a,
     string_a,
     bool_a,
     nil_a,
@@ -92,7 +91,7 @@ void make_operand(expr* e, vmarg* arg);
 unsigned nextinstructionlabel();
 
 unsigned consts_newstring(std::string s);
-unsigned consts_newdouble(double n);
+unsigned consts_newnumber(double n);
 unsigned consts_newint(int a);
 unsigned libfuncs_newused(std::string s);
 unsigned userfunc_newfunc(SymbolTableEntry_T sym);
@@ -141,8 +140,7 @@ void generate_RETURN(quad*);
 std::string vmopcode_to_string(vmopcode op);
 void print_instructions(void);
 void print_const_strings(void);
-void print_const_doubles(void);
-void print_const_ints(void);
+void print_const_nums(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
 

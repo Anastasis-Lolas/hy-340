@@ -13,15 +13,14 @@ typedef void (*memclear_func_t)(avm_memcell*);
 extern memclear_func_t memclearFuncs[];
 
 enum avm_memcell_t {
-    double_m = 0,
-    int_m = 1,
-    string_m = 2,
-    bool_m = 3,
-    table_m = 4,
-    userfunc_m = 5,
-    libfunc_m = 6,
-    nil_m = 7,
-    undef_m = 8
+    number_m = 0,
+    string_m = 1,
+    bool_m = 2,
+    table_m = 3,
+    userfunc_m = 4,
+    libfunc_m = 5,
+    nil_m = 6,
+    undef_m = 7
 };
 
 struct avm_table;  // Forward declaration for table type
@@ -29,8 +28,7 @@ struct avm_table;  // Forward declaration for table type
 typedef struct avm_memcell {
     avm_memcell_t type;
     union {
-        double doubleVal;
-        int intVal;
+        double numVal;
         std::string strVal;
         bool boolVal;
         struct avm_table* tableVal;
@@ -51,9 +49,7 @@ void avm_dec_top(void);
 
 void avm_initstack(void);
 
-double consts_getdouble(unsigned index);
-
-int consts_getint(unsigned index);
+double consts_getnumber(unsigned index);
 std::string consts_getstring(unsigned index);
 std::string libfunc_get(unsigned index);
 

@@ -3,7 +3,12 @@
 
 
 #include <iostream>
-
+#include "avm_execute.h"
+#include "t-codeLib/t-code.h"
+#include "execs/execute_jumps.h"
+#include "execs/execute_arith.h"
+#include "execs/execute_funcs.h"
+#include "execs/execute_tables.h"
 #include "memcell_struct.h"
 
 void avm_execute_cycle(void);

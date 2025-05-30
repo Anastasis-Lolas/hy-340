@@ -1,8 +1,4 @@
 
-#include "avm_execute.h"
-
-#include "memcell_struct.h"
-#include "t-codeLib/t-code.h"
 
 
 #define AVM_ENDING_PC codeSize

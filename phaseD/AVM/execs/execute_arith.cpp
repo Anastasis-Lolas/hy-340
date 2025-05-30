@@ -1,4 +1,4 @@
-#include "execute_arith.h"
+#include "../avm_execute.h"
 
 arithmetic_func_t arithmeticFuncs[] = {
     add_impl,

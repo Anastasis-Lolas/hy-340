@@ -1,4 +1,4 @@
-#include "execute_jumps.h"
+#include "../avm_execute.h"
 
 
 char* typeStrings [] = {

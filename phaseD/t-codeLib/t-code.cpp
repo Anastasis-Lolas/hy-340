@@ -98,6 +98,11 @@ void make_operand(expr *e, vmarg *arg) {
             arg->type = number_a;
             break;
         }
+        case intnum_e: {
+            arg->val = consts_newnumber(e->numConst);
+            arg->type = number_a;
+            break;
+        }
         case nil_e:
             arg->type = nil_a;
             break;

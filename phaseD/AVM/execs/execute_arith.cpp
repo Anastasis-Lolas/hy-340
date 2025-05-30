@@ -1,13 +1,17 @@
 #include "../avm_execute.h"
 
+
+extern avm_memcell stack[AVM_STACKSIZE];
+
 arithmetic_func_t arithmeticFuncs[] = {add_impl, sub_impl, mul_impl, div_impl,
                                        mod_impl};
 
+
 void execute_assign(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
-    avm_memcell* rv = avm_translate_operand(&instr->argl, &ax);
+    avm_memcell* rv = avm_translate_operand(&instr->arg1, &ax);
 
-    assert(lv && (&stack[M - 1] >= lv && lv > &stack[top] || lv == &retval));
+    assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));
     assert(rv);  // should do similar assertion tests here
 
     avm_assign(lv, rv);
@@ -21,14 +25,17 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
         lv->data.tableVal == rv->data.tableVal)
         return;
 
-    if (rv->type == undef_m) avm_warning("assigning from 'undef' content!");
+    if (rv->type == undef_m) {
+        avm_warning("assigning from 'undef' content!");
+
+    }
     avm_memcellclear(lv);
 
     memcpy(lv, rv, sizeof(avm_memcell));
 
 
     if (lv->type == string_m)
-        lv->data.strVal = strdup(rv->data.strVal);
+        lv->data.strVal =  new std::string((rv->data.strVal));
     else if (lv->type == table_m)
         avm_tableincrefcounter(lv->data.tableVal);
 }

@@ -39,22 +39,15 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return &stack[topsp + AVM_STACKENV_SIZE + arg->val];
         case retval_a:
             return &retval;
-        case number_m:
-            reg->type = number_m;
-            reg->data.numVal = consts_getdouble(arg->val);
+
+        case double_a:
+            reg->type = double_m;
+            reg->data.doubleVal = consts_getdouble(arg->val);
             return reg;
-        /*
-        case double_m:
-            reg->type = number_m;
-            reg->data.numVal = consts_getdouble(arg->val);
+        case int_a:
+            reg->type = int_m;
+            reg->data.intVal = consts_getint(arg->val);
             return reg;
-        */
-        /*
-        case int_m:
-            reg->type = number_m;
-            reg->data.numVal = consts_getint(arg->val);
-            return reg;
-        */
         case string_a:
             reg->type = string_m;
             reg->data.strVal = consts_getstring(arg->val);

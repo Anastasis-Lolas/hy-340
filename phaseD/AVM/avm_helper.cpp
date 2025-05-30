@@ -28,3 +28,10 @@ bool avm_tobool(avm_memcell* m) {
 tobool_func_t toboolFuncs[] = {number_tobool, string_tobool,   bool_tobool,
                                table_tobool,  userfunc_tobool, libfunc_tobool,
                                nil_tobool,    undef_tobool};
+
+void avm_error(const std::string& msg) {
+    std::cerr << "\033[1;31mAVM Error: " << msg << "\033[0m\n";
+}
+void avm_warning(const std::string& msg) {
+    std::cerr << "\033[1;33mAVM Warning: " << msg << "\033[0m\n";
+}

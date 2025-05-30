@@ -42,10 +42,9 @@ typedef struct avm_memcell {
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);
 
-void avm_callsaveenvironment(void);
-
 void avm_dec_top(void);
-
+void avm_push_envvalue(unsigned val);
+void avm_callsaveenvironment(void);
 
 void avm_initstack(void);
 

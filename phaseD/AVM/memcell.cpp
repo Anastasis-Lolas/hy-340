@@ -14,6 +14,7 @@ unsigned executionFinished = 0;
 unsigned currLine = 0;  // Current line number
 unsigned codeSize = 0;
 instruction* code = nullptr;  // Pointer to the code array
+unsigned totalActuals = 0;
 
 avm_memcell ax, bx, cx;
 avm_memcell retval;
@@ -106,3 +107,37 @@ memclear_func_t memclearFuncs[] = {
     0, /* nil */
     0  /* undef */
 };
+
+
+void avm_dec_top(void) {
+    if (!top) { /* Stack overflow */
+        avm_error("Stack overflow");
+        executionFinished = 1;
+    } else {
+        top--;
+    }
+}
+
+void avm_push_envvalue(unsigned val) {
+    stack[top].type = number_m;
+    stack[top].data.numVal = val;  // Copy the data
+    avm_dec_top();
+}
+
+void avm_callsaveenvironment(void) {
+    avm_push_envvalue(totalActuals);
+    assert(code[pc].opcode == call_v);
+    avm_push_envvalue(pc + 1);
+    avm_push_envvalue(top + totalActuals + 2);
+    avm_push_envvalue(topsp);
+}
+
+userfunc* avm_getfuncinfo(unsigned address) {
+    if (address < userfuncs.size()) {
+        return &userfuncs[address];
+    } else {
+        // avm_error("Invalid function address: " + std::to_string(address));
+        // error??
+        return nullptr;
+    }
+}

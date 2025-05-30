@@ -39,6 +39,7 @@ extern unsigned executionFinished = 0;
 extern unsigned currLine = 0;  // Current line number
 extern unsigned codeSize = 0;
 extern instruction* code = nullptr;  // Pointer to the code array
+extern unsigned totalActuals = 0;
 
 extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;

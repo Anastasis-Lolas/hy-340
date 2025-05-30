@@ -20,5 +20,8 @@ bool libfunc_tobool(avm_memcell* m);
 bool nil_tobool(avm_memcell* m);
 bool undef_tobool(avm_memcell* m);
 
+void avm_error(const std::string& msg);
+void avm_warning(const std::string& msg);
+
 
 #endif  // AVM_HELPER_H

@@ -127,7 +127,6 @@ void execute_cycle(void);
 void execute_funcexit(instruction* unused);
 
 
-void avm_error(const std::string& msg);
 //----------Binary File Reading and Printing----------//
 void read_and_print_avm_binary(const std::string& filename);
 

@@ -8,7 +8,9 @@
 #define AVM_STACKSIZE 4096
 #define AVM_STACKENV_SIZE 4
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
+typedef void (*memclear_func_t)(avm_memcell*);
 
+extern memclear_func_t memclearFuncs[];
 
 enum avm_memcell_t {
     number_m = 0,
@@ -50,5 +52,9 @@ void avm_initstack(void);
 double consts_getnumber(unsigned index);
 std::string consts_getstring(unsigned index);
 std::string libfunc_get(unsigned index);
+
+void memclear_string(avm_memcell* m);
+void memclear_table(avm_memcell* m);
+
 
 #endif

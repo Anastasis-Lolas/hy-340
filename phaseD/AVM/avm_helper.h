@@ -4,13 +4,13 @@
 #include <iostream>
 #include <string>
 
-#include "avm_table.h"
 #include "memcell_struct.h"
 #include "t-codeLib/t-code.h"
 
 
 typedef bool (*tobool_func_t)(avm_memcell*);
 
+bool avm_tobool(avm_memcell* m);
 bool number_tobool(avm_memcell* m);
 bool string_tobool(avm_memcell* m);
 bool bool_tobool(avm_memcell* m);

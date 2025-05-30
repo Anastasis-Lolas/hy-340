@@ -20,12 +20,6 @@ avm_memcell retval;
 int top, topsp;
 
 
-//======
-extern std::string* string_consts;
-extern double* number_consts;
-extern int* int_consts;
-extern std::string* libfuncs;
-
 void avm_initstack(void) {
     for (size_t i = 0; i < AVM_STACKSIZE; ++i) {
         AVM_WIPEOUT(stack[i]);
@@ -75,8 +69,31 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
     }
 }
 
+
 double consts_getnumber(unsigned index) { return number_consts[index]; }
 
 std::string consts_getstring(unsigned index) { return string_consts[index]; }
 
 std::string libfunc_get(unsigned index) { return libfuncs[index]; }
+
+void memclear_string(avm_memcell* m) {
+    assert(!m->data.strVal.empty());
+    m->data.strVal.clear();
+    delete m->data.strVal;
+}
+
+void memclear_table(avm_memcell* m) {
+    assert(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
+}
+
+memclear_func_t memclearFuncs[] = {
+    0, /* number */
+    memclear_string,
+    0, /* bool */
+    memclear_table,
+    0, /* userfunc */
+    0, /* libfunc */
+    0, /* nil */
+    0  /* undef */
+};

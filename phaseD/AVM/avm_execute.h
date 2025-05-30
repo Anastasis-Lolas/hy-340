@@ -3,37 +3,59 @@
 
 
 #include <iostream>
+
+#include "../t-codeLib/t-code.h"
 #include "avm_execute.h"
-#include "t-codeLib/t-code.h"
-#include "execs/execute_jumps.h"
-#include "execs/execute_arith.h"
-#include "execs/execute_funcs.h"
-#include "execs/execute_tables.h"
+#include "avm_helper.h"
+#include "avm_table.h"
 #include "memcell_struct.h"
 
 
-#define execute_add execute_arithmetic 
-#define execute_sub execute_arithmetic 
-#define execute_mul execute_arithmetic 
-#define execute_div execute_arithmetic 
-#define execute_mod execute_arithmetic 
+#define execute_add execute_arithmetic
+#define execute_sub execute_arithmetic
+#define execute_mul execute_arithmetic
+#define execute_div execute_arithmetic
+#define execute_mod execute_arithmetic
 
 //----------J U M P S -----------------//
 #define execute_jge execute_rljump
-#define execute_jgt execute_rljump 
-#define execute_jle execute_rljump 
-#define execute_jlt execute_rljump 
+#define execute_jgt execute_rljump
+#define execute_jle execute_rljump
+#define execute_jlt execute_rljump
+
+typedef void (*execute_func_t)(instruction*);
+
+
+// externs
+//======
+extern std::vector<std::string> string_consts;
+extern std::vector<double> double_consts;
+extern std::vector<int> int_consts;
+extern std::vector<std::string> libfuncs;
+extern std::vector<userfunc> userfuncs;
+
+
+extern unsigned pc = 0;  // Program counter
+extern unsigned executionFinished = 0;
+extern unsigned currLine = 0;  // Current line number
+extern unsigned codeSize = 0;
+extern instruction* code = nullptr;  // Pointer to the code array
+
+extern avm_memcell ax, bx, cx;
+extern avm_memcell retval;
+extern int top, topsp;
+
 
 typedef unsigned char (*equality_check)(avm_memcell* op1, avm_memcell* op2);
-typedef double (*jump_cmp_func) (double x , double y);
-typedef double (*arithmetic_func_t)(double x ,double y);
+typedef double (*jump_cmp_func)(double x, double y);
+typedef double (*arithmetic_func_t)(double x, double y);
 
-void execute_rljmp(instruction * instr);
+void execute_rljmp(instruction* instr);
 
-double jge_impl (double x , double y);
-double jgt_impl (double x , double y);
-double jle_impl (double x , double y);
-double jlt_impl (double x , double y);
+double jge_impl(double x, double y);
+double jgt_impl(double x, double y);
+double jle_impl(double x, double y);
+double jlt_impl(double x, double y);
 
 
 unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2);
@@ -58,17 +80,17 @@ void execute_funcexit(instruction*);
 //---------F U N C S ---------------//
 
 //--------------------------------//
-double add_impl(double x ,double y);
-double sub_impl(double x ,double y);
-double mul_impl(double x ,double y);
-double div_impl(double x ,double y);
-double mod_impl(double x ,double y);
+double add_impl(double x, double y);
+double sub_impl(double x, double y);
+double mul_impl(double x, double y);
+double div_impl(double x, double y);
+double mod_impl(double x, double y);
 //--------------------------------//
 
 //--------------------------------//
 void execute_assign(instruction*);
-void avm_assign (avm_memcell * lv , avm_memcell * rv);
-void execute_arithmetic(instruction *);
+void avm_assign(avm_memcell* lv, avm_memcell* rv);
+void execute_arithmetic(instruction*);
 //--------------------------------//
 
 //--------------------------------//
@@ -104,5 +126,9 @@ void execute_cycle(void);
 
 void execute_funcexit(instruction* unused);
 
+
+void avm_error(const std::string& msg);
+//----------Binary File Reading and Printing----------//
+void read_and_print_avm_binary(const std::string& filename);
 
 #endif  // AVM_EXECUTE_H

@@ -2,8 +2,8 @@
 #define T_CODE_HEADER
 
 #include <cassert>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "../Quads/quad.h"
 #include "../Symtable/TableEntry/SymbolTableEntry.h"
@@ -144,6 +144,5 @@ void print_const_doubles(void);
 void print_const_ints(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
-void generate_binary_readable(const std::string &outname);
 
 #endif

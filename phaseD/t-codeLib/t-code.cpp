@@ -1,4 +1,5 @@
 #include "t-code.h"
+
 #include <iomanip>
 
 std::vector<incomplete_jump *> incjumps_vec;
@@ -9,7 +10,7 @@ std::vector<int> int_vec_consts;
 std::vector<userfunc> funcstack;
 std::vector<int> labstack;
 extern std::vector<quad *> quad_table;
-std::vector<unsigned> final_number_vector; 
+std::vector<unsigned> final_number_vector;
 
 std::vector<instruction *> instruction_table;
 unsigned int currInst = 0;
@@ -201,7 +202,6 @@ void generate(vmopcode op, quad *quad) {
     instruction *t = new instruction();
     t->opcode = op;
 
-   
 
     if (quad->arg1) make_operand(quad->arg1, &t->arg1);
 
@@ -277,11 +277,11 @@ std::string vmopcode_to_string(vmopcode op) {
 
 void generate_relational(vmopcode op, quad *q) {
     instruction t;
-    t.opcode     = op;
-    t.arg1       = vmarg();  
-    t.arg2       = vmarg();  
-    t.result     = vmarg();
-    t.srcLine    = q->line;
+    t.opcode = op;
+    t.arg1 = vmarg();
+    t.arg2 = vmarg();
+    t.result = vmarg();
+    t.srcLine = q->line;
 
     if (q->arg1) make_operand(q->arg1, &t.arg1);
     if (q->arg2) make_operand(q->arg2, &t.arg2);
@@ -290,7 +290,6 @@ void generate_relational(vmopcode op, quad *q) {
     t.result.type = label_a;
 
     if (q->label < quad_table.size()) {
-        
         if (quad_table[q->label]->taddress != (unsigned)-1) {
             // backward jump: target already has taddress
             t.result.val = quad_table[q->label]->taddress;
@@ -329,7 +328,6 @@ void generate_UMINUS(quad *q) {
     make_numberoperand(&instr->arg1, -1.0);
 
 
-
     make_operand(q->arg1, &instr->arg2);
     make_operand(q->result, &instr->result);
 
@@ -344,22 +342,22 @@ void generate_NOP(quad *) {
     t->arg2.type = undef_a;
     t->result.type = undef_a;
 
-    vm_emit(t); 
+    vm_emit(t);
 }
 
-//void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
+// void generate_JUMP(quad *q) { generate_relational(jump_v, q); }
 
-instruction* new_jump_inst(quad *q, vmopcode op) {
+instruction *new_jump_inst(quad *q, vmopcode op) {
     instruction *instr = new instruction();
-    instr->opcode   = op;
-    instr->srcLine  = q->line;
+    instr->opcode = op;
+    instr->srcLine = q->line;
 
     // record this quad's instruction index
     q->taddress = nextinstructionlabel();
 
     // initialize label operand to undef, then queue for patch
     instr->result.type = label_a;
-    instr->result.val  = 0;
+    instr->result.val = 0;
     add_incomplete_jump(q->taddress, q->label);
 
     // unused args
@@ -370,9 +368,7 @@ instruction* new_jump_inst(quad *q, vmopcode op) {
 }
 
 
-void generate_JUMP(quad *q) {
-    vm_emit(new_jump_inst(q, jump_v));
-}
+void generate_JUMP(quad *q) { vm_emit(new_jump_inst(q, jump_v)); }
 
 
 void generate_IF_EQ(quad *q) { generate_relational(jeq_v, q); }
@@ -385,151 +381,18 @@ void generate_IF_LESS(quad *q) { generate_relational(jlt_v, q); }
 void generate_IF_LESSEQ(quad *q) { generate_relational(jle_v, q); }
 
 
-void generate_NOT(quad *q) {
-    // q->taddress = nextinstructionlabel();
-
-    // instruction *t = new instruction();
-
-    // t->opcode = jeq_v;
-
-    // t->arg1 = new vmarg();
-    // t->arg2 = new vmarg();
-    // t->result = new vmarg();
-
-    // if (q->arg1) make_operand(q->arg1, t->arg1);
-
-    // make_booloperand(t->arg2, false);
-
-    // t->result->type = label_a;
-
-    // t->result->val = nextinstructionlabel() + 3;
-
-    // vm_emit(t);
+void generate_NOT(quad *q) { return; }
 
 
-    // t->opcode = assign_v;
+void generate_OR(quad *q) { return; }
 
-    // make_booloperand(t->arg1, false);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // if (q->result) make_operand(q->result, t->result);
-
-    // vm_emit(t);
-
-    // t->opcode = jump_v;
-
-    // if (t->arg1) reset_operand(t->arg1);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // t->result->type = label_a;
-    // t->result->val = nextinstructionlabel() + 2;
-
-    // vm_emit(t);
-
-    // t->opcode = assign_v;
-
-    // if (t->arg1) make_booloperand(t->arg1, true);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // if (q->result) make_operand(q->result, t->result);
-
-    // vm_emit(t);
-}
-
-
-void generate_OR(quad *q) {
-    // q->taddress = nextinstructionlabel();
-
-    // instruction *t = new instruction();
-
-    // t->opcode = jeq_v;
-
-    // t->arg1 = new vmarg();
-    // t->arg2 = new vmarg();
-    // t->result = new vmarg();
-
-    // if (q->arg1) make_operand(q->arg1, t->arg1);
-
-    // make_booloperand(t->arg2, true);
-
-    // t->result->type = label_a;
-    // t->result->val = nextinstructionlabel() + 4;
-    // vm_emit(t);
-
-    // if (q->arg2) make_operand(q->arg2, t->arg1);
-
-    // t->result->val = nextinstructionlabel() + 3;
-    // vm_emit(t);
-
-    // t->opcode = assign_v;
-    // make_booloperand(t->arg1, false);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // if (q->result) make_operand(q->result, t->result);
-
-    // vm_emit(t);
-
-    // t->opcode = assign_v;
-    // make_booloperand(t->arg1, true);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // vm_emit(t);
-}
-
-void generate_AND(quad *q) {
-    // q->taddress = nextinstructionlabel();
-
-    // instruction *t = new instruction();
-
-    // t->opcode = jeq_v;
-
-    // t->arg1 = new vmarg();
-    // t->arg2 = new vmarg();
-    // t->result = new vmarg();
-
-    // if (q->arg1) make_operand(q->arg1, t->arg1);
-
-    // make_booloperand(t->arg2, true);
-
-    // t->result->type = label_a;
-    // t->result->val = nextinstructionlabel() + 4;
-    // vm_emit(t);
-
-    // if (q->arg2) make_operand(q->arg2, t->arg1);
-
-    // t->result->val = nextinstructionlabel() + 3;
-    // vm_emit(t);
-
-    // t->opcode = assign_v;
-    // make_booloperand(t->arg1, false);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // if (q->result) make_operand(q->result, t->result);
-
-    // vm_emit(t);
-
-    // t->opcode = assign_v;
-    // make_booloperand(t->arg1, true);
-
-    // if (t->arg2) reset_operand(t->arg2);
-
-    // if (q->result) make_operand(q->result, t->result);
-
-    // vm_emit(t);
-}
+void generate_AND(quad *q) { return; }
 
 void generate_PARAM(quad *q) {
     q->taddress = nextinstructionlabel();
     instruction *t = new instruction();
     t->opcode = pusharg_v;
 
-   
 
     if (q->arg1) make_operand(q->arg1, &t->arg1);
 
@@ -553,12 +416,11 @@ void generate_GETRETVAL(quad *q) {
     t->opcode = assign_v;
     q->taddress = nextinstructionlabel();
     t->srcLine = q->line;  // ? q->taddress;
-    
+
 
     if (q->result) {
-    
         make_operand(q->result, &t->result);
-    } 
+    }
 
     make_retvaloperand(&t->arg1);
 
@@ -573,7 +435,6 @@ void generate_RETURN(quad *q) {
     t->srcLine = q->line;                  // ? q->taddress;
 
     if (q->result) {
-
         make_operand(q->result, &t->arg1);
     } else {
         t->arg1.type = undef_a;
@@ -646,132 +507,21 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
     return funcstack.size() - 1;
 }
 
-
-// void generate_instructions() {
-//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
-//         quad *q = quad_table[i];
-//         if (!q) continue;
-//         if (q->op < 0 ||
-//             q->op >= sizeof(generators) / sizeof(generator_func_t)) {
-//             std::cerr << "Unknown quad opcode! Aborting.\n";
-//             assert(0);
-//         }
-//         generators[q->op](q);
-//     }
-// }
-
-
 void generate_instructions() {
-  // pre‐initialize all taddress to “not set”:
-  for (auto &q : quad_table)
-    q->taddress = (unsigned)-1;
+    // pre‐initialize all taddress to “not set”:
+    for (auto &q : quad_table) q->taddress = (unsigned)-1;
 
-  for (auto *q : quad_table) {
-    if (!q) continue;
-    // now q->taddress marks “this quad’s instr idx”:
-    q->taddress = nextinstructionlabel();
+    for (auto *q : quad_table) {
+        if (!q) continue;
+        // now q->taddress marks “this quad’s instr idx”:
+        q->taddress = nextinstructionlabel();
 
-    // dispatch to generate_*()
-    generators[q->op](q);
-  }
+        // dispatch to generate_*()
+        generators[q->op](q);
+    }
 
-  patch_incomplete_jumps();
+    patch_incomplete_jumps();
 }
-
-// void generate_instructions() {
-//     for (unsigned int i = 0; i < quad_table.size(); ++i) {
-//         quad *q = quad_table[i];
-//         if (!q) continue;
-//         q->taddress = nextinstructionlabel();
-
-//         switch (q->op) {
-//             case assign:
-//                 generate_ASSIGN(q);
-//                 break;
-//             case add:
-//                 generate_ADD(q);
-//                 break;
-//             case sub:
-//                 generate_SUB(q);
-//                 break;
-//             case mul:
-//                 generate_MUL(q);
-//                 break;
-//             case divv:
-//                 generate_DIV(q);
-//                 break;
-//             case mod:
-//                 generate_MOD(q);
-//                 break;
-//             case uminus:
-//                 generate_UMINUS(q);
-//                 break;
-//             case and_op:
-//                 generate_AND(q);
-//                 break;
-//             case or_op:
-//                 generate_OR(q);
-//                 break;
-//             case not_op:
-//                 generate_NOT(q);
-//                 break;
-//             case if_eq:
-//                 generate_IF_EQ(q);
-//                 break;
-//             case if_noteq:
-//                 generate_IF_NOTEQ(q);
-//                 break;
-//             case if_lesseq:
-//                 generate_IF_LESSEQ(q);
-//                 break;
-//             case if_greatereq:
-//                 generate_IF_GREATEREQ(q);
-//                 break;
-//             case if_less:
-//                 generate_IF_LESS(q);
-//                 break;
-//             case if_greater:
-//                 generate_IF_GREATER(q);
-//                 break;
-//             case call:
-//                 generate_CALL(q);
-//                 break;
-//             case param:
-//                 generate_PARAM(q);
-//                 break;
-//             case ret:
-//                 generate_RETURN(q);
-//                 break;
-//             case getretval:
-//                 generate_GETRETVAL(q);
-//                 break;
-//             case funcstart:
-//                 generate_FUNCSTART(q);
-//                 break;
-//             case funcend:
-//                 generate_FUNCEND(q);
-//                 break;
-//             case tablecreate:
-//                 generate_NEWTABLE(q);
-//                 break;
-//             case jump:
-//                 generate_JUMP(q);
-//                 break;
-//             case tablegetelem:
-//                 generate_TABLEGETELEM(q);
-//                 break;
-//             case tablesetelem:
-//                 generate_TABLESETELEM(q);
-//                 break;
-//             default:
-//                 std::cerr << "Unknown quad opcode! Aborting.\n";
-//                 assert(0);
-//         }
-//     }
-//     patch_incomplete_jumps();
-// }
-
-
 void free_instructions() {
     for (auto inst : instruction_table) {
         if (inst) free(inst);
@@ -782,27 +532,26 @@ void free_instructions() {
 
 // prints
 void print_instructions() {
-     std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
+    std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
                               "number_a",   "string_a",  "bool_a",   "nil_a",
                               "userfunc_a", "libfunc_a", "retval_a", "undef_a"};
 
-    // Καθορισμός πλάτους για κάθε στήλη - μπορείς να τα προσαρμόσεις
-    const int col_num_width = 4;      // Για τον αριθμό της εντολής
-    const int col_opcode_width = 15;  // Για το όνομα του opcode
-    const int col_arg_width = 20;     // Για κάθε όρισμα (result, arg1, arg2)
-    const int col_srcline_width = 10; // Για το SrcLine
+    const int col_num_width = 4;
+    const int col_opcode_width = 15;
+    const int col_arg_width = 20;
+    const int col_srcline_width = 10;
 
-    std::cout << "\n========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
-    // Εκτύπωση επικεφαλίδων πίνακα
-    std::cout << std::left << std::setw(col_num_width) << "No."
-              << std::left << std::setw(col_opcode_width) << "Opcode"
-              << std::left << std::setw(col_arg_width) << "Result"
-              << std::left << std::setw(col_arg_width) << "Arg1"
-              << std::left << std::setw(col_arg_width) << "Arg2"
-              << std::left << std::setw(col_srcline_width) << "SrcLine"
-              << std::endl;
+    std::cout
+        << "\n========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
+    std::cout << std::left << std::setw(col_num_width) << "No." << std::left
+              << std::setw(col_opcode_width) << "Opcode" << std::left
+              << std::setw(col_arg_width) << "Result" << std::left
+              << std::setw(col_arg_width) << "Arg1" << std::left
+              << std::setw(col_arg_width) << "Arg2" << std::left
+              << std::setw(col_srcline_width) << "SrcLine" << std::endl;
 
-    int total_width_for_separator = col_num_width + col_opcode_width + (col_arg_width * 3) + col_srcline_width;
+    int total_width_for_separator = col_num_width + col_opcode_width +
+                                    (col_arg_width * 3) + col_srcline_width;
     std::cout << std::string(total_width_for_separator, '-') << std::endl;
 
 
@@ -814,23 +563,27 @@ void print_instructions() {
             continue;
         }
 
-        std::cout << std::left << std::setw(col_num_width) << i << " "; // Χρησιμοποιούμε κενό αντί για ':' για καλύτερη στοίχιση με setw
-        std::cout << std::left << std::setw(col_opcode_width) << vmopcode_to_string(inst->opcode);
+        std::cout << std::left << std::setw(col_num_width) << i << " ";
+
+        std::cout << std::left << std::setw(col_opcode_width)
+                  << vmopcode_to_string(inst->opcode);
 
         std::string result_str = " ";
-        if ( inst->result.type != undef_a) {
-            result_str = argCodes[inst->result.type] + ":" + std::to_string(inst->result.val);
-        } else if ( inst->result.type == undef_a) { // Ξεχωριστή περίπτωση για undef_a
-             result_str = argCodes[inst->result.type]; // Τύπωσε μόνο τον τύπο undef_a
+        if (inst->result.type != undef_a) {
+            result_str = argCodes[inst->result.type] + ":" +
+                         std::to_string(inst->result.val);
+        } else if (inst->result.type == undef_a) {
+            result_str = argCodes[inst->result.type];
         } else {
-             result_str = "unused_result";
+            result_str = "unused_result";
         }
         std::cout << std::left << std::setw(col_arg_width) << result_str;
 
         std::string arg1_str = " ";
-        if ( inst->arg1.type != undef_a) {
-            arg1_str = argCodes[inst->arg1.type] + ":" + std::to_string(inst->arg1.val);
-        } else if ( inst->arg1.type == undef_a) {
+        if (inst->arg1.type != undef_a) {
+            arg1_str = argCodes[inst->arg1.type] + ":" +
+                       std::to_string(inst->arg1.val);
+        } else if (inst->arg1.type == undef_a) {
             arg1_str = argCodes[inst->arg1.type];
         } else {
             arg1_str = "unused_arg1";
@@ -838,16 +591,18 @@ void print_instructions() {
         std::cout << std::left << std::setw(col_arg_width) << arg1_str;
 
         std::string arg2_str = " ";
-        if ( inst->arg2.type != undef_a) {
-            arg2_str = argCodes[inst->arg2.type] + ":" + std::to_string(inst->arg2.val);
-        } else if ( inst->arg2.type == undef_a) {
+        if (inst->arg2.type != undef_a) {
+            arg2_str = argCodes[inst->arg2.type] + ":" +
+                       std::to_string(inst->arg2.val);
+        } else if (inst->arg2.type == undef_a) {
             arg2_str = argCodes[inst->arg2.type];
         } else {
             arg2_str = "unused_arg2";
         }
         std::cout << std::left << std::setw(col_arg_width) << arg2_str;
 
-        std::cout << std::left << std::setw(col_srcline_width) << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "")
+        std::cout << std::left << std::setw(col_srcline_width)
+                  << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "")
                   << "\n";
     }
     std::cout << std::string(total_width_for_separator, '-') << std::endl;
@@ -884,108 +639,130 @@ void print_userfuncs(void) {
 }
 
 void generate_binary_readable(const std::string &outname) {
-    //fopen binary file ? 
     std::ofstream outfile(outname, std::ios::binary | std::ios::trunc);
     if (!outfile.is_open()) {
         return;
     }
 
-    // write the magic number but where ? 
-     unsigned int magic_number = 340200501;
-    outfile.write(reinterpret_cast<const char*>(&magic_number), sizeof(magic_number));
+    // write the magic number but where ?
+    unsigned int magic_number = 340200501;
+    outfile.write(reinterpret_cast<const char *>(&magic_number),
+                  sizeof(magic_number));
 
-    // Strings 
-       // how many strings we have in this array = number of inputs in the string vector
-       // write down each input
+    // Strings
+    // how many strings we have in this array = number of inputs in the string
+    // vector write down each input
     unsigned int total_strings = string_vec_consts.size();
-    outfile.write(reinterpret_cast<const char*>(&total_strings), sizeof(total_strings));
-    for (const std::string& s : string_vec_consts) {
+    outfile.write(reinterpret_cast<const char *>(&total_strings),
+                  sizeof(total_strings));
+    for (const std::string &s : string_vec_consts) {
         unsigned int str_len = s.length();
-        outfile.write(reinterpret_cast<const char*>(&str_len), sizeof(unsigned int));
+        outfile.write(reinterpret_cast<const char *>(&str_len),
+                      sizeof(unsigned int));
         outfile.write(s.c_str(), str_len);
         char null_terminator = '\0';
         outfile.write(&null_terminator, sizeof(char));
     }
 
-    
-    // Ints 
-      // how many int values = number of inputs in int vector
-      // write down every value of  every index of the int vector
-    
-      unsigned int total_numbers_int = int_vec_consts.size();
-    outfile.write(reinterpret_cast<const char*>(&total_numbers_int), sizeof(unsigned int));
+
+    // Ints
+    // how many int values = number of inputs in int vector
+    // write down every value of  every index of the int vector
+
+    unsigned int total_numbers_int = int_vec_consts.size();
+    outfile.write(reinterpret_cast<const char *>(&total_numbers_int),
+                  sizeof(unsigned int));
     for (int val_int : int_vec_consts) {
-        outfile.write(reinterpret_cast<const char*>(&val_int), sizeof(int));
+        outfile.write(reinterpret_cast<const char *>(&val_int), sizeof(int));
     }
     // Double
-       // same as ints but for double vector
+    // same as ints but for double vector
     unsigned int total_numbers_double = double_vec_consts.size();
-    outfile.write(reinterpret_cast<const char*>(&total_numbers_double), sizeof(unsigned int));
+    outfile.write(reinterpret_cast<const char *>(&total_numbers_double),
+                  sizeof(unsigned int));
     for (double d : double_vec_consts) {
-        outfile.write(reinterpret_cast<const char*>(&d), sizeof(double));
+        outfile.write(reinterpret_cast<const char *>(&d), sizeof(double));
     }
 
     // User functions
-       // write how many functions we have = No of inputs in the userfunc vector
-       // write down id,iaddress and...
+    // write how many functions we have = No of inputs in the userfunc vector
+    // write down id,iaddress and...
     unsigned int total_user_funcs = funcstack.size();
-    outfile.write(reinterpret_cast<const char*>(&total_user_funcs), sizeof(unsigned int));
-    for (const userfunc& uf : funcstack) {
-        outfile.write(reinterpret_cast<const char*>(&uf.address), sizeof(unsigned int));
-        outfile.write(reinterpret_cast<const char*>(&uf.localSize), sizeof(unsigned int));
+    outfile.write(reinterpret_cast<const char *>(&total_user_funcs),
+                  sizeof(unsigned int));
+    for (const userfunc &uf : funcstack) {
+        outfile.write(reinterpret_cast<const char *>(&uf.address),
+                      sizeof(unsigned int));
+        outfile.write(reinterpret_cast<const char *>(&uf.localSize),
+                      sizeof(unsigned int));
         unsigned int id_len = uf.id.length();
-        outfile.write(reinterpret_cast<const char*>(&id_len), sizeof(unsigned int));
+        outfile.write(reinterpret_cast<const char *>(&id_len),
+                      sizeof(unsigned int));
         outfile.write(uf.id.c_str(), id_len);
         char null_terminator_id = '\0';
         outfile.write(&null_terminator_id, sizeof(char));
     }
 
     // lib funcs
-       // find how many lib funcs we use from the lib_str_func vector
-       // which functions -> output = strings ( for example : print,cos etc)
-     unsigned int total_lib_funcs = lig_strvec_consts.size();
-    outfile.write(reinterpret_cast<const char*>(&total_lib_funcs), sizeof(unsigned int));
-    for (const std::string& s_lib : lig_strvec_consts) {
+    // find how many lib funcs we use from the lib_str_func vector
+    // which functions -> output = strings ( for example : print,cos etc)
+    unsigned int total_lib_funcs = lig_strvec_consts.size();
+    outfile.write(reinterpret_cast<const char *>(&total_lib_funcs),
+                  sizeof(unsigned int));
+    for (const std::string &s_lib : lig_strvec_consts) {
         unsigned int lib_str_len = s_lib.length();
-        outfile.write(reinterpret_cast<const char*>(&lib_str_len), sizeof(unsigned int));
+        outfile.write(reinterpret_cast<const char *>(&lib_str_len),
+                      sizeof(unsigned int));
         outfile.write(s_lib.c_str(), lib_str_len);
         char null_terminator_lib = '\0';
         outfile.write(&null_terminator_lib, sizeof(char));
     }
 
-    // All of the above : 
-       // We can know the number of inputs for each vector with : <name_of_vector>.size();
-       // we iterate with auto for for the vec and we : <name_of_vector>[i] ----> this is the value 
-    
+    // All of the above :
+    // We can know the number of inputs for each vector with :
+    // <name_of_vector>.size(); we iterate with auto for for the vec and we :
+    // <name_of_vector>[i] ----> this is the value
+
 
     // We now have the instruction table
-       // since the print is working right we have the 4 'byte' code but it is not yet encoded 
-       unsigned int total_instructions = instruction_table.size();
-    outfile.write(reinterpret_cast<const char*>(&total_instructions), sizeof(unsigned int));
-    for (const instruction* instr_ptr : instruction_table) {
+    // since the print is working right we have the 4 'byte' code but it is not
+    // yet encoded
+    unsigned int total_instructions = instruction_table.size();
+    outfile.write(reinterpret_cast<const char *>(&total_instructions),
+                  sizeof(unsigned int));
+    for (const instruction *instr_ptr : instruction_table) {
         if (!instr_ptr) {
             continue;
         }
 
         uint8_t opcode_byte = static_cast<uint8_t>(instr_ptr->opcode);
-        outfile.write(reinterpret_cast<const char*>(&opcode_byte), sizeof(uint8_t));
+        outfile.write(reinterpret_cast<const char *>(&opcode_byte),
+                      sizeof(uint8_t));
 
         vmarg default_undef_vmarg;
         default_undef_vmarg.type = undef_a;
         default_undef_vmarg.val = 0;
 
-        const vmarg* vmarg_operands[3] = {&(instr_ptr->result), &(instr_ptr->arg1), &(instr_ptr->arg2)};
+        const vmarg *vmarg_operands[3] = {
+            &(instr_ptr->result), &(instr_ptr->arg1), &(instr_ptr->arg2)};
 
         for (int k = 0; k < 3; ++k) {
-            const vmarg* current_vmarg = vmarg_operands[k];
+            const vmarg *current_vmarg = vmarg_operands[k];
             if (current_vmarg && current_vmarg->type != undef_a) {
                 uint8_t type_byte = static_cast<uint8_t>(current_vmarg->type);
-                outfile.write(reinterpret_cast<const char*>(&type_byte), sizeof(uint8_t));
-                outfile.write(reinterpret_cast<const char*>(&current_vmarg->val), sizeof(unsigned int));
+                outfile.write(reinterpret_cast<const char *>(&type_byte),
+                              sizeof(uint8_t));
+                outfile.write(
+                    reinterpret_cast<const char *>(&current_vmarg->val),
+                    sizeof(unsigned int));
             } else {
-                uint8_t type_byte = static_cast<uint8_t>(default_undef_vmarg.type);
-                outfile.write(reinterpret_cast<const char*>(&type_byte), sizeof(uint8_t));
-                outfile.write(reinterpret_cast<const char*>(&default_undef_vmarg.val), sizeof(unsigned int));
+                uint8_t type_byte =
+                    static_cast<uint8_t>(default_undef_vmarg.type);
+                outfile.write(reinterpret_cast<const char *>(&type_byte),
+                              sizeof(uint8_t));
+                outfile.write(
+                    reinterpret_cast<const char *>(&default_undef_vmarg.val),
+                    sizeof(unsigned int));
             }
         }
     }

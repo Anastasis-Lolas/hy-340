@@ -12,10 +12,8 @@
 #define N 4096
 
 
-
-std::string typeStrings[] = {"number", "string", "bool", "table", "userfunc", "libfunc", "nil",  "undef"};
-
-
+std::string typeStrings[] = {"number",   "string",  "bool", "table",
+                             "userfunc", "libfunc", "nil",  "undef"};
 
 
 #define execute_add execute_arithmetic
@@ -31,9 +29,11 @@ std::string typeStrings[] = {"number", "string", "bool", "table", "userfunc", "l
 #define execute_jlt execute_rljump
 
 #define AVM_MAX_INSTRUCTIONS (unsigned)nop_v
+#define AVM_ENDING_PC codeSize
+
 
 typedef void (*execute_func_t)(instruction*);
-
+typedef void (*library_func_t)(void);
 
 // externs
 //======
@@ -86,6 +86,8 @@ void execute_call(instruction*);
 void execute_pusharg(instruction*);
 void execute_funcenter(instruction*);
 void execute_funcexit(instruction*);
+void avm_callibfunc(std::string funcName);
+void avm_call_functor(avm_table* table);
 //---------F U N C S ---------------//
 
 //--------------------------------//
@@ -122,6 +124,7 @@ void execute_not(instruction*);
 void execute_newtable(instruction*);
 void execute_tablegetelem(instruction*);
 void execute_tablesetelem(instruction*);
+void avm_push_table_arg(avm_table*);
 //----------T A B L E S ------------------//
 
 void avm_callsaveenvironment(void);

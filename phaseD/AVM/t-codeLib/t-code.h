@@ -145,5 +145,6 @@ void print_const_ints(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
 void generate_binary_readable(const std::string &outname);
+void read_and_print_avm_binary(const std::string& filename);
 
 #endif

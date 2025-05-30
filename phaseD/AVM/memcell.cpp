@@ -76,6 +76,15 @@ std::string consts_getstring(unsigned index) { return string_consts[index]; }
 
 std::string libfunc_get(unsigned index) { return libfuncs[index]; }
 
+void avm_memcellclear(avm_memcell* m) {
+    assert(m);
+    if (m->type != undef_m) {
+        memclear_func_t f = memclearFuncs[m->type];
+        if (f) f(m);
+        m->type = undef_m;
+    }
+}
+
 void memclear_string(avm_memcell* m) {
     assert(!m->data.strVal.empty());
     m->data.strVal.clear();

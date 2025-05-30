@@ -46,7 +46,7 @@ void avm_assign (avm_memcell * lv , avm_memcell * rv){
 double add_impl (double x, double y) { return x+y; }
 double sub_impl (double x, double y) { return x-y; }
 double mul_impl (double x, double y) { return x*y; }
-double div_impl (double x, double y) { return x/y; }
+double div_impl (double x, double y) {if(y != 0){ return x/y;}else{std::cout<<"DIV WITH 0 !\n";return -1;} }
 double mod_impl (double x, double y) { return ((unsigned) x) % ((unsigned) y); /* Error check */}
 
 void execute_arithmetic(instruction * instr){

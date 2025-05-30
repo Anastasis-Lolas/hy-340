@@ -6,6 +6,7 @@
 #include "t-codeLib/t-code.h"
 
 #define AVM_STACKSIZE 4096
+#define AVM_STACKENV_SIZE 4
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
 
 
@@ -26,11 +27,12 @@ typedef struct avm_memcell {
     avm_memcell_t type;
     union {
         double numVal;
-        std::string* strVal;
+        std::string strVal;
         bool boolVal;
         struct avm_table* tableVal;
-        userfunc funcVal; /* changed from unsigned */
-        std::string* libfuncVal;
+        unsigned
+            funcVal; /* changed from unsigned (why), changed from usefunc */
+        std::string libfuncVal;
     } data;
 
 } avm_memcell;
@@ -44,5 +46,9 @@ void avm_dec_top(void);
 
 
 void avm_initstack(void);
+
+double consts_getnumber(unsigned index);
+std::string consts_getstring(unsigned index);
+std::string libfunc_get(unsigned index);
 
 #endif

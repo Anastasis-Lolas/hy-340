@@ -1,12 +1,11 @@
-
-
+#include "avm_execute.h"
 
 #define AVM_ENDING_PC codeSize
 
 
 extern unsigned pc = 0;  // Program counter
 extern unsigned executionFinished = 0;
-// unsigned  currLine = 0; // Current line number
+unsigned currLine = 0;  // Current line number
 extern unsigned codeSize = 0;
 
 

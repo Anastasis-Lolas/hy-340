@@ -23,6 +23,8 @@
 #define execute_jle execute_rljump
 #define execute_jlt execute_rljump
 
+#define AVM_MAX_INSTRUCTIONS (unsigned)nop_v
+
 typedef void (*execute_func_t)(instruction*);
 
 
@@ -115,7 +117,6 @@ void execute_tablegetelem(instruction*);
 void execute_tablesetelem(instruction*);
 //----------T A B L E S ------------------//
 
-void avm_execute_cycle(void);
 void avm_callsaveenvironment(void);
 
 

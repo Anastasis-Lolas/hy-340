@@ -21,6 +21,24 @@ execute_func_t executeFuncs[] = {
     execute_nop};
 
 
+void execute_cycle(void) {
+    if (executionFinished)
+        return;
+    else if (pc == AVM_ENDING_PC) {
+        executionFinished = 1;
+        return;
+    } else {
+        assert(pc < AVM_ENDING_PC);
+        instruction *instr = code + pc;
+        assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
+
+        if (instr->srcLine) currLine = instr->srcLine;
+        unsigned oldPC = pc;
+        executeFuncs[instr->opcode](instr);
+        if (pc == oldPC) ++pc;
+    }
+}
+
 void read_and_print_avm_binary(const std::string &filename) {
     std::ifstream infile(filename, std::ios::binary);
     if (!infile.is_open()) {

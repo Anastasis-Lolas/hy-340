@@ -3,14 +3,15 @@
 
 #include <iostream>
 
-#include "t-codeLib/t-code.h"
+#include "../t-codeLib/t-code.h"
+
 
 #define AVM_STACKSIZE 4096
 #define AVM_STACKENV_SIZE 4
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
-typedef void (*memclear_func_t)(avm_memcell*);
 
-extern memclear_func_t memclearFuncs[];
+
+struct avm_table;  // Forward declaration for table type
 
 enum avm_memcell_t {
     number_m = 0,
@@ -23,7 +24,6 @@ enum avm_memcell_t {
     undef_m = 7
 };
 
-struct avm_table;  // Forward declaration for table type
 
 typedef struct avm_memcell {
     avm_memcell_t type;
@@ -38,6 +38,13 @@ typedef struct avm_memcell {
     } data;
 
 } avm_memcell;
+
+
+
+typedef void (*memclear_func_t)(avm_memcell*);
+
+extern memclear_func_t memclearFuncs[];
+
 
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);

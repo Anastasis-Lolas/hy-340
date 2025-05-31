@@ -7,12 +7,7 @@
 
 #define AVM_TABLE_HASHSIZE 211
 
-typedef struct avm_table {
-    unsigned refCounter; 
-    unsigned total;      // Total number of elements in the table
-    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE]; 
-    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE]; 
-} avm_table;
+
 
 
 typedef struct avm_table_bucket {
@@ -22,6 +17,16 @@ typedef struct avm_table_bucket {
 
     ~avm_table_bucket(); // declare destructor
 } avm_table_bucket;
+
+typedef struct avm_table {
+    unsigned refCounter; 
+    unsigned total;      // Total number of elements in the table
+    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE]; 
+    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE]; 
+} avm_table;
+
+
+
 
 avm_table*      avm_tablenew (void);
 

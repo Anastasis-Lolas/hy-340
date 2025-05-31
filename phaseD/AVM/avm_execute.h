@@ -43,17 +43,17 @@ extern std::vector<std::string> libfuncs;
 extern std::vector<userfunc> userfuncs;
 
 
-extern unsigned pc = 0;  // Program counter
-extern unsigned executionFinished = 0;
-extern unsigned currLine = 0;  // Current line number
-extern unsigned codeSize = 0;
-extern instruction* code = nullptr;  // Pointer to the code array
-extern unsigned totalActuals = 0;
+extern unsigned pc;  // Program counter
+extern unsigned executionFinished ;
+extern unsigned currLine ;  // Current line number
+extern unsigned codeSize ;
+extern instruction* code ;  // Pointer to the code array
+extern unsigned totalActuals ;
 
 extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern int top, topsp;
-
+    
 
 typedef unsigned char (*equality_check)(avm_memcell* op1, avm_memcell* op2);
 typedef double (*jump_cmp_func)(double x, double y);

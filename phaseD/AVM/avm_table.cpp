@@ -1,6 +1,6 @@
 #include "avm_table.h"
 #include "memcell_struct.h"
-#include "t-codeLib/t-code.h"
+#include "../t-codeLib/t-code.h"
 #include <iostream>
 #include <cstring> // For memset
 
@@ -26,6 +26,20 @@ avm_table* avm_tablenew(void) {
     return t;
 }
 
+void avm_tablebucketsdestroy(avm_table_bucket** buckets) {
+    if (!buckets) return;
+    for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
+        avm_table_bucket* bucket = buckets[i];
+        while (bucket) {
+            avm_table_bucket* next = bucket->next;
+            delete bucket;
+            bucket = next;
+        }
+        buckets[i] = nullptr; // Set to nullptr after deletion
+    }
+}
+
+
 void avm_tabledestroy(avm_table* t) {
     if (!t) return;
     avm_tablebucketsdestroy(t->strIndexed);
@@ -34,30 +48,7 @@ void avm_tabledestroy(avm_table* t) {
 }
 
 
-void avm_tablebucketsdestroy(avm_table_bucket** buckets) {
-    for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
-        avm_table_bucket* current = buckets[i];
-        while (current) {
-            avm_table_bucket* next = current->next;
 
-            // Clean up key
-            if (current->key.type == string_m) {
-                delete current->key.data.strVal;
-            }
-
-            // Clean up value
-            if (current->value.type == string_m) {
-                delete current->value.data.strVal;
-            } else if (current->value.type == table_m) {
-                avm_tabledecrefcounter(current->value.data.tableVal);
-            }
-
-            delete current;
-            current = next;
-        }
-        buckets[i] = nullptr;
-    }
-}
 
 void avm_tableincrefcounter(avm_table* t) {
     if (t) {

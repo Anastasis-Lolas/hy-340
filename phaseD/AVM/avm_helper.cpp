@@ -1,29 +1,8 @@
 #include "avm_helper.h"
 
+typedef bool (*tobool_func_t)(avm_memcell*);
 
-bool number_tobool(avm_memcell* m) { return m->data.numVal != 0; }
-
-bool string_tobool(avm_memcell* m) { return !(m->data.strVal.empty()); }
-
-bool bool_tobool(avm_memcell* m) { return m->data.boolVal; }
-
-bool table_tobool(avm_memcell* m) { return true; }
-
-bool userfunc_tobool(avm_memcell* m) { return true; }
-
-bool libfunc_tobool(avm_memcell* m) { return true; }
-
-bool nil_tobool(avm_memcell* m) { return false; }
-
-bool undef_tobool(avm_memcell* m) {
-    assert(0);
-    return false;
-}
-
-bool avm_tobool(avm_memcell* m) {
-    assert(m->type >= 0 && m->type < undef_m);
-    return (*toboolFuncs[m->type])(m);
-}
+typedef std::string (*tostring_func_t) (avm_memcell*);
 
 tobool_func_t toboolFuncs[] = {number_tobool, string_tobool,   bool_tobool,
                                table_tobool,  userfunc_tobool, libfunc_tobool,
@@ -39,7 +18,34 @@ tostring_func_t toStringFunctions[] = {
     libfunc_toString,
     nil_toString,
     undef_toString
-};    
+};
+
+
+bool number_tobool(avm_memcell* m) { return m->data.numVal != 0; }
+
+bool string_tobool(avm_memcell* m) { return !(m->data.strVal.empty()); }
+
+bool bool_tobool(avm_memcell* m) { return m->data.boolVal; }
+
+bool table_tobool(avm_memcell* ) { return true; }
+
+bool userfunc_tobool(avm_memcell* ) { return true; }
+
+bool libfunc_tobool(avm_memcell* ) { return true; }
+
+bool nil_tobool(avm_memcell* ) { return false; }
+
+bool undef_tobool(avm_memcell* ) {
+    assert(0);
+    return false;
+}
+
+bool avm_tobool(avm_memcell* m) {
+    assert(m->type >= 0 && m->type < undef_m);
+    return (*toboolFuncs[m->type])(m);
+}
+
+   
 
 std::string avm_toString (avm_memcell* m){
     assert(m->type >= 0 && m->type <= undef_m);

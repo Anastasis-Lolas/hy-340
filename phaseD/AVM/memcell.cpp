@@ -2,7 +2,7 @@
 
 #include "avm_execute.h"
 #include "memcell_struct.h"
-#include "t-codeLib/t-code.h"
+
 
 #define AVM_ENDING_PC codeSize
 
@@ -17,7 +17,7 @@ instruction* code = nullptr;  // Pointer to the code array
 unsigned totalActuals = 0;
 
 avm_memcell ax, bx, cx;
-avm_memcell retval;
+avm_memcell retval; // ERROR here
 int top, topsp;
 
 
@@ -40,7 +40,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return &stack[topsp + AVM_STACKENV_SIZE + arg->val];
         case retval_a:
             return &retval;
-        case number_m:
+        case number_a:
             reg->type = number_m;
             reg->data.numVal = consts_getnumber(arg->val);
             return reg;
@@ -136,7 +136,7 @@ userfunc* avm_getfuncinfo(unsigned address) {
     if (address < userfuncs.size()) {
         return &userfuncs[address];
     } else {
-        // avm_error("Invalid function address: " + std::to_string(address));
+        avm_error("Invalid function address: " + std::to_string(address));
         // error??
         return nullptr;
     }

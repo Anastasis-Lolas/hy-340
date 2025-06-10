@@ -144,5 +144,5 @@ void print_const_nums(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
 void generate_binary_readable(const std::string& outname);
-
+void generate_txt_read(const std::string &outname);
 #endif

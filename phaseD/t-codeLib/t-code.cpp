@@ -735,3 +735,88 @@ void generate_binary_readable(const std::string &outname) {
     // stop writing to this folder ?
     outfile.close();
 }
+
+void generate_txt_read(const std::string &outname){
+  std::ofstream outfile(outname);
+    if (!outfile.is_open()) {
+        return;
+    }
+
+    std::string argCodes[] = {
+        "label_a", "global_a", "formal_a", "local_a", "number_a",
+        "string_a", "bool_a", "nil_a", "userfunc_a", "libfunc_a",
+        "retval_a", "undef_a"
+    };
+
+    outfile << "========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
+    const int col_num = 4;
+    const int col_opcode = 15;
+    const int col_arg = 20;
+    const int col_srcline = 10;
+
+    outfile << std::left << std::setw(col_num) << "No."
+            << std::left << std::setw(col_opcode) << "Opcode"
+            << std::left << std::setw(col_arg) << "Result"
+            << std::left << std::setw(col_arg) << "Arg1"
+            << std::left << std::setw(col_arg) << "Arg2"
+            << std::left << std::setw(col_srcline) << "SrcLine" << "\n";
+    
+    int separator_length = col_num + col_opcode + (col_arg * 3) + col_srcline;
+    outfile << std::string(separator_length, '-') << "\n";
+
+    for (unsigned int i = 0; i < instruction_table.size(); ++i) {
+        instruction* inst = instruction_table[i];
+        if (!inst) {
+            outfile << std::left << std::setw(col_num) << i << "null instruction pointer\n";
+            continue;
+        }
+
+        outfile << std::left << std::setw(col_num) << i << " ";
+        outfile << std::left << std::setw(col_opcode) << vmopcode_to_string(inst->opcode);
+
+        std::string result_str = " ";
+        if (inst->result.type != undef_a) {
+            result_str = argCodes[inst->result.type] + ":" + std::to_string(inst->result.val);
+        }
+        outfile << std::left << std::setw(col_arg) << result_str;
+
+        std::string arg1_str = " ";
+        if (inst->arg1.type != undef_a) {
+            arg1_str = argCodes[inst->arg1.type] + ":" + std::to_string(inst->arg1.val);
+        }
+        outfile << std::left << std::setw(col_arg) << arg1_str;
+
+        std::string arg2_str = " ";
+        if (inst->arg2.type != undef_a) {
+            arg2_str = argCodes[inst->arg2.type] + ":" + std::to_string(inst->arg2.val);
+        }
+        outfile << std::left << std::setw(col_arg) << arg2_str;
+
+        outfile << std::left << std::setw(col_srcline) << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "") << "\n";
+    }
+    outfile << std::string(separator_length, '-') << "\n";
+    outfile << "==============================================================\n";
+
+    outfile << "print_const_strings:\n";
+    for (size_t i = 0; i < string_vec_consts.size(); ++i) {
+        outfile << i << " : \"" << string_vec_consts[i] << "\"\n";
+    }
+
+    outfile << "print_const_nums:\n";
+    for (size_t i = 0; i < num_vec_consts.size(); ++i) {
+        outfile << i << " : " << num_vec_consts[i] << "\n";
+    }
+
+    outfile << "print_userfuncs:\n";
+    for (size_t i = 0; i < funcstack.size(); ++i) {
+        const auto& uf = funcstack[i];
+        outfile << i << " : ID=" << uf.id << ", Address=" << uf.address << ", Locals=" << uf.localSize << "\n";
+    }
+
+    outfile << "print_libfuncs:\n";
+    for (size_t i = 0; i < lig_strvec_consts.size(); ++i) {
+        outfile << i << " : " << lig_strvec_consts[i] << "\n";
+    }
+
+    outfile.close();
+}

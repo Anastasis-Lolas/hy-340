@@ -812,7 +812,7 @@ int main(int argc, char** argv) {
     print_libfuncs();
 
 
-
+   generate_txt_read("peos.txt");
    generate_binary_readable("bifile.abc");
 
 

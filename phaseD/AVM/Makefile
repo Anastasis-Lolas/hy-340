@@ -2,7 +2,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g
 
-SRC := $(wildcard *.cpp) $(wildcard execs/*.cpp)
+SRC := $(wildcard *.cpp) $(wildcard execs/*.cpp) ../Symtable/symtablehash.cpp
 OBJ := $(SRC:.cpp=.o)
 TARGET = avm
 

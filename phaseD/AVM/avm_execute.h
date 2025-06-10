@@ -2,7 +2,11 @@
 #define AVM_EXECUTE_H
 
 
+#include <algorithm>
+#include <cctype>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "../t-codeLib/t-code.h"
 #include "avm_execute.h"
@@ -87,7 +91,11 @@ void execute_funcenter(instruction*);
 void execute_funcexit(instruction*);
 void avm_callibfunc(std::string funcName);
 void avm_call_functor(avm_table* table);
-//---------F U N C S ---------------//
+userfunc* avm_getfuncinfo(unsigned address);
+unsigned avm_get_envvalue(unsigned i);
+unsigned avm_totalactuals(void);
+avm_memcell* avm_getactual(unsigned i);
+//----------------------------------//
 
 //--------------------------------//
 double add_impl(double x, double y);

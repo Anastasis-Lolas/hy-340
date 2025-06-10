@@ -2,10 +2,12 @@
 #define LIBRARY_FUNCTIONS_H
 
 
+#include "../Symtable/symtable.h"
 #include "memcell_struct.h"
 
-                         
+typedef void (*library_func_t)(void);
 
+library_func_t avm_getlibraryfunc(std::string id);
 
 void libfunc_print();
 
@@ -31,4 +33,4 @@ void libfunc_sin();
 
 void libfunc_cos();
 
-#endif // LIBRARY_FUNCTIONS_H
+#endif  // LIBRARY_FUNCTIONS_H

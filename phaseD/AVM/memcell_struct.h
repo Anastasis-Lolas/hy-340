@@ -8,6 +8,10 @@
 
 #define AVM_STACKSIZE 4096
 #define AVM_STACKENV_SIZE 4
+#define AVM_NUMACTUALS_OFFSET +4
+#define AVM_SAVEDPC_OFFSET +3
+#define AVM_SAVEDTOP_OFFSET +2
+#define AVM_SAVEDTOPSP_OFFSET +1
 #define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
 
 
@@ -32,21 +36,19 @@ typedef struct avm_memcell {
         std::string strVal;
         bool boolVal;
         struct avm_table* tableVal;
-        unsigned funcVal; 
+        unsigned funcVal;
         std::string libfuncVal;
-          data() {}
+        data() {}
         ~data() {}
-       
+
     } data;
 
 } avm_memcell;
 
 
-
 typedef void (*memclear_func_t)(avm_memcell*);
 
 extern memclear_func_t memclearFuncs[];
-
 
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg);

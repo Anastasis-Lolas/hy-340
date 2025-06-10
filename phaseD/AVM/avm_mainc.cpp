@@ -8,5 +8,6 @@
 
 int main() {
     // First we are going to read the binary file
-    read_and_print_avm_binary("bifile.abc");
+    read_and_print_avm_binary("../bifile.abc");
+    execute_cycle();
 }

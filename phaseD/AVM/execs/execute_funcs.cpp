@@ -1,3 +1,4 @@
+#include "../../Symtable/symtable.h"
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
@@ -251,8 +252,117 @@ void libfunc_objectmemberkeys() {
         return;
     }
     avm_table* table = avm_tablenew();
-    unsigned
+    // flag gia evi
+    // Add keys from number-indexed map --> avm_tablesetelem(new_table, &ax,
+    // key);
+}
+void libfunc_objecttotalmembers() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("objecttotalmembers expects exactly one argument, not " +
+                  std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != table_m) {
+        avm_error("objecttotalmembers argument is not a table");
+        retval.type = nil_m;
+        return;
+    }
+    avm_table* table = arg->data.tableVal;
+    avm_memcellclear(&retval);
+    retval.type = number_m;
+    retval.data.numVal = table->total;
+}
 
-        retval.type = table_m;
-    retval.data.tableVal = ;
+void libfunc_objectcopy() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("objectcopy expects exactly one argument, not " +
+                  std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != table_m) {
+        avm_error("objectcopy argument is not a table");
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_table* src_table = arg->data.tableVal;
+    avm_table* new_table = avm_tablenew();
+
+    // flag gia evi
+    //  Copy number-indexed elements ==> avm_tablemembercopy
+
+    retval.type = table_m;
+    retval.data.tableVal = new_table;
+    new_table->total = src_table->total;
+    avm_tableincrefcounter(new_table);
+}
+
+
+void libfunc_argument() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("argument expects exactly one argument");
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg0 = avm_getactual(0);
+    if (arg0->type != number_m || arg0->data.numVal < 0) {
+        avm_error("argument argument must be a non-negative number");
+        retval.type = nil_m;
+        return;
+    }
+
+    unsigned index = static_cast<unsigned>(arg0->data.numVal);
+
+    if (topsp == 0) {
+        avm_warning("argument called outside of a function");
+        retval.type = nil_m;
+        return;
+    }
+
+    // flag check topsp
+    // check total_args
+    unsigned total_args = avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
+
+    if (index >= total_args) {
+        avm_warning(
+            "argument index out of bounds (i = " + std::to_string(index) +
+            ", total = " + std::to_string(total_args) + ")");
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg_cell = &stack[topsp + AVM_STACKENV_SIZE + index + 1];
+    avm_memcellclear(&retval);
+    retval.type = arg_cell->type;
+    switch (arg_cell->type) {
+        case number_m:
+            retval.data.numVal = arg_cell->data.numVal;
+            break;
+        case string_m:
+            retval.data.strVal = arg_cell->data.strVal;
+            break;
+        case bool_m:
+            retval.data.boolVal = arg_cell->data.boolVal;
+            break;
+        case table_m:
+            retval.data.tableVal = arg_cell->data.tableVal;
+            break;
+        case userfunc_m:
+            retval.data.funcVal = arg_cell->data.funcVal;
+            break;
+        case libfunc_m:
+            retval.data.libfuncVal = arg_cell->data.libfuncVal;
+            break;
+        default:
+            break;
+    }
 }

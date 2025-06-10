@@ -1,8 +1,7 @@
 #ifndef LIBRARY_FUNCTIONS_H
 #define LIBRARY_FUNCTIONS_H
 
-
-#include "../Symtable/symtable.h"
+// #include "../Symtable/symtable.h"
 #include "memcell_struct.h"
 
 typedef void (*library_func_t)(void);

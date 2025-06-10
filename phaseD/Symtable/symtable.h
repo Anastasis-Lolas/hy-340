@@ -1,7 +1,7 @@
 #ifndef SYMTABLE_HEADER
 #define SYMTABLE_HEADER
+#include <string>
 #include <vector>
-
 
 /*Struct for symbol Table*/
 typedef struct SymTable *SymTable_T;

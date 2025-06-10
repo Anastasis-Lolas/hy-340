@@ -6,6 +6,7 @@
 #define DEBUG_check(msg)
 
 extern avm_memcell stack[AVM_STACKSIZE];
+SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
@@ -233,4 +234,25 @@ void libfunc_input() {
         DEBUG_check("Input number: " + std::to_string(number));
         return;
     }
+}
+
+void libfunc_objectmemberkeys() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("objectmemberkeys expects exactly one argument, not " +
+                  std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+    avm_memcell* m = avm_getactual(0);
+    if (m->type != table_m) {
+        avm_error("objectmemberkeys expects a table as argument!");
+        retval.type = nil_m;
+        return;
+    }
+    avm_table* table = avm_tablenew();
+    unsigned
+
+        retval.type = table_m;
+    retval.data.tableVal = ;
 }

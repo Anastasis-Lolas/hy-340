@@ -196,10 +196,149 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
     return nullptr; // Key not found
 }
 
-void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content) {
-    if (!table || !index || !content) {
-        std::cerr << "Error: Null pointer passed to avm_tablesetelem." << std::endl;
-        return;
-    }
 
+
+void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content) {
+ assert(table != nullptr && index != nullptr && content != nullptr);
+
+    switch (index->type) {
+        case number_m: {
+            double key = index->data.numVal;
+            auto& map = *table->numIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        case string_m: {
+            std::string key(index->data.strVal);
+            auto& map = *table->strIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        case bool_m: {
+            bool key = index->data.boolVal;
+            auto& map = *table->boolIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        case table_m: {
+            avm_table* key = index->data.tableVal;
+            auto& map = *table->tableIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    avm_tabledecrefcounter(key);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                } else {
+                    avm_tableincrefcounter(key);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        case userfunc_m: {
+            unsigned key = index->data.funcVal;
+            auto& map = *table->userfuncIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        case libfunc_m: {
+            std::string key(index->data.libfuncVal);
+            auto& map = *table->libfuncIndexed;
+            if (content->type == nil_m) {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                    map.erase(it);
+                    table->total--;
+                }
+            } else {
+                auto it = map.find(key);
+                if (it != map.end()) {
+                    avm_memcellclear(&it->second);
+                }
+                avm_memcell_copy(&map[key], content);
+                if (it == map.end()) {
+                    table->total++;
+                }
+            }
+            break;
+        }
+        default:
+            std::cerr << "Error: Invalid key type in avm_tablesetelem." << std::endl;
+            break;
+    }
 }

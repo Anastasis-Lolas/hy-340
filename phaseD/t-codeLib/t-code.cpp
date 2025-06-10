@@ -40,11 +40,6 @@ unsigned consts_newstring(std::string s) {
 }
 
 unsigned consts_newnumber(double n) {
-    for (unsigned int i = 0; i < num_vec_consts.size(); ++i) {
-        if (num_vec_consts[i] == n) {
-            return i;
-        }
-    }
     num_vec_consts.push_back(n);
     return num_vec_consts.size() - 1;
 }

@@ -1,12 +1,13 @@
 #include "avm_execute.h"
-#include "../t-codeLib/t-code.h"
 
 #include <iomanip>
+
+#include "../t-codeLib/t-code.h"
 
 #define AVM_ENDING_PC codeSize
 
 std::vector<std::string> string_consts;
- std::vector<double> nums_consts;
+std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -77,23 +78,21 @@ std::string vmopcode_to_string(vmopcode op) {
 execute_func_t executeFuncs[] = {
     execute_assign,       execute_add,          execute_sub,
     execute_mul,          execute_div,          execute_mod,
-    execute_uminus,       execute_and,         execute_or,      execute_not,
-    execute_jeq,          execute_jne,
+    execute_uminus,       execute_and,          execute_or,
+    execute_not,          execute_jeq,          execute_jne,
     execute_jle,          execute_jge,          execute_jlt,
     execute_jgt,          execute_call,         execute_pusharg,
     execute_funcenter,    execute_funcexit,     execute_newtable,
-    execute_tablegetelem, execute_tablesetelem, execute_jump,
-    execute_nop};
+    execute_tablegetelem, execute_tablesetelem, execute_nop,
+    execute_jump,         execute_ret};
 
 
+void execute_and(instruction *) {}
+void execute_or(instruction *) {}
 
-void execute_and(instruction* ) {}
-void execute_or(instruction* ){}
-    
-void execute_uminus(instruction* ) {}
-void execute_not(instruction* ) {}
-    
-  
+void execute_uminus(instruction *) {}
+void execute_not(instruction *) {}
+
 
 void execute_cycle(void) {
     if (executionFinished)
@@ -243,7 +242,7 @@ void read_and_print_avm_binary(const std::string &filename) {
                                           "bool_a",    "nil_a",    "userfunc_a",
                                           "libfunc_a", "retval_a", "undef_a"};
 
-            std::string type_str = " (unknown)" ;
+            std::string type_str = " (unknown)";
             if (arg_to_print->type >= label_a &&
                 arg_to_print->type <= undef_a) {
                 type_str = argTypeNames[arg_to_print->type];

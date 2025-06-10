@@ -12,7 +12,6 @@
 #define N 4096
 
 
-
 extern std::string typeStrings[];
 
 #define execute_add execute_arithmetic
@@ -43,16 +42,16 @@ extern std::vector<userfunc> userfuncs;
 
 
 extern unsigned pc;  // Program counter
-extern unsigned executionFinished ;
-extern unsigned currLine ;  // Current line number
-extern unsigned codeSize ;
-extern instruction* code ;  // Pointer to the code array
-extern unsigned totalActuals ;
+extern unsigned executionFinished;
+extern unsigned currLine;  // Current line number
+extern unsigned codeSize;
+extern instruction* code;  // Pointer to the code array
+extern unsigned totalActuals;
 
 extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern int top, topsp;
-    
+
 
 typedef unsigned char (*equality_check)(avm_memcell* op1, avm_memcell* op2);
 typedef double (*jump_cmp_func)(double x, double y);
@@ -70,6 +69,7 @@ unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2);
 unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2);
 
 
+void execute_ret(instruction*);
 void execute_jump(instruction*);
 void execute_jeq(instruction*);
 void execute_jne(instruction*);

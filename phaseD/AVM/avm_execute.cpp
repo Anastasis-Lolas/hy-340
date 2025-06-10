@@ -77,6 +77,7 @@ std::string vmopcode_to_string(vmopcode op) {
 execute_func_t executeFuncs[] = {
     execute_assign,       execute_add,          execute_sub,
     execute_mul,          execute_div,          execute_mod,
+    execute_uminus,       execute_and,         execute_or,      execute_not,
     execute_jeq,          execute_jne,
     execute_jle,          execute_jge,          execute_jlt,
     execute_jgt,          execute_call,         execute_pusharg,
@@ -84,6 +85,15 @@ execute_func_t executeFuncs[] = {
     execute_tablegetelem, execute_tablesetelem, execute_jump,
     execute_nop};
 
+
+
+void execute_and(instruction* ) {}
+void execute_or(instruction* ){}
+    
+void execute_uminus(instruction* ) {}
+void execute_not(instruction* ) {}
+    
+  
 
 void execute_cycle(void) {
     if (executionFinished)

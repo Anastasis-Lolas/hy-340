@@ -112,10 +112,10 @@ void execute_mod(instruction*);
 //--------------------------------//
 
 //------------XXXX--------------------//
-// void execute_uminus(instruction*);
-// void execute_and(instruction*);
-// void execute_or(instruction*);
-// void execute_not(instruction*);
+void execute_uminus(instruction*);
+void execute_and(instruction*);
+void execute_or(instruction*);
+void execute_not(instruction*);
 //------------XXXX--------------------//
 
 

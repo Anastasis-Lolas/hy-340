@@ -132,12 +132,3 @@ void avm_callsaveenvironment(void) {
     avm_push_envvalue(topsp);
 }
 
-userfunc* avm_getfuncinfo(unsigned address) {
-    if (address < userfuncs.size()) {
-        return &userfuncs[address];
-    } else {
-        avm_error("Invalid function address: " + std::to_string(address));
-        // error??
-        return nullptr;
-    }
-}

@@ -3,7 +3,7 @@
 #ifndef AVM_TABLE_H
 #define AVM_TABLE_H
 #include "memcell_struct.h"
-
+#include <unordered_map> 
 
 #define AVM_TABLE_HASHSIZE 211
 
@@ -21,12 +21,18 @@ typedef struct avm_table_bucket {
 typedef struct avm_table {
     unsigned refCounter; 
     unsigned total;      // Total number of elements in the table
-    avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE]; 
-    avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE]; 
+    std::unordered_map<double, avm_memcell> *numIndexed;
+    std::unordered_map<std::string, avm_memcell> *strIndexed;
+    std::unordered_map<bool, avm_memcell> *boolIndexed;
+    std::unordered_map<avm_table*, avm_memcell, std::hash<avm_table*>> *tableIndexed;
+    std::unordered_map<unsigned, avm_memcell> *userfuncIndexed;
+    std::unordered_map<std::string, avm_memcell> *libfuncIndexed;
+    avm_table();
+    ~avm_table();
+    unsigned get_avm_tableElement_count();
 } avm_table;
 
-
-
+void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src);
 
 avm_table*      avm_tablenew (void);
 

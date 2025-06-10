@@ -94,7 +94,7 @@ void make_operand(expr *e, vmarg *arg) {
             break;
         }
         case intnum_e: {
-            arg->val = consts_newnumber(e->numConst);
+            arg->val = consts_newnumber(e->numInt);
             arg->type = number_a;
             break;
         }

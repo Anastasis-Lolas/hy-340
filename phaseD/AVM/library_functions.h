@@ -2,6 +2,8 @@
 #define LIBRARY_FUNCTIONS_H
 
 // #include "../Symtable/symtable.h"
+#include <cmath>
+
 #include "memcell_struct.h"
 
 typedef void (*library_func_t)(void);

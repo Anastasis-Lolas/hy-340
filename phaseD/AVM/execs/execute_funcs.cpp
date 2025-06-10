@@ -366,3 +366,98 @@ void libfunc_argument() {
             break;
     }
 }
+
+void libfunc_strtonum() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("strtonum expects exactly one argument, not " +
+                  std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != string_m) {
+        avm_error("strtonum expects a string as argument!");
+        retval.type = nil_m;
+        return;
+    }
+    avm_memcellclear(&retval);
+    std::istringstream iss(arg->data.strVal);
+    double number;
+    if (iss >> number && iss.eof()) {
+        DEBUG_check("strtonum: converting string '" + arg->data.strVal +
+                    "' to number: " + std::to_string(number));
+        retval.type = number_m;
+        retval.data.numVal = number;
+    } else {
+        avm_warning("strtonum: invalid string format, returning 0");
+        retval.type = number_m;
+        retval.data.numVal = 0.0;
+    }
+}
+void libfunc_sqrt() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("sqrt expects exactly one argument, not " +
+                  std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != number_m || arg->data.numVal < 0) {
+        avm_error("sqrt expects a non-negative number as argument!");
+        retval.type = nil_m;
+        return;
+    }
+
+    double result = std::sqrt(arg->data.numVal);
+    avm_memcellclear(&retval);
+    retval.type = number_m;
+    retval.data.numVal = result;
+}
+
+void libfunc_cos() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("cos expects exactly one argument, not " + std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != number_m) {
+        avm_error("cos expects a number as argument!");
+        retval.type = nil_m;
+        return;
+    }
+    double degrees = arg->data.numVal;
+    degrees = degrees * M_PI / 180.0;
+    double result = std::cos(degrees);
+    avm_memcellclear(&retval);
+    retval.type = number_m;
+    retval.data.numVal = result;
+}
+
+void libfunc_sin() {
+    unsigned n = avm_totalactuals();
+    if (n != 1) {
+        avm_error("sin expects exactly one argument, not " + std::to_string(n));
+        retval.type = nil_m;
+        return;
+    }
+
+    avm_memcell* arg = avm_getactual(0);
+    if (arg->type != number_m) {
+        avm_error("sin expects a number as argument!");
+        retval.type = nil_m;
+        return;
+    }
+    double degrees = arg->data.numVal;
+    degrees = degrees * M_PI / 180.0;
+    double result = std::sin(degrees);
+    avm_memcellclear(&retval);
+    retval.type = number_m;
+    retval.data.numVal = result;
+}

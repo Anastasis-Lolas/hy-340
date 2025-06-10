@@ -12,9 +12,8 @@
 #define N 4096
 
 
-std::string typeStrings[] = {"number",   "string",  "bool", "table",
-                             "userfunc", "libfunc", "nil",  "undef"};
 
+extern std::string typeStrings[];
 
 #define execute_add execute_arithmetic
 #define execute_sub execute_arithmetic
@@ -113,10 +112,10 @@ void execute_mod(instruction*);
 //--------------------------------//
 
 //------------XXXX--------------------//
-void execute_uminus(instruction*);
-void execute_and(instruction*);
-void execute_or(instruction*);
-void execute_not(instruction*);
+// void execute_uminus(instruction*);
+// void execute_and(instruction*);
+// void execute_or(instruction*);
+// void execute_not(instruction*);
 //------------XXXX--------------------//
 
 

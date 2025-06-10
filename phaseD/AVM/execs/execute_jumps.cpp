@@ -12,7 +12,7 @@ double jgt_impl(double x, double y) { return x > y; }
 double jle_impl(double x, double y) { return x <= y; }
 double jlt_impl(double x, double y) { return x < y; }
 
-void execute_rljmp(instruction* instr) {
+void execute_rljump(instruction* instr) {
     assert(instr->result.type == label_a);
 
     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
@@ -86,7 +86,16 @@ void execute_jeq(instruction* instr) {
 }
 
 
-void execute_jne(instruction*);
+void execute_nop(instruction* ) {
+    // No operation, just a placeholder
+    std::cout << "!!! executed nop! !!!\n";
+    assert(0);
+}
+
+
+void execute_jne(instruction* instr){
+    assert(instr->result.type == label_a);
+}
 void execute_jle(instruction*) ;
 void execute_jge(instruction*) ;
 void execute_jlt(instruction*) ;

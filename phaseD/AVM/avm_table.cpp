@@ -1,6 +1,7 @@
 #include "avm_table.h"
 #include "memcell_struct.h"
 #include "../t-codeLib/t-code.h"
+#include "avm_helper.h"
 #include <iostream>
 #include <cstring> // For memset
 
@@ -27,16 +28,8 @@ avm_table* avm_tablenew(void) {
 }
 
 void avm_tablebucketsdestroy(avm_table_bucket** buckets) {
-    if (!buckets) return;
-    for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
-        avm_table_bucket* bucket = buckets[i];
-        while (bucket) {
-            avm_table_bucket* next = bucket->next;
-            delete bucket;
-            bucket = next;
-        }
-        buckets[i] = nullptr; // Set to nullptr after deletion
-    }
+    avm_warning("avm_tablebucketsdestroy: not implemented yet!");
+    return ;
 }
 
 
@@ -66,6 +59,7 @@ void avm_tabledecrefcounter(avm_table* t) {
 
 
 avm_memcell*    avm_tablegetelem (avm_table* table, avm_memcell* index){
+    return nullptr; // Placeholder for the actual implementation
 
 }
 

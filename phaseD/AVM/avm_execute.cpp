@@ -1,22 +1,83 @@
 #include "avm_execute.h"
+#include "../t-codeLib/t-code.h"
 
 #include <iomanip>
 
 #define AVM_ENDING_PC codeSize
 
 std::vector<std::string> string_consts;
-extern std::vector<double> nums_consts;
+ std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
 
+std::string typeStrings[] = {"number",   "string",  "bool", "table",
+                             "userfunc", "libfunc", "nil",  "undef"};
+
+std::string vmopcode_to_string(vmopcode op) {
+    switch (op) {
+        case assign_v:
+            return "assign";
+        case add_v:
+            return "add";
+        case sub_v:
+            return "sub";
+        case mul_v:
+            return "mul";
+        case div_v:
+            return "div";
+        case mod_v:
+            return "mod";
+        case uminus_v:
+            return "uminus";
+        case and_v:
+            return "and";
+        case or_v:
+            return "or";
+        case not_v:
+            return "not";
+        case jeq_v:
+            return "jeq";
+        case jne_v:
+            return "jne";
+        case jle_v:
+            return "jle";
+        case jge_v:
+            return "jge";
+        case jlt_v:
+            return "jlt";
+        case jgt_v:
+            return "jgt";
+        case call_v:
+            return "call";
+        case pusharg_v:
+            return "pusharg";
+        case funcenter_v:
+            return "funcenter";
+        case funcexit_v:
+            return "funcexit";
+        case newtable_v:
+            return "newtable";
+        case tablegetelem_v:
+            return "tablegetelem";
+        case tablesetelem_v:
+            return "tablesetelem";
+        case jump_v:
+            return "jump";
+        case ret_v:
+            return "ret";
+        case nop_v:
+            return "nop";
+        default:
+            return "unknown_op";
+    }
+}
 
 
 execute_func_t executeFuncs[] = {
     execute_assign,       execute_add,          execute_sub,
     execute_mul,          execute_div,          execute_mod,
-    execute_uminus,       execute_and,          execute_or,
-    execute_not,          execute_jeq,          execute_jne,
+    execute_jeq,          execute_jne,
     execute_jle,          execute_jge,          execute_jlt,
     execute_jgt,          execute_call,         execute_pusharg,
     execute_funcenter,    execute_funcexit,     execute_newtable,
@@ -172,7 +233,7 @@ void read_and_print_avm_binary(const std::string &filename) {
                                           "bool_a",    "nil_a",    "userfunc_a",
                                           "libfunc_a", "retval_a", "undef_a"};
 
-            std::string type_str = "??(unknown)";
+            std::string type_str = " (unknown)" ;
             if (arg_to_print->type >= label_a &&
                 arg_to_print->type <= undef_a) {
                 type_str = argTypeNames[arg_to_print->type];

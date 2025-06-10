@@ -35,7 +35,8 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
 
     if (lv->type == string_m)
-        lv->data.strVal =  new std::string((rv->data.strVal));
+        //lv->data.strVal = strdup(rv->data.strVal);
+        lv->data.strVal = rv->data.strVal;
     else if (lv->type == table_m)
         avm_tableincrefcounter(lv->data.tableVal);
 }
@@ -57,7 +58,7 @@ double mod_impl(double x, double y) {
 
 void execute_arithmetic(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
-    avm_memcell* rv1 = avm_translate_operand(&instr->argl, &ax);
+    avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
     avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
 
     assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));

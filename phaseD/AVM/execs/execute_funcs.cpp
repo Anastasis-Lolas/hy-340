@@ -1,5 +1,9 @@
 #include "../avm_execute.h"
-#include "../avm_helper.h"
+
+
+
+
+extern avm_memcell stack[AVM_STACKSIZE];
 
 void execute_call(instruction* instr) {
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
@@ -47,6 +51,13 @@ void avm_call_functor(avm_table* table) {  // flag edw
         avm_error("in calling table: illegal '()' element value!");
     }
 }
+library_func_t avm_getlibraryfunc(std::string id)
+{
+    avm_warning("avm_getlibraryfunc: not implemented yet!");
+    return nullptr;
+
+}
+
 
 void avm_callibfunc(std::string funcName) {
     library_func_t f = avm_getlibraryfunc(funcName);
@@ -64,6 +75,14 @@ void avm_callibfunc(std::string funcName) {
     }
 }
 
-void execute_pusharg(instruction*) {}
+void execute_pusharg(instruction* instr) {
+    avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
+    assert(arg);
+
+    avm_assign(&stack[top], arg);
+    ++totalActuals;
+    avm_dec_top();
+}
+
 void execute_funcenter(instruction*) {}
 void execute_funcexit(instruction*) {}

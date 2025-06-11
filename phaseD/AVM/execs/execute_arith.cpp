@@ -1,5 +1,6 @@
-#include "../avm_execute.h"
+#include <cstring>
 
+#include "../avm_execute.h"
 
 extern avm_memcell stack[AVM_STACKSIZE];
 
@@ -27,7 +28,6 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
     if (rv->type == undef_m) {
         avm_warning("assigning from 'undef' content!");
-
     }
     avm_memcellclear(lv);
 
@@ -35,7 +35,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
 
     if (lv->type == string_m)
-        //lv->data.strVal = strdup(rv->data.strVal);
+        // lv->data.strVal = strdup(rv->data.strVal);
         lv->data.strVal = rv->data.strVal;
     else if (lv->type == table_m)
         avm_tableincrefcounter(lv->data.tableVal);

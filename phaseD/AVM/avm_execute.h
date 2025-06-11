@@ -154,5 +154,5 @@ void print_userfuncs();
 void print_vmarg(const vmarg& arg);
 void print_instructions();
 void print_all();
-
+unsigned int compute_total_globals(const std::vector<instruction>& instrs);
 #endif  // AVM_EXECUTE_H

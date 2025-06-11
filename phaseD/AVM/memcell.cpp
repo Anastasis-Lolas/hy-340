@@ -62,7 +62,6 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return reg;
         case libfunc_a:
             reg->type = libfunc_m;
-            std::cout << "whatever: " << libfunc_get(arg->val) << std::endl;
             reg->libfuncVal = libfunc_get(arg->val);
             return reg;
         default:
@@ -127,7 +126,6 @@ void avm_push_envvalue(unsigned val) {
 
 void avm_callsaveenvironment(void) {
     avm_push_envvalue(totalActuals);
-    assert(code[pc].opcode == call_v);
     avm_push_envvalue(pc + 1);
     avm_push_envvalue(top + totalActuals + 2);
     avm_push_envvalue(topsp);

@@ -13,11 +13,13 @@ double jle_impl(double x, double y) { return x <= y; }
 double jlt_impl(double x, double y) { return x < y; }
 
 void execute_rljump(instruction* instr) {
+    std::cout<<"[AVM DEBUG] relational!\n";
     assert(instr->result.type == label_a);
 
     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
     avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
-    unsigned char comparison_result_bool = 0;
+
+    unsigned char result = 0;
 
     if (executionFinished) {
         return;
@@ -26,23 +28,44 @@ void execute_rljump(instruction* instr) {
     if (rv1->type != number_m || rv2->type != number_m) {
         avm_error("Operands for relational jump must be numbers.");
         executionFinished = 1;
-    } else {
-        unsigned int dispatcher_idx = instr->opcode - jge_v;
-
-        if (dispatcher_idx <
-            (sizeof(jump_dispatcher) / sizeof(jump_cmp_func))) {
-            double comparison_value = jump_dispatcher[dispatcher_idx](
-                rv1->data.numVal, rv2->data.numVal);
-            comparison_result_bool = (comparison_value != 0.0);
-        } else {
-            avm_error(
-                "Internal error: Relational jump opcode out of dispatcher "
-                "bounds.");
+    }
+    else
+    if(rv1->type == nil_m || rv2->type == nil_m)
+        result = rv1->type==nil_m && rv2->type==nil_m;
+    else
+    if(rv1->type == bool_m || rv2->type == bool_m)
+        result = (avm_tobool(rv1) == avm_tobool(rv2));
+    else
+    if(rv1->type != rv2->type )
+        avm_error("Assigning diff types is illegal");
+    else{
+         std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal << ") with (" << rv2->data.numVal << ")" << std::endl;
+       switch (instr->opcode) {
+        
+        case jge_v:
+            std::cout << "[AVM DEBUG] jge \n";
+            result = jge_impl(rv1->data.numVal, rv2->data.numVal);
+            break;
+        case jgt_v:
+            std::cout << "[AVM DEBUG] jgt \n";
+            result = jgt_impl(rv1->data.numVal, rv2->data.numVal);
+            break;
+        case jle_v:
+            std::cout << "[AVM DEBUG] jle \n";
+            result = jle_impl(rv1->data.numVal, rv2->data.numVal);
+            break;
+        case jlt_v:
+            std::cout << "[AVM DEBUG] jlt \n";
+            result = jlt_impl(rv1->data.numVal, rv2->data.numVal);
+            break;
+        default:
+            avm_error("Internal error: Unhandled relational jump opcode.");
             executionFinished = 1;
+            break;
         }
     }
 
-    if (!executionFinished && comparison_result_bool) {
+    if(!executionFinished && result){
         pc = instr->result.val;
     }
 }
@@ -55,8 +78,9 @@ unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
 }
 
 void execute_jump(instruction* instr) {
-    assert(instr->result.type = label_a);
-
+    assert(instr->result.type == label_a);
+    unsigned int target_pc = instr->result.val;
+    std::cout << "[AVM DEBUG] JUMP to instruction: " << target_pc << std::endl;
     pc = instr->result.val;
 }
 

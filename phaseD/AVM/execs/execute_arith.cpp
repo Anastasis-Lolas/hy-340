@@ -38,9 +38,12 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
     memcpy(lv, rv, sizeof(avm_memcell));
 
+    lv->type = rv->type;
+
     if (lv->type == string_m)
         // lv->strVal = strdup(rv->strVal);
-        lv->data.strVal = rv->data.strVal;
+        // lv->data.strVal = rv->data.strVal;
+        new (&lv->data.strVal) std::string(rv->data.strVal);
     else if (lv->type == table_m) {
         // assert(0);
         avm_tableincrefcounter(lv->data.tableVal);

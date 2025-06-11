@@ -47,6 +47,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             reg->type = string_m;
             tempStr = consts_getstring(arg->val);
             new (&reg->data.strVal) std::string(tempStr);
+            // std::cout << avm_toString(reg) << "\n";
             return reg;
         case bool_a:
             reg->type = bool_m;

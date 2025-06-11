@@ -12,7 +12,12 @@ std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
+<<<<<<< HEAD
 unsigned TotalGlobals;
+=======
+unsigned int total_globals = 0;
+
+>>>>>>> upstream/main
 std::string typeStrings[] = {"number",   "string",  "bool", "table",
                              "userfunc", "libfunc", "nil",  "undef"};
 
@@ -210,6 +215,7 @@ void read_and_print_avm_binary(const std::string &filename) {
     std::cout << "Total globals used in instructions (read from binary): " << TotalGlobals << std::endl;
 
     infile.close();
+    total_globals = get_total_globals(exec_instructions);
 }
 
 
@@ -253,26 +259,97 @@ void print_vmarg(const vmarg &arg) {
     }
 }
 
-void print_instructions() {
-    std::cout << "=== Instructions ===\n";
-    for (size_t i = 0; i < exec_instructions.size(); ++i) {
-        const instruction &inst = exec_instructions[i];
-        std::cout << i << ": Opcode = " << static_cast<int>(inst.opcode);
-        std::cout << ", Result = [";
-        print_vmarg(inst.result);
-        std::cout << "], Arg1 = [";
-        print_vmarg(inst.arg1);
-        std::cout << "], Arg2 = [";
-        print_vmarg(inst.arg2);
-        std::cout << "]\n";
+unsigned int get_total_globals(const std::vector<instruction> &instrs) {
+    unsigned int max_global_offset = 0;
+    for (const auto &instr : instrs) {
+        const vmarg *args[] = {&instr.result, &instr.arg1, &instr.arg2};
+        for (const vmarg *arg : args) {
+            if (arg && arg->type == global_a) {
+                if (arg->val > max_global_offset) max_global_offset = arg->val;
+            }
+        }
     }
-    std::cout << '\n';
+    return max_global_offset;
 }
 
+
 void print_all() {
+    std::cout << "globs: " << total_globals << std::endl;
     print_string_consts();
     print_number_consts();
     print_libfuncs();
     print_userfuncs();
     print_instructions();
+}
+
+void print_instructions() {
+    std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
+                              "number_a",   "string_a",  "bool_a",   "nil_a",
+                              "userfunc_a", "libfunc_a", "retval_a", "undef_a"};
+
+    const int col_num_width = 4;
+    const int col_opcode_width = 15;
+    const int col_arg_width = 20;
+    const int col_srcline_width = 10;
+
+    std::cout
+        << "\n========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
+    std::cout << std::left << std::setw(col_num_width) << "No." << std::left
+              << std::setw(col_opcode_width) << "Opcode" << std::left
+              << std::setw(col_arg_width) << "Result" << std::left
+              << std::setw(col_arg_width) << "Arg1" << std::left
+              << std::setw(col_arg_width) << "Arg2" << std::left
+              << std::setw(col_srcline_width) << "SrcLine" << std::endl;
+
+    int total_width_for_separator = col_num_width + col_opcode_width +
+                                    (col_arg_width * 3) + col_srcline_width;
+    std::cout << std::string(total_width_for_separator, '-') << std::endl;
+
+
+    for (unsigned int i = 0; i < exec_instructions.size(); ++i) {
+        instruction inst = exec_instructions[i];
+        std::cout << std::left << std::setw(col_num_width) << i << " ";
+
+        std::cout << std::left << std::setw(col_opcode_width)
+                  << vmopcode_to_string(inst.opcode);
+
+        std::string result_str = " ";
+        if (inst.result.type != undef_a) {
+            result_str = argCodes[inst.result.type] + ":" +
+                         std::to_string(inst.result.val);
+        } else if (inst.result.type == undef_a) {
+            result_str = argCodes[inst.result.type];
+        } else {
+            result_str = "unused_result";
+        }
+        std::cout << std::left << std::setw(col_arg_width) << result_str;
+
+        std::string arg1_str = " ";
+        if (inst.arg1.type != undef_a) {
+            arg1_str =
+                argCodes[inst.arg1.type] + ":" + std::to_string(inst.arg1.val);
+        } else if (inst.arg1.type == undef_a) {
+            arg1_str = argCodes[inst.arg1.type];
+        } else {
+            arg1_str = "unused_arg1";
+        }
+        std::cout << std::left << std::setw(col_arg_width) << arg1_str;
+
+        std::string arg2_str = " ";
+        if (inst.arg2.type != undef_a) {
+            arg2_str =
+                argCodes[inst.arg2.type] + ":" + std::to_string(inst.arg2.val);
+        } else if (inst.arg2.type == undef_a) {
+            arg2_str = argCodes[inst.arg2.type];
+        } else {
+            arg2_str = "unused_arg2";
+        }
+        std::cout << std::left << std::setw(col_arg_width) << arg2_str;
+
+        // std::cout << std::left << std::setw(col_srcline_width)
+        //           << (inst.srcLine > 0 ? std::to_string(inst.srcLine) : "")
+        //           << "\n";
+    }
+    std::cout << std::string(total_width_for_separator, '-') << std::endl;
+    std::cout << "=======================================\n";
 }

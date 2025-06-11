@@ -9,9 +9,7 @@ extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
-    DEBUG_check("checkpoint1");
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
-    DEBUG_check("checkpoint2");
     assert(func);
     switch (func->type) {
         case userfunc_m: {
@@ -164,14 +162,6 @@ void libfunc_totalarguments() {
 }
 
 library_func_t avm_getlibraryfunc(std::string id) {
-    DEBUG_check("Looking for library function: " + id);
-    library_func_t temp = (library_func_t)SymTable_get(libFuncs, id);
-    if (temp) {
-        DEBUG_check("Found library function: " + id);
-    } else {
-        DEBUG_check("Library function not found: " + id);
-        assert(0);
-    }
     return (library_func_t)SymTable_get(libFuncs, id);
 }
 
@@ -181,7 +171,6 @@ void libfunc_print() {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i) {
         avm_memcell* m = avm_getactual(i);
-        assert(m && m->type && m->type != undef_m);
         if (m->type == userfunc_m) {
             userfunc* f = avm_getfuncinfo(m->funcVal);
             if (f) {
@@ -195,6 +184,7 @@ void libfunc_print() {
             std::cout << "Library Function: " << m->libfuncVal << "\n";
         } else if (m->type == table_m) {
             // Assuming avm_table has a toString method or similar flag gia evi
+            assert(0);
         } else {
             std::cout << avm_toString(m) << "\n";
         }
@@ -474,7 +464,7 @@ void libfunc_sin() {
 }
 
 void init_lib_functions() {
-    top = AVM_STACKSIZE - 1 - total_globals;
+    top = AVM_STACKSIZE - 1 - total_glob;
     topsp = AVM_STACKSIZE - 1;
     libFuncs = SymTable_new();
     avm_registerlibfunc("print", libfunc_print);

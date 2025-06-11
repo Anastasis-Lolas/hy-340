@@ -55,7 +55,7 @@ extern unsigned totalActuals;
 extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern int top, topsp;
-extern unsigned int total_globals;
+extern unsigned int total_glob;
 
 
 typedef unsigned char (*equality_check)(avm_memcell* op1, avm_memcell* op2);

@@ -13,9 +13,13 @@ std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
 <<<<<<< HEAD
+<<<<<<< HEAD
 unsigned TotalGlobals;
 =======
 unsigned int total_globals = 0;
+=======
+unsigned int total_glob = 0;
+>>>>>>> upstream/main
 
 >>>>>>> upstream/main
 std::string typeStrings[] = {"number",   "string",  "bool", "table",
@@ -215,7 +219,7 @@ void read_and_print_avm_binary(const std::string &filename) {
     std::cout << "Total globals used in instructions (read from binary): " << TotalGlobals << std::endl;
 
     infile.close();
-    total_globals = get_total_globals(exec_instructions);
+    total_glob = get_total_globals(exec_instructions);
 }
 
 
@@ -274,7 +278,7 @@ unsigned int get_total_globals(const std::vector<instruction> &instrs) {
 
 
 void print_all() {
-    std::cout << "globs: " << total_globals << std::endl;
+    std::cout << "globs: " << total_glob << std::endl;
     print_string_consts();
     print_number_consts();
     print_libfuncs();
@@ -346,9 +350,9 @@ void print_instructions() {
         }
         std::cout << std::left << std::setw(col_arg_width) << arg2_str;
 
-        // std::cout << std::left << std::setw(col_srcline_width)
-        //           << (inst.srcLine > 0 ? std::to_string(inst.srcLine) : "")
-        //           << "\n";
+        std::cout << std::left << std::setw(col_srcline_width)
+                  << (inst.srcLine > 0 ? std::to_string(inst.srcLine) : "")
+                  << "\n";
     }
     std::cout << std::string(total_width_for_separator, '-') << std::endl;
     std::cout << "=======================================\n";

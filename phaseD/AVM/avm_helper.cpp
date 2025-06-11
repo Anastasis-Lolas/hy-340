@@ -69,44 +69,34 @@ std::string table_toString(avm_memcell* m) {
     assert(m && m->type == table_m);
 
     avm_table* table = m->data.tableVal;
+    assert(table);
+
     std::ostringstream oss;
-    oss << "{ ";
-    for (auto it = table->numIndexed->begin(); it != table->numIndexed->end();
-         ++it)
-        oss << "[" << it->first << "] = " << avm_toString(&(it->second))
-            << ", ";
-
-    for (auto it = table->strIndexed->begin(); it != table->strIndexed->end();
-         ++it)
-        oss << "[\"" << it->first << "\"] = " << avm_toString(&(it->second))
-            << ", ";
-
-    for (auto it = table->boolIndexed->begin(); it != table->boolIndexed->end();
-         ++it)
-        oss << "[" << (it->first ? "true" : "false")
-            << "] = " << avm_toString(&(it->second)) << ", ";
-
-    for (auto it = table->tableIndexed->begin();
-         it != table->tableIndexed->end(); ++it)
-        oss << "[table" << it->first << "] = " << avm_toString(&(it->second))
-            << ", ";
-
-    for (auto it = table->userfuncIndexed->begin();
-         it != table->userfuncIndexed->end(); ++it)
-        oss << "[userfunc" << it->first << "] = " << avm_toString(&(it->second))
-            << ", ";
-
-    for (auto it = table->libfuncIndexed->begin();
-         it != table->libfuncIndexed->end(); ++it)
-        oss << "[libfunc \"" << it->first
-            << "\"] = " << avm_toString(&(it->second)) << ", ";
+    oss << "[ ";
 
 
-    std::string result = oss.str();
-    if (result.size() > 2)
-        result.erase(result.end() - 2, result.end());  // remove last ", "
-    result += " }";
-    return result;
+    std::vector<double> keys;
+    keys.reserve(table->numIndexed->size());
+    for (const auto& p : *table->numIndexed)
+        keys.push_back(p.first);
+    std::sort(keys.begin(), keys.end());
+
+  
+    for (size_t i = 0; i < keys.size(); ++i) {
+        double idx = keys[i];
+        avm_memcell& cell = (*table->numIndexed)[idx];
+        // if nested table, recurse; otherwise print directly
+        if (cell.type == table_m) {
+            oss << table_toString(&cell);
+        } else {
+            oss << avm_toString(&cell);
+        }
+        if (i + 1 < keys.size())
+            oss << ", ";
+    }
+
+    oss << " ]";
+    return oss.str();
 }
 
 

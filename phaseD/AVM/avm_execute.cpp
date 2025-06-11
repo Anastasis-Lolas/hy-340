@@ -10,16 +10,9 @@ std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
-<<<<<<< HEAD
-<<<<<<< HEAD
-unsigned TotalGlobals;
-=======
-unsigned int total_globals = 0;
-=======
 unsigned int total_glob = 0;
->>>>>>> upstream/main
 
->>>>>>> upstream/main
+
 std::string typeStrings[] = {"number",   "string",  "bool", "table",
                              "userfunc", "libfunc", "nil",  "undef"};
 
@@ -219,8 +212,8 @@ void read_and_print_avm_binary(const std::string &filename) {
         exec_instructions.push_back(inst);
     }
 
-    infile.read(reinterpret_cast<char *>(&TotalGlobals), sizeof(int));
-    std::cout << "Total globals used in instructions (read from binary): " << TotalGlobals << std::endl;
+    infile.read(reinterpret_cast<char *>(&total_glob), sizeof(int));
+    std::cout << "Total globals used in instructions (read from binary): " << total_glob << std::endl;
 
     infile.close();
     total_glob = get_total_globals(exec_instructions);

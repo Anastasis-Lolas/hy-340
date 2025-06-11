@@ -55,6 +55,7 @@ extern unsigned totalActuals;
 extern avm_memcell ax, bx, cx;
 extern avm_memcell retval;
 extern int top, topsp;
+extern unsigned int total_globals;
 
 
 typedef unsigned char (*equality_check)(avm_memcell* op1, avm_memcell* op2);
@@ -154,5 +155,5 @@ void print_userfuncs();
 void print_vmarg(const vmarg& arg);
 void print_instructions();
 void print_all();
-unsigned int compute_total_globals(const std::vector<instruction>& instrs);
+unsigned int get_total_globals(const std::vector<instruction>& instrs);
 #endif  // AVM_EXECUTE_H

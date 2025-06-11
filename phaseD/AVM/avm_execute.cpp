@@ -109,17 +109,22 @@ void execute_cycle(void) {
     while (1) {
         if (executionFinished)
             break;
-        else if (pc == exec_instructions.size()) {
+        else if (pc == AVM_ENDING_PC) {
             executionFinished = 1;
             break;
         } else {
             assert(pc < exec_instructions.size());
             instruction *instr = &exec_instructions[pc];
             assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
-
+            std::cout << "Executing instruction at PC: " << pc
+                      << ", Opcode: " << vmopcode_to_string(instr->opcode)
+                      << ", SrcLine: " << instr->srcLine << std::endl;
             if (instr->srcLine) currLine = instr->srcLine;
             unsigned oldPC = pc;
             executeFuncs[instr->opcode](instr);
+            std::cout << "Executed instruction at PC: " << oldPC
+                      << ", Opcode: " << vmopcode_to_string(instr->opcode)
+                      << ", SrcLine: " << instr->srcLine << std::endl;
             if (pc == oldPC) ++pc;
         }
     }

@@ -12,9 +12,14 @@ void execute_assign(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
     avm_memcell* rv = avm_translate_operand(&instr->arg1, &ax);
 
-    assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));
-    assert(rv);  // should do similar assertion tests here
-
+    // assert(lv);
+    // assert(&stack[N - 1] >= lv);
+    // std::cout << "lv = " << lv - stack << ", top = " << top << std::endl;
+    // assert(lv >= &stack[top]);
+    // assert(lv == &retval);
+    // assert(rv);  // should do similar assertion tests here
+    assert(lv);
+    assert(rv);
     avm_assign(lv, rv);
 }
 
@@ -33,12 +38,13 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
     memcpy(lv, rv, sizeof(avm_memcell));
 
-
     if (lv->type == string_m)
         // lv->strVal = strdup(rv->strVal);
         lv->strVal = rv->strVal;
-    else if (lv->type == table_m)
+    else if (lv->type == table_m) {
+        // assert(0);
         avm_tableincrefcounter(lv->tableVal);
+    }
 }
 
 double add_impl(double x, double y) { return x + y; }

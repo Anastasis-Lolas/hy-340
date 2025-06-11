@@ -13,7 +13,7 @@ double jle_impl(double x, double y) { return x <= y; }
 double jlt_impl(double x, double y) { return x < y; }
 
 void execute_rljump(instruction* instr) {
-    std::cout<<"[AVM DEBUG] relational!\n";
+    std::cout << "[AVM DEBUG] relational!\n";
     assert(instr->result.type == label_a);
 
     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
@@ -28,53 +28,49 @@ void execute_rljump(instruction* instr) {
     if (rv1->type != number_m || rv2->type != number_m) {
         avm_error("Operands for relational jump must be numbers.");
         executionFinished = 1;
-    }
-    else
-    if(rv1->type == nil_m || rv2->type == nil_m)
-        result = rv1->type==nil_m && rv2->type==nil_m;
-    else
-    if(rv1->type == bool_m || rv2->type == bool_m)
+    } else if (rv1->type == nil_m || rv2->type == nil_m)
+        result = rv1->type == nil_m && rv2->type == nil_m;
+    else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
-    else
-    if(rv1->type != rv2->type )
+    else if (rv1->type != rv2->type)
         avm_error("Assigning diff types is illegal");
-    else{
-         std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal << ") with (" << rv2->data.numVal << ")" << std::endl;
-       switch (instr->opcode) {
-        
-        case jge_v:
-            std::cout << "[AVM DEBUG] jge \n";
-            result = jge_impl(rv1->data.numVal, rv2->data.numVal);
-            break;
-        case jgt_v:
-            std::cout << "[AVM DEBUG] jgt \n";
-            result = jgt_impl(rv1->data.numVal, rv2->data.numVal);
-            break;
-        case jle_v:
-            std::cout << "[AVM DEBUG] jle \n";
-            result = jle_impl(rv1->data.numVal, rv2->data.numVal);
-            break;
-        case jlt_v:
-            std::cout << "[AVM DEBUG] jlt \n";
-            result = jlt_impl(rv1->data.numVal, rv2->data.numVal);
-            break;
-        default:
-            avm_error("Internal error: Unhandled relational jump opcode.");
-            executionFinished = 1;
-            break;
+    else {
+        std::cout << "[AVM DEBUG] Comparing: (" << rv1->numVal << ") with ("
+                  << rv2->numVal << ")" << std::endl;
+        switch (instr->opcode) {
+            case jge_v:
+                std::cout << "[AVM DEBUG] jge \n";
+                result = jge_impl(rv1->numVal, rv2->numVal);
+                break;
+            case jgt_v:
+                std::cout << "[AVM DEBUG] jgt \n";
+                result = jgt_impl(rv1->numVal, rv2->numVal);
+                break;
+            case jle_v:
+                std::cout << "[AVM DEBUG] jle \n";
+                result = jle_impl(rv1->numVal, rv2->numVal);
+                break;
+            case jlt_v:
+                std::cout << "[AVM DEBUG] jlt \n";
+                result = jlt_impl(rv1->numVal, rv2->numVal);
+                break;
+            default:
+                avm_error("Internal error: Unhandled relational jump opcode.");
+                executionFinished = 1;
+                break;
         }
     }
 
-    if(!executionFinished && result){
+    if (!executionFinished && result) {
         pc = instr->result.val;
     }
 }
 
 unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2) {
-    return (op1->data.numVal == op2->data.numVal);
+    return (op1->numVal == op2->numVal);
 }
 unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
-    return (op1->data.strVal == op2->data.strVal);
+    return (op1->strVal == op2->strVal);
 }
 
 void execute_jump(instruction* instr) {
@@ -98,7 +94,8 @@ void execute_jeq(instruction* instr) {
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     else if (rv1->type != rv2->type)
-       avm_error(typeStrings[rv1->type] + std::string(" ") + typeStrings[rv2->type] + " is illegal!");
+        avm_error(typeStrings[rv1->type] + std::string(" ") +
+                  typeStrings[rv2->type] + " is illegal!");
 
 
     else {
@@ -110,17 +107,15 @@ void execute_jeq(instruction* instr) {
 }
 
 
-void execute_nop(instruction* ) {
+void execute_nop(instruction*) {
     // No operation, just a placeholder
     std::cout << "!!! executed nop! !!!\n";
     assert(0);
 }
 
 
-void execute_jne(instruction* instr){
-    assert(instr->result.type == label_a);
-}
-void execute_jle(instruction*) ;
-void execute_jge(instruction*) ;
-void execute_jlt(instruction*) ;
+void execute_jne(instruction* instr) { assert(instr->result.type == label_a); }
+void execute_jle(instruction*);
+void execute_jge(instruction*);
+void execute_jlt(instruction*);
 void execute_jgt(instruction*);

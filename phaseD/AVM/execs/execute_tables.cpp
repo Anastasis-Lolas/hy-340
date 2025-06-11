@@ -13,8 +13,8 @@ void execute_newtable(instruction* instr) {
     avm_memcellclear(lv);
 
     lv->type = table_m;
-    lv->data.tableVal = avm_tablenew();
-    avm_tableincrefcounter(lv->data.tableVal);
+    lv->tableVal = avm_tablenew();
+    avm_tableincrefcounter(lv->tableVal);
 }
 
 
@@ -34,7 +34,7 @@ void execute_tablegetelem(instruction* instr) {
         avm_error("Illegal use of type " + typeStrings[t->type] + " as table!");
 
     else {
-        avm_memcell* content = avm_tablegetelem(t->data.tableVal, i);
+        avm_memcell* content = avm_tablegetelem(t->tableVal, i);
         if (content)
             avm_assign(lv, content);
         else {
@@ -55,12 +55,12 @@ void execute_tablesetelem(instruction* instr) {
     if (t->type != table_m)
         avm_error("Illegal use of type " + typeStrings[t->type] + " as table!");
     else
-        avm_tablesetelem(t->data.tableVal, i, c);
+        avm_tablesetelem(t->tableVal, i, c);
 }
 
 void avm_push_table_arg(avm_table* t) {
     stack[top].type = table_m;
-    avm_tableincrefcounter(stack[top].data.tableVal = t);
+    avm_tableincrefcounter(stack[top].tableVal = t);
     ++totalActuals;
     avm_dec_top();
 }

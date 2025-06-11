@@ -2,32 +2,34 @@
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
-// #define DEBUG_check(msg) std::cout << "Reduced: " << msg << " (line " <<
-// yylineno << ")\n"
-#define DEBUG_check(msg)
+#define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
+// #define DEBUG_check(msg)
 
 extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
+    DEBUG_check("checkpoint1");
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
+    DEBUG_check("checkpoint2");
     assert(func);
     switch (func->type) {
         case userfunc_m: {
             avm_callsaveenvironment();  // Maybe outside switch?
-            pc = func->data.funcVal;
+            pc = func->funcVal;
             assert(pc < AVM_ENDING_PC);
             assert(code[pc].opcode == funcenter_v);
             break;
         }
         case string_m:
-            avm_callibfunc(func->data.strVal);
+            avm_callibfunc(func->strVal);
             break;
         case libfunc_m:
-            avm_callibfunc(func->data.libfuncVal);
+            DEBUG_check("Calling library function: " + func->libfuncVal);
+            avm_callibfunc(func->libfuncVal);
             break;
         case table_m:
-            avm_call_functor(func->data.tableVal);
+            avm_call_functor(func->tableVal);
             break;
 
         default:
@@ -39,17 +41,17 @@ void execute_call(instruction* instr) {
 }
 void avm_call_functor(avm_table* table) {  // flag edw
     cx.type = string_m;
-    cx.data.strVal = "()";
+    cx.strVal = "()";
 
     avm_memcell* f = avm_tablegetelem(table, &cx);
     if (!f)
         avm_error("in calling table: no '()' element found!");
     else if (f->type == table_m) {
-        avm_call_functor(f->data.tableVal);
+        avm_call_functor(f->tableVal);
     } else if (f->type == userfunc_m) {
         avm_push_table_arg(table);
         avm_callsaveenvironment();
-        pc = f->data.funcVal;
+        pc = f->funcVal;
         assert(pc < AVM_ENDING_PC && code[pc].opcode == funcenter_v);
     } else {
         avm_error("in calling table: illegal '()' element value!");
@@ -84,10 +86,10 @@ void execute_pusharg(instruction* instr) {
 void execute_funcenter(instruction* instr) {
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
     assert(func);
-    assert(pc == func->data.funcVal); /* Func address should match PC. */
+    assert(pc == func->funcVal); /* Func address should match PC. */
 
     totalActuals = 0;
-    userfunc* f = avm_getfuncinfo(func->data.funcVal);
+    userfunc* f = avm_getfuncinfo(func->funcVal);
     topsp = top;
     top = top - f->localSize;
 }
@@ -103,8 +105,8 @@ void execute_funcexit(instruction*) {
 
 unsigned avm_get_envvalue(unsigned i) {
     assert(stack[i].type == number_m);
-    unsigned val = (unsigned)stack[i].data.numVal;
-    assert(stack[i].data.numVal == ((double)val));
+    unsigned val = (unsigned)stack[i].numVal;
+    assert(stack[i].numVal == ((double)val));
     return val;
 }
 
@@ -146,7 +148,7 @@ void libfunc_typeof() {
     }
     avm_memcellclear(&retval);
     retval.type = string_m;
-    retval.data.strVal = typeStrings[avm_getactual(0)->type];
+    retval.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -157,11 +159,19 @@ void libfunc_totalarguments() {
         retval.type = nil_m;
     } else {
         retval.type = number_m;
-        retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+        retval.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
     }
 }
 
 library_func_t avm_getlibraryfunc(std::string id) {
+    DEBUG_check("Looking for library function: " + id);
+    library_func_t temp = (library_func_t)SymTable_get(libFuncs, id);
+    if (temp) {
+        DEBUG_check("Found library function: " + id);
+    } else {
+        DEBUG_check("Library function not found: " + id);
+        assert(0);
+    }
     return (library_func_t)SymTable_get(libFuncs, id);
 }
 
@@ -171,17 +181,18 @@ void libfunc_print() {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i) {
         avm_memcell* m = avm_getactual(i);
+        assert(m && m->type && m->type != undef_m);
         if (m->type == userfunc_m) {
-            userfunc* f = avm_getfuncinfo(m->data.funcVal);
+            userfunc* f = avm_getfuncinfo(m->funcVal);
             if (f) {
                 std::cout << "User Function: " << f->id << " at address "
                           << f->address << "\n";
             } else {
-                std::cout << "User Function: Unknown at address "
-                          << m->data.funcVal << "\n";
+                std::cout << "User Function: Unknown at address " << m->funcVal
+                          << "\n";
             }
         } else if (m->type == libfunc_m) {
-            std::cout << "Library Function: " << m->data.libfuncVal << "\n";
+            std::cout << "Library Function: " << m->libfuncVal << "\n";
         } else if (m->type == table_m) {
             // Assuming avm_table has a toString method or similar flag gia evi
         } else {
@@ -205,18 +216,18 @@ void libfunc_input() {
 
     if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
         retval.type = string_m;
-        retval.data.strVal = input.substr(1, input.length() - 2);
-        DEBUG_check("Input string: " + retval.data.strVal);
+        retval.strVal = input.substr(1, input.length() - 2);
+        DEBUG_check("Input string: " + retval.strVal);
         return;
     }
     if (input == "true") {
         retval.type = bool_m;
-        retval.data.boolVal = true;
+        retval.boolVal = true;
         DEBUG_check("Input boolean: true");
         return;
     } else if (input == "false") {
         retval.type = bool_m;
-        retval.data.boolVal = false;
+        retval.boolVal = false;
         DEBUG_check("Input boolean: false");
         return;
     }
@@ -231,7 +242,7 @@ void libfunc_input() {
     // flag gia alex
     if (iss >> number && iss.eof()) {
         retval.type = number_m;
-        retval.data.numVal = number;
+        retval.numVal = number;
         DEBUG_check("Input number: " + std::to_string(number));
         return;
     }
@@ -270,10 +281,10 @@ void libfunc_objecttotalmembers() {
         retval.type = nil_m;
         return;
     }
-    avm_table* table = arg->data.tableVal;
+    avm_table* table = arg->tableVal;
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.data.numVal = table->total;
+    retval.numVal = table->total;
 }
 
 void libfunc_objectcopy() {
@@ -292,14 +303,14 @@ void libfunc_objectcopy() {
         return;
     }
 
-    avm_table* src_table = arg->data.tableVal;
+    avm_table* src_table = arg->tableVal;
     avm_table* new_table = avm_tablenew();
 
     // flag gia evi
     //  Copy number-indexed elements ==> avm_tablemembercopy
 
     retval.type = table_m;
-    retval.data.tableVal = new_table;
+    retval.tableVal = new_table;
     new_table->total = src_table->total;
     avm_tableincrefcounter(new_table);
 }
@@ -314,13 +325,13 @@ void libfunc_argument() {
     }
 
     avm_memcell* arg0 = avm_getactual(0);
-    if (arg0->type != number_m || arg0->data.numVal < 0) {
+    if (arg0->type != number_m || arg0->numVal < 0) {
         avm_error("argument argument must be a non-negative number");
         retval.type = nil_m;
         return;
     }
 
-    unsigned index = static_cast<unsigned>(arg0->data.numVal);
+    unsigned index = static_cast<unsigned>(arg0->numVal);
 
     if (topsp == 0) {
         avm_warning("argument called outside of a function");
@@ -345,22 +356,22 @@ void libfunc_argument() {
     retval.type = arg_cell->type;
     switch (arg_cell->type) {
         case number_m:
-            retval.data.numVal = arg_cell->data.numVal;
+            retval.numVal = arg_cell->numVal;
             break;
         case string_m:
-            retval.data.strVal = arg_cell->data.strVal;
+            retval.strVal = arg_cell->strVal;
             break;
         case bool_m:
-            retval.data.boolVal = arg_cell->data.boolVal;
+            retval.boolVal = arg_cell->boolVal;
             break;
         case table_m:
-            retval.data.tableVal = arg_cell->data.tableVal;
+            retval.tableVal = arg_cell->tableVal;
             break;
         case userfunc_m:
-            retval.data.funcVal = arg_cell->data.funcVal;
+            retval.funcVal = arg_cell->funcVal;
             break;
         case libfunc_m:
-            retval.data.libfuncVal = arg_cell->data.libfuncVal;
+            retval.libfuncVal = arg_cell->libfuncVal;
             break;
         default:
             break;
@@ -383,17 +394,17 @@ void libfunc_strtonum() {
         return;
     }
     avm_memcellclear(&retval);
-    std::istringstream iss(arg->data.strVal);
+    std::istringstream iss(arg->strVal);
     double number;
     if (iss >> number && iss.eof()) {
-        DEBUG_check("strtonum: converting string '" + arg->data.strVal +
+        DEBUG_check("strtonum: converting string '" + arg->strVal +
                     "' to number: " + std::to_string(number));
         retval.type = number_m;
-        retval.data.numVal = number;
+        retval.numVal = number;
     } else {
         avm_warning("strtonum: invalid string format, returning 0");
         retval.type = number_m;
-        retval.data.numVal = 0.0;
+        retval.numVal = 0.0;
     }
 }
 void libfunc_sqrt() {
@@ -406,16 +417,16 @@ void libfunc_sqrt() {
     }
 
     avm_memcell* arg = avm_getactual(0);
-    if (arg->type != number_m || arg->data.numVal < 0) {
+    if (arg->type != number_m || arg->numVal < 0) {
         avm_error("sqrt expects a non-negative number as argument!");
         retval.type = nil_m;
         return;
     }
 
-    double result = std::sqrt(arg->data.numVal);
+    double result = std::sqrt(arg->numVal);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.data.numVal = result;
+    retval.numVal = result;
 }
 
 void libfunc_cos() {
@@ -432,12 +443,12 @@ void libfunc_cos() {
         retval.type = nil_m;
         return;
     }
-    double degrees = arg->data.numVal;
+    double degrees = arg->numVal;
     degrees = degrees * M_PI / 180.0;
     double result = std::cos(degrees);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.data.numVal = result;
+    retval.numVal = result;
 }
 
 void libfunc_sin() {
@@ -454,10 +465,17 @@ void libfunc_sin() {
         retval.type = nil_m;
         return;
     }
-    double degrees = arg->data.numVal;
+    double degrees = arg->numVal;
     degrees = degrees * M_PI / 180.0;
     double result = std::sin(degrees);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.data.numVal = result;
+    retval.numVal = result;
+}
+
+void init_lib_functions() {
+    top = AVM_STACKSIZE - 1 - total_globals;
+    topsp = AVM_STACKSIZE - 1;
+    libFuncs = SymTable_new();
+    avm_registerlibfunc("print", libfunc_print);
 }

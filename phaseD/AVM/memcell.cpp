@@ -17,7 +17,7 @@ instruction* code = nullptr;  // Pointer to the code array
 unsigned totalActuals = 0;
 
 avm_memcell ax, bx, cx;
-avm_memcell retval; // ERROR here
+avm_memcell retval;  // ERROR here
 int top, topsp;
 
 
@@ -42,27 +42,28 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return &retval;
         case number_a:
             reg->type = number_m;
-            reg->data.numVal = consts_getnumber(arg->val);
+            reg->numVal = consts_getnumber(arg->val);
             return reg;
         case string_a:
             reg->type = string_m;
-            reg->data.strVal = consts_getstring(arg->val);
+            reg->strVal = consts_getstring(arg->val);
             return reg;
         case bool_a:
             reg->type = bool_m;
-            reg->data.boolVal = (arg->val != 0);
+            reg->boolVal = (arg->val != 0);
             return reg;
         case nil_a:
             reg->type = nil_m;
             return reg;
         case userfunc_a:
             reg->type = userfunc_m;
-            reg->data.funcVal = arg->val;
-            // reg->data.funcVal = userfunc_get(arg->val)->address;
+            reg->funcVal = arg->val;
+            // reg->funcVal = userfunc_get(arg->val)->address;
             return reg;
         case libfunc_a:
             reg->type = libfunc_m;
-            reg->data.libfuncVal = libfunc_get(arg->val);
+            std::cout << "whatever: " << libfunc_get(arg->val) << std::endl;
+            reg->libfuncVal = libfunc_get(arg->val);
             return reg;
         default:
             std::cerr << "Invalid operand type: " << arg->type << std::endl;
@@ -87,14 +88,14 @@ void avm_memcellclear(avm_memcell* m) {
 }
 
 void memclear_string(avm_memcell* m) {
-    assert(!m->data.strVal.empty());
-    m->data.strVal.clear();
-    // delete m->data.strVal;
+    assert(!m->strVal.empty());
+    m->strVal.clear();
+    // delete m->strVal;
 }
 
 void memclear_table(avm_memcell* m) {
-    assert(m->data.tableVal);
-    avm_tabledecrefcounter(m->data.tableVal);
+    assert(m->tableVal);
+    avm_tabledecrefcounter(m->tableVal);
 }
 
 memclear_func_t memclearFuncs[] = {
@@ -120,7 +121,7 @@ void avm_dec_top(void) {
 
 void avm_push_envvalue(unsigned val) {
     stack[top].type = number_m;
-    stack[top].data.numVal = val;  // Copy the data
+    stack[top].numVal = val;  // Copy the data
     avm_dec_top();
 }
 
@@ -131,4 +132,3 @@ void avm_callsaveenvironment(void) {
     avm_push_envvalue(top + totalActuals + 2);
     avm_push_envvalue(topsp);
 }
-

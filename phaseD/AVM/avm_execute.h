@@ -96,6 +96,7 @@ userfunc* avm_getfuncinfo(unsigned address);
 unsigned avm_get_envvalue(unsigned i);
 unsigned avm_totalactuals(void);
 avm_memcell* avm_getactual(unsigned i);
+void init_lib_functions();
 //----------------------------------//
 
 //--------------------------------//

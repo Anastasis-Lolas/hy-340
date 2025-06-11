@@ -1,9 +1,11 @@
 #include "avm_table.h"
-#include "memcell_struct.h"
+
+#include <cstring>  // For memset
+#include <iostream>
+
 #include "../t-codeLib/t-code.h"
 #include "avm_helper.h"
-#include <iostream>
-#include <cstring> // For memset
+#include "memcell_struct.h"
 
 
 // Helper function to copy avm_memcell content
@@ -11,32 +13,33 @@ void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src) {
     dest->type = src->type;
     switch (src->type) {
         case number_m:
-            dest->data.numVal = src->data.numVal;
+            dest->numVal = src->numVal;
             break;
         case string_m:
-            dest->data.strVal = src->data.strVal;
+            dest->strVal = src->strVal;
             break;
         case bool_m:
-            dest->data.boolVal = src->data.boolVal;
+            dest->boolVal = src->boolVal;
             break;
         case table_m:
-            dest->data.tableVal = src->data.tableVal;
-            if (src->data.tableVal) {
-                avm_tableincrefcounter(src->data.tableVal);
+            dest->tableVal = src->tableVal;
+            if (src->tableVal) {
+                avm_tableincrefcounter(src->tableVal);
             }
             break;
         case userfunc_m:
-            dest->data.funcVal = src->data.funcVal;
+            dest->funcVal = src->funcVal;
             break;
         case libfunc_m:
-            dest->data.libfuncVal = src->data.libfuncVal;
+            dest->libfuncVal = src->libfuncVal;
             break;
         case nil_m:
         case undef_m:
             // No data to copy
             break;
         default:
-            std::cerr << "Error: Invalid type in avm_memcell_copy." << std::endl;
+            std::cerr << "Error: Invalid type in avm_memcell_copy."
+                      << std::endl;
             break;
     }
 }
@@ -44,18 +47,18 @@ void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src) {
 
 void avm_tablebucketsinit(avm_table_bucket** buckets) {
     for (unsigned i = 0; i < AVM_TABLE_HASHSIZE; ++i) {
-        buckets[i] = (avm_table_bucket*) 0 ;
+        buckets[i] = (avm_table_bucket*)0;
     }
 }
 
-avm_table::avm_table ()
-{
+avm_table::avm_table() {
     this->strIndexed = new std::unordered_map<std::string, avm_memcell>;
     this->numIndexed = new std::unordered_map<double, avm_memcell>;
     this->userfuncIndexed = new std::unordered_map<unsigned, avm_memcell>;
     this->libfuncIndexed = new std::unordered_map<std::string, avm_memcell>;
     this->boolIndexed = new std::unordered_map<bool, avm_memcell>;
-    this->tableIndexed = new std::unordered_map<avm_table*, avm_memcell, std::hash<avm_table*>>;
+    this->tableIndexed =
+        new std::unordered_map<avm_table*, avm_memcell, std::hash<avm_table*>>;
 
     this->total = 0;
 }
@@ -78,7 +81,8 @@ avm_table::~avm_table() {
     }
     for (auto& pair : *tableIndexed) {
         avm_memcellclear(&pair.second);
-        avm_tabledecrefcounter(pair.first); // Decrement ref count for table keys
+        avm_tabledecrefcounter(
+            pair.first);  // Decrement ref count for table keys
     }
     delete this->strIndexed;
     delete this->numIndexed;
@@ -89,10 +93,7 @@ avm_table::~avm_table() {
 }
 
 
-void avm_tabledestroy(avm_table* t) {
- 
-    delete t;
-}
+void avm_tabledestroy(avm_table* t) { delete t; }
 
 
 unsigned avm_table::get_avm_tableElement_count() {
@@ -108,11 +109,11 @@ unsigned avm_table::get_avm_tableElement_count() {
     return total;
 }
 
-avm_table* avm_tablenew (void) {
+avm_table* avm_tablenew(void) {
     avm_table* t = new avm_table();
-    t->refCounter = 0; /* total becomes set inside ctor */   
-    //AVM_WIPEOUT(*t);
-    
+    t->refCounter = 0; /* total becomes set inside ctor */
+    // AVM_WIPEOUT(*t);
+
     return t;
 }
 
@@ -120,26 +121,28 @@ void avm_tableincrefcounter(avm_table* t) {
     if (t) {
         t->refCounter++;
     } else {
-        std::cerr << "Error: Attempt to increment refCounter of a null table." << std::endl;
+        std::cerr << "Error: Attempt to increment refCounter of a null table."
+                  << std::endl;
     }
 }
 void avm_tabledecrefcounter(avm_table* t) {
-     //assert(t->refCounter > 0); // Ensure refCounter is > 0
+    // assert(t->refCounter > 0); // Ensure refCounter is > 0
     if (t->refCounter == 0) {
-    std::cerr << "Warning: Attempt to decrement zero refCounter" << std::endl;
-    return;
+        std::cerr << "Warning: Attempt to decrement zero refCounter"
+                  << std::endl;
+        return;
+    }
+    if (!--t->refCounter) {
+        avm_tabledestroy(t);
+    }
 }
-        if (!--t->refCounter) {
-            avm_tabledestroy(t);
-        }
-    } 
 
 avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
     assert(table != nullptr && index != nullptr);
-  
+
     switch (index->type) {
         case number_m: {
-            double key = index->data.numVal;
+            double key = index->numVal;
             auto it = table->numIndexed->find(key);
             if (it != table->numIndexed->end()) {
                 return &it->second;
@@ -147,7 +150,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case string_m: {
-            std::string key(index->data.strVal);
+            std::string key(index->strVal);
             auto it = table->strIndexed->find(key);
             if (it != table->strIndexed->end()) {
                 return &it->second;
@@ -155,7 +158,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case bool_m: {
-            bool key = index->data.boolVal;
+            bool key = index->boolVal;
             auto it = table->boolIndexed->find(key);
             if (it != table->boolIndexed->end()) {
                 return &it->second;
@@ -163,7 +166,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case table_m: {
-            avm_table* key = index->data.tableVal;
+            avm_table* key = index->tableVal;
             auto it = table->tableIndexed->find(key);
             if (it != table->tableIndexed->end()) {
                 return &it->second;
@@ -171,7 +174,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case userfunc_m: {
-            unsigned key = index->data.funcVal;
+            unsigned key = index->funcVal;
             auto it = table->userfuncIndexed->find(key);
             if (it != table->userfuncIndexed->end()) {
                 return &it->second;
@@ -179,31 +182,33 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case libfunc_m: {
-            std::string key(index->data.libfuncVal);
+            std::string key(index->libfuncVal);
             auto it = table->libfuncIndexed->find(key);
             if (it != table->libfuncIndexed->end()) {
                 return &it->second;
             }
-            break;}
-        case nil_m:{
+            break;
+        }
+        case nil_m: {
             // Can't index by nil
             avm_error("Cannot index table by nil!");
-            break;}
+            break;
+        }
         default:
             avm_error("Error: Invalid key type in avm_tablegetelem.\n");
             break;
-    } 
-    return nullptr; // Key not found
+    }
+    return nullptr;  // Key not found
 }
 
 
-
-void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content) {
- assert(table != nullptr && index != nullptr && content != nullptr);
+void avm_tablesetelem(avm_table* table, avm_memcell* index,
+                      avm_memcell* content) {
+    assert(table != nullptr && index != nullptr && content != nullptr);
 
     switch (index->type) {
         case number_m: {
-            double key = index->data.numVal;
+            double key = index->numVal;
             auto& map = *table->numIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -225,7 +230,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         case string_m: {
-            std::string key(index->data.strVal);
+            std::string key(index->strVal);
             auto& map = *table->strIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -247,7 +252,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         case bool_m: {
-            bool key = index->data.boolVal;
+            bool key = index->boolVal;
             auto& map = *table->boolIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -269,7 +274,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         case table_m: {
-            avm_table* key = index->data.tableVal;
+            avm_table* key = index->tableVal;
             auto& map = *table->tableIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -294,7 +299,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         case userfunc_m: {
-            unsigned key = index->data.funcVal;
+            unsigned key = index->funcVal;
             auto& map = *table->userfuncIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -316,7 +321,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         case libfunc_m: {
-            std::string key(index->data.libfuncVal);
+            std::string key(index->libfuncVal);
             auto& map = *table->libfuncIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -338,7 +343,8 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content
             break;
         }
         default:
-            std::cerr << "Error: Invalid key type in avm_tablesetelem." << std::endl;
+            std::cerr << "Error: Invalid key type in avm_tablesetelem."
+                      << std::endl;
             break;
     }
 }

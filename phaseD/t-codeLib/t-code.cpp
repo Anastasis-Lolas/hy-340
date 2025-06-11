@@ -62,7 +62,7 @@ void make_operand(expr *e, vmarg *arg) {
         case arithexpr_e:
         case boolexpr_e:
         case newtable_e: {
-            assert(e->sym);
+            
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -305,20 +305,22 @@ void generate_UMINUS(quad *q) {
     instruction *instr = new instruction();
     instr->opcode = mul_v;
     instr->srcLine = q->line;
+ 
+ 
 
-    // arg1 = -1
+    if (q->arg1)
+    make_operand(q->arg1, &instr->arg1);  
 
-    make_numberoperand(&instr->arg1, -1.0);
+    make_numberoperand(&instr->arg2, -1);     
 
-
-    make_operand(q->arg1, &instr->arg2);
-    make_operand(q->result, &instr->result);
+    if (q->result)
+    make_operand(q->result, &instr->result); 
 
     vm_emit(instr);
 }
 
 void generate_NOP(quad *) {
-    instruction *t = (instruction *)malloc(sizeof(instruction));
+    instruction *t = new instruction();
     t->opcode = not_v;
     // ??
     t->arg1.type = undef_a;
@@ -491,20 +493,40 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 void generate_instructions() {
-    // pre‐initialize all taddress to “not set”:
-    for (auto &q : quad_table) q->taddress = (unsigned)-1;
+    printf("Generating instructions...\n");
+    for (auto &q : quad_table) {
+        if (q) q->taddress = (unsigned)-1;
+    }
 
     for (auto *q : quad_table) {
-        if (!q) continue;
-        // now q->taddress marks “this quad’s instr idx”:
+        if (!q) {
+            printf("Skipped null quad.\n");
+            continue;
+        }
+
         q->taddress = nextinstructionlabel();
 
-        // dispatch to generate_*()
+        // Debug print before calling the generator
+        printf("Processing quad: op = %d\n", q->op);
+
+        if (q->op < 0 || q->op >= 27) {
+            printf("Invalid op code: %d\n", q->op);
+            continue;  // or handle error
+        }
+
+        if (!generators[q->op]) {
+            printf("Null generator for op code: %d\n", q->op);
+            continue;  // or handle error
+        }
+
+        printf("Calling generator for op = %d...\n", q->op);
         generators[q->op](q);
+        printf("Finished generator for op = %d.\n", q->op);
     }
 
     patch_incomplete_jumps();
 }
+
 void free_instructions() {
     for (auto inst : instruction_table) {
         if (inst) free(inst);

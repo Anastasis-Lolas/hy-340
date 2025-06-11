@@ -1,4 +1,7 @@
 #include "avm_helper.h"
+#include <sstream>
+#include <iomanip>
+#include "avm_table.h"
 
 typedef bool (*tobool_func_t)(avm_memcell*);
 
@@ -29,7 +32,7 @@ bool libfunc_tobool(avm_memcell*) { return true; }
 bool nil_tobool(avm_memcell*) { return false; }
 
 bool undef_tobool(avm_memcell*) {
-    assert(0);
+    avm_warning("Trying to convert 'undefined' to boolean.");
     return false;
 }
 
@@ -56,15 +59,42 @@ std::string string_toString(avm_memcell* m) {
 
 std::string bool_toString(avm_memcell* m) {
     assert(m && m->type == bool_m);
-    bool b = m->boolVal;
-    return b ? "true" : "false";
+     return m->boolVal ? "true" : "false";
 }
 
 
 std::string table_toString(avm_memcell* m) {
     assert(m && m->type == table_m);
-    return "[table]not implemented yet";
+
+    avm_table* table = m->tableVal;
+    std::ostringstream oss;
+    oss << "{ ";
+    for (auto it = table->numIndexed->begin(); it != table->numIndexed->end(); ++it)
+        oss << "[" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+
+    for (auto it = table->strIndexed->begin(); it != table->strIndexed->end(); ++it)
+        oss << "[\"" << it->first << "\"] = " << avm_toString(&(it->second)) << ", ";
+
+    for (auto it = table->boolIndexed->begin(); it != table->boolIndexed->end(); ++it)
+        oss << "[" << (it->first ? "true" : "false") << "] = " << avm_toString(&(it->second)) << ", ";
+
+    for (auto it = table->tableIndexed->begin(); it != table->tableIndexed->end(); ++it)
+        oss << "[table" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+
+    for (auto it = table->userfuncIndexed->begin(); it != table->userfuncIndexed->end(); ++it)
+        oss << "[userfunc" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+
+    for (auto it = table->libfuncIndexed->begin(); it != table->libfuncIndexed->end(); ++it)
+        oss << "[libfunc \"" << it->first << "\"] = " << avm_toString(&(it->second)) << ", ";
+
+        
+    std::string result = oss.str();
+    if (result.size() > 2)
+        result.erase(result.end() - 2, result.end()); // remove last ", "
+    result += " }";
+    return result;
 }
+
 
 std::string userfunc_toString(avm_memcell* m) {
     assert(m && m->type == userfunc_m);

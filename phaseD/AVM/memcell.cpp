@@ -1,10 +1,9 @@
 #include <cstring>
+#include <new>
+#include <string>
 
 #include "avm_execute.h"
 #include "memcell_struct.h"
-
-
-#define AVM_ENDING_PC codeSize
 
 avm_memcell stack[AVM_STACKSIZE];
 
@@ -30,6 +29,7 @@ void avm_initstack(void) {
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
     assert(arg);
+    std::string tempStr;
     switch (arg->type) {
         case global_a:
             return &stack[AVM_STACKSIZE - 1 - arg->val];
@@ -41,27 +41,32 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return &retval;
         case number_a:
             reg->type = number_m;
-            reg->numVal = consts_getnumber(arg->val);
+            reg->data.numVal = consts_getnumber(arg->val);
             return reg;
         case string_a:
             reg->type = string_m;
-            reg->strVal = consts_getstring(arg->val);
+            tempStr = consts_getstring(arg->val);
+            new (&reg->data.strVal) std::string(tempStr);
             return reg;
         case bool_a:
             reg->type = bool_m;
-            reg->boolVal = (arg->val != 0);
+            reg->data.boolVal = (arg->val != 0);
             return reg;
         case nil_a:
             reg->type = nil_m;
             return reg;
         case userfunc_a:
             reg->type = userfunc_m;
-            reg->funcVal = arg->val;
+            reg->data.funcVal = arg->val;
             // reg->funcVal = userfunc_get(arg->val)->address;
             return reg;
         case libfunc_a:  // 10
+                         // reg->type = libfunc_m;
+                         // libfuncName = libfunc_get(arg->val);
+                         // reg->data.libfuncVal = libfuncName;
             reg->type = libfunc_m;
-            reg->libfuncVal = libfunc_get(arg->val);
+            tempStr = libfunc_get(arg->val);
+            new (&reg->data.libfuncVal) std::string(tempStr);
             return reg;
         default:
             std::cerr << "Invalid operand type: " << arg->type << std::endl;
@@ -86,14 +91,14 @@ void avm_memcellclear(avm_memcell* m) {
 }
 
 void memclear_string(avm_memcell* m) {
-    assert(!m->strVal.empty());
-    m->strVal.clear();
+    assert(!m->data.strVal.empty());
+    m->data.strVal.clear();
     // delete m->strVal;
 }
 
 void memclear_table(avm_memcell* m) {
-    assert(m->tableVal);
-    avm_tabledecrefcounter(m->tableVal);
+    assert(m->data.tableVal);
+    avm_tabledecrefcounter(m->data.tableVal);
 }
 
 memclear_func_t memclearFuncs[] = {
@@ -119,7 +124,7 @@ void avm_dec_top(void) {
 
 void avm_push_envvalue(unsigned val) {
     stack[top].type = number_m;
-    stack[top].numVal = val;  // Copy the data
+    stack[top].data.numVal = val;  // Copy the data
     avm_dec_top();
 }
 

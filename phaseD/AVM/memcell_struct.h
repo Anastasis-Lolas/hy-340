@@ -31,12 +31,17 @@ enum avm_memcell_t {
 
 typedef struct avm_memcell {
     avm_memcell_t type;
-    double numVal;
-    std::string strVal;
-    bool boolVal;
-    struct avm_table* tableVal;
-    unsigned funcVal;
-    std::string libfuncVal;
+    union data {
+        double numVal;
+        std::string strVal;
+        bool boolVal;
+        struct avm_table* tableVal;
+        unsigned funcVal;
+        std::string libfuncVal;
+        data() {}
+        ~data() {}
+
+    } data;
 } avm_memcell;
 
 

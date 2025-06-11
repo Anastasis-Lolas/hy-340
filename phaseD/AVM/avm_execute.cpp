@@ -4,8 +4,6 @@
 #include <iostream>
 #include "../t-codeLib/t-code.h"
 
-#define AVM_ENDING_PC codeSize
-
 std::vector<instruction> exec_instructions;
 std::vector<std::string> string_consts;
 std::vector<double> nums_consts;
@@ -106,14 +104,14 @@ void execute_not(instruction *) {}
 
 
 void execute_cycle(void) {
-    while (1) {
+    while (executionFinished == 0) {
         if (executionFinished)
             break;
         else if (pc == AVM_ENDING_PC) {
             executionFinished = 1;
             break;
         } else {
-            assert(pc < exec_instructions.size());
+            assert(pc < AVM_ENDING_PC);
             instruction *instr = &exec_instructions[pc];
             assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
             std::cout << "Executing instruction at PC: " << pc
@@ -124,7 +122,7 @@ void execute_cycle(void) {
             executeFuncs[instr->opcode](instr);
             std::cout << "Executed instruction at PC: " << oldPC
                       << ", Opcode: " << vmopcode_to_string(instr->opcode)
-                      << ", SrcLine: " << instr->srcLine << std::endl;
+                      << std::endl;
             if (pc == oldPC) ++pc;
         }
     }
@@ -194,6 +192,7 @@ void read_and_print_avm_binary(const std::string &filename) {
     unsigned int total_instructions;
     infile.read(reinterpret_cast<char *>(&total_instructions),
                 sizeof(unsigned int));
+    codeSize = total_instructions;
     for (unsigned int i = 0; i < total_instructions; ++i) {
         if (!infile.good()) break;
         uint8_t opcode_byte_read;

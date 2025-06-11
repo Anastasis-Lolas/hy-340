@@ -28,7 +28,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
     if (lv == rv) return;
 
     if (lv->type == table_m && rv->type == table_m &&
-        lv->tableVal == rv->tableVal)
+        lv->data.tableVal == rv->data.tableVal)
         return;
 
     if (rv->type == undef_m) {
@@ -40,10 +40,10 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
     if (lv->type == string_m)
         // lv->strVal = strdup(rv->strVal);
-        lv->strVal = rv->strVal;
+        lv->data.strVal = rv->data.strVal;
     else if (lv->type == table_m) {
         // assert(0);
-        avm_tableincrefcounter(lv->tableVal);
+        avm_tableincrefcounter(lv->data.tableVal);
     }
 }
 
@@ -77,6 +77,6 @@ void execute_arithmetic(instruction* instr) {
         arithmetic_func_t op = arithmeticFuncs[instr->opcode - add_v];
         avm_memcellclear(lv);
         lv->type = number_m;
-        lv->numVal = (*op)(rv1->numVal, rv2->numVal);
+        lv->data.numVal = (*op)(rv1->data.numVal, rv2->data.numVal);
     }
 }

@@ -40,18 +40,18 @@ enum vmopcode {
 };
 
 typedef enum vmarg_t {
-    label_a,
-    global_a,
-    formal_a,
-    local_a,
-    number_a,
-    string_a,
-    bool_a,
-    nil_a,
-    userfunc_a,
-    libfunc_a,
-    retval_a,
-    undef_a,
+    label_a,     // 0
+    global_a,    // 1
+    formal_a,    // 2
+    local_a,     // 3
+    number_a,    // 4
+    string_a,    // 5
+    bool_a,      // 6
+    nil_a,       // 7
+    userfunc_a,  // 8
+    libfunc_a,   // 9
+    retval_a,    // 10
+    undef_a,     // 11
 } vmarg_t;
 
 typedef struct vmarg {
@@ -144,5 +144,5 @@ void print_const_nums(void);
 void print_userfuncs(void);
 void print_libfuncs(void);
 void generate_binary_readable(const std::string& outname);
-void generate_txt_read(const std::string &outname);
+void generate_txt_read(const std::string& outname);
 #endif

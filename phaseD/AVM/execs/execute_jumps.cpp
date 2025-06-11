@@ -25,13 +25,10 @@ void execute_rljump(instruction* instr) {
         return;
     }
 
-    if (rv1->type != number_m || rv2->type != number_m) {
-        avm_error("Operands for relational jump must be numbers.");
-        executionFinished = 1;
-    } else if (rv1->type == nil_m || rv2->type == nil_m)
-        result = rv1->type == nil_m && rv2->type == nil_m;
-    else if (rv1->type == bool_m || rv2->type == bool_m)
+    if (rv1->type == bool_m || rv2->type == bool_m){
         result = (avm_tobool(rv1) == avm_tobool(rv2));
+    }else if (rv1->type == nil_m || rv2->type == nil_m)
+        result = rv1->type == nil_m && rv2->type == nil_m;
     else if (rv1->type != rv2->type)
         avm_error("Assigning diff types is illegal");
     else {

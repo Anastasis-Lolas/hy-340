@@ -30,7 +30,6 @@ void avm_initstack(void) {
 
 avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
     assert(arg);
-
     switch (arg->type) {
         case global_a:
             return &stack[AVM_STACKSIZE - 1 - arg->val];
@@ -60,7 +59,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             reg->funcVal = arg->val;
             // reg->funcVal = userfunc_get(arg->val)->address;
             return reg;
-        case libfunc_a:
+        case libfunc_a:  // 10
             reg->type = libfunc_m;
             reg->libfuncVal = libfunc_get(arg->val);
             return reg;

@@ -1,7 +1,7 @@
 #include "avm_execute.h"
 
 #include <iomanip>
-
+#include <iostream>
 #include "../t-codeLib/t-code.h"
 
 #define AVM_ENDING_PC codeSize
@@ -12,7 +12,7 @@ std::vector<double> nums_consts;
 std::vector<std::string> libfuncs;
 std::vector<userfunc> userfuncs;
 extern avm_memcell stack[AVM_STACKSIZE];
-
+unsigned TotalGlobals;
 std::string typeStrings[] = {"number",   "string",  "bool", "table",
                              "userfunc", "libfunc", "nil",  "undef"};
 
@@ -206,10 +206,13 @@ void read_and_print_avm_binary(const std::string &filename) {
         exec_instructions.push_back(inst);
     }
 
+    infile.read(reinterpret_cast<char *>(&TotalGlobals), sizeof(int));
+    std::cout << "Total globals used in instructions (read from binary): " << TotalGlobals << std::endl;
+
     infile.close();
 }
 
-#include <iostream>
+
 
 void print_string_consts() {
     std::cout << "=== String Constants ===\n";

@@ -1,6 +1,8 @@
 #include "avm_helper.h"
-#include <sstream>
+
 #include <iomanip>
+#include <sstream>
+
 #include "avm_table.h"
 
 typedef bool (*tobool_func_t)(avm_memcell*);
@@ -17,11 +19,11 @@ tostring_func_t toStringFunctions[] = {
     userfunc_toString, libfunc_toString, nil_toString,  undef_toString};
 
 
-bool number_tobool(avm_memcell* m) { return m->numVal != 0; }
+bool number_tobool(avm_memcell* m) { return m->data.numVal != 0; }
 
-bool string_tobool(avm_memcell* m) { return !(m->strVal.empty()); }
+bool string_tobool(avm_memcell* m) { return !(m->data.strVal.empty()); }
 
-bool bool_tobool(avm_memcell* m) { return m->boolVal; }
+bool bool_tobool(avm_memcell* m) { return m->data.boolVal; }
 
 bool table_tobool(avm_memcell*) { return true; }
 
@@ -49,48 +51,60 @@ std::string avm_toString(avm_memcell* m) {
 
 std::string number_toString(avm_memcell* m) {
     assert(m && m->type == number_m);
-    return std::to_string(m->numVal);
+    return std::to_string(m->data.numVal);
 }
 
 std::string string_toString(avm_memcell* m) {
     assert(m->type == string_m);
-    return m->strVal;
+    return m->data.strVal;
 }
 
 std::string bool_toString(avm_memcell* m) {
     assert(m && m->type == bool_m);
-     return m->boolVal ? "true" : "false";
+    return m->data.boolVal ? "true" : "false";
 }
 
 
 std::string table_toString(avm_memcell* m) {
     assert(m && m->type == table_m);
 
-    avm_table* table = m->tableVal;
+    avm_table* table = m->data.tableVal;
     std::ostringstream oss;
     oss << "{ ";
-    for (auto it = table->numIndexed->begin(); it != table->numIndexed->end(); ++it)
-        oss << "[" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->numIndexed->begin(); it != table->numIndexed->end();
+         ++it)
+        oss << "[" << it->first << "] = " << avm_toString(&(it->second))
+            << ", ";
 
-    for (auto it = table->strIndexed->begin(); it != table->strIndexed->end(); ++it)
-        oss << "[\"" << it->first << "\"] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->strIndexed->begin(); it != table->strIndexed->end();
+         ++it)
+        oss << "[\"" << it->first << "\"] = " << avm_toString(&(it->second))
+            << ", ";
 
-    for (auto it = table->boolIndexed->begin(); it != table->boolIndexed->end(); ++it)
-        oss << "[" << (it->first ? "true" : "false") << "] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->boolIndexed->begin(); it != table->boolIndexed->end();
+         ++it)
+        oss << "[" << (it->first ? "true" : "false")
+            << "] = " << avm_toString(&(it->second)) << ", ";
 
-    for (auto it = table->tableIndexed->begin(); it != table->tableIndexed->end(); ++it)
-        oss << "[table" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->tableIndexed->begin();
+         it != table->tableIndexed->end(); ++it)
+        oss << "[table" << it->first << "] = " << avm_toString(&(it->second))
+            << ", ";
 
-    for (auto it = table->userfuncIndexed->begin(); it != table->userfuncIndexed->end(); ++it)
-        oss << "[userfunc" << it->first << "] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->userfuncIndexed->begin();
+         it != table->userfuncIndexed->end(); ++it)
+        oss << "[userfunc" << it->first << "] = " << avm_toString(&(it->second))
+            << ", ";
 
-    for (auto it = table->libfuncIndexed->begin(); it != table->libfuncIndexed->end(); ++it)
-        oss << "[libfunc \"" << it->first << "\"] = " << avm_toString(&(it->second)) << ", ";
+    for (auto it = table->libfuncIndexed->begin();
+         it != table->libfuncIndexed->end(); ++it)
+        oss << "[libfunc \"" << it->first
+            << "\"] = " << avm_toString(&(it->second)) << ", ";
 
-        
+
     std::string result = oss.str();
     if (result.size() > 2)
-        result.erase(result.end() - 2, result.end()); // remove last ", "
+        result.erase(result.end() - 2, result.end());  // remove last ", "
     result += " }";
     return result;
 }
@@ -98,12 +112,12 @@ std::string table_toString(avm_memcell* m) {
 
 std::string userfunc_toString(avm_memcell* m) {
     assert(m && m->type == userfunc_m);
-    return "userfunc" + std::to_string(m->funcVal);
+    return "userfunc" + std::to_string(m->data.funcVal);
 }
 
 std::string libfunc_toString(avm_memcell* m) {
     assert(m && m->type == libfunc_m);
-    return m->libfuncVal;
+    return m->data.libfuncVal;
 }
 std::string nil_toString(avm_memcell* m) {
     assert(m && m->type == nil_m);

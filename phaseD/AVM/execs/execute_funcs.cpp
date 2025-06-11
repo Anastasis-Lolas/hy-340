@@ -9,25 +9,28 @@ extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
+    DEBUG_check("execute_call");
+
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
+    DEBUG_check("sdasd");
+    DEBUG_check("Function to call: " + avm_toString(func));
     assert(func);
     switch (func->type) {
         case userfunc_m: {
             avm_callsaveenvironment();  // Maybe outside switch?
-            pc = func->funcVal;
-            assert(pc < AVM_ENDING_PC);
+            pc = func->data.funcVal;
             assert(code[pc].opcode == funcenter_v);
             break;
         }
         case string_m:
-            avm_callibfunc(func->strVal);
+            avm_callibfunc(func->data.strVal);
             break;
         case libfunc_m:
-            DEBUG_check("Calling library function: " + func->libfuncVal);
-            avm_callibfunc(func->libfuncVal);
+            DEBUG_check("Calling library function: " + func->data.libfuncVal);
+            avm_callibfunc(func->data.libfuncVal);
             break;
         case table_m:
-            avm_call_functor(func->tableVal);
+            avm_call_functor(func->data.tableVal);
             break;
 
         default:
@@ -36,21 +39,23 @@ void execute_call(instruction* instr) {
             avm_error(err_msg);
             executionFinished = 1;
     }
+    DEBUG_check("=====================\tENDexecute_call");
 }
 void avm_call_functor(avm_table* table) {  // flag edw
     cx.type = string_m;
-    cx.strVal = "()";
+    cx.data.strVal = "()";
 
     avm_memcell* f = avm_tablegetelem(table, &cx);
     if (!f)
         avm_error("in calling table: no '()' element found!");
     else if (f->type == table_m) {
-        avm_call_functor(f->tableVal);
+        avm_call_functor(f->data.tableVal);
     } else if (f->type == userfunc_m) {
         avm_push_table_arg(table);
         avm_callsaveenvironment();
-        pc = f->funcVal;
-        assert(pc < AVM_ENDING_PC && code[pc].opcode == funcenter_v);
+        pc = f->data.funcVal;
+        // pc < AVM_ENDING_PC &&
+        assert(code[pc].opcode == funcenter_v);
     } else {
         avm_error("in calling table: illegal '()' element value!");
     }
@@ -84,10 +89,10 @@ void execute_pusharg(instruction* instr) {
 void execute_funcenter(instruction* instr) {
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
     assert(func);
-    assert(pc == func->funcVal); /* Func address should match PC. */
+    assert(pc == func->data.funcVal); /* Func address should match PC. */
 
     totalActuals = 0;
-    userfunc* f = avm_getfuncinfo(func->funcVal);
+    userfunc* f = avm_getfuncinfo(func->data.funcVal);
     topsp = top;
     top = top - f->localSize;
 }
@@ -103,8 +108,8 @@ void execute_funcexit(instruction*) {
 
 unsigned avm_get_envvalue(unsigned i) {
     assert(stack[i].type == number_m);
-    unsigned val = (unsigned)stack[i].numVal;
-    assert(stack[i].numVal == ((double)val));
+    unsigned val = (unsigned)stack[i].data.numVal;
+    assert(stack[i].data.numVal == ((double)val));
     return val;
 }
 
@@ -146,7 +151,7 @@ void libfunc_typeof() {
     }
     avm_memcellclear(&retval);
     retval.type = string_m;
-    retval.strVal = typeStrings[avm_getactual(0)->type];
+    retval.data.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -157,7 +162,7 @@ void libfunc_totalarguments() {
         retval.type = nil_m;
     } else {
         retval.type = number_m;
-        retval.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
+        retval.data.numVal = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
     }
 }
 
@@ -172,16 +177,16 @@ void libfunc_print() {
     for (unsigned i = 0; i < n; ++i) {
         avm_memcell* m = avm_getactual(i);
         if (m->type == userfunc_m) {
-            userfunc* f = avm_getfuncinfo(m->funcVal);
+            userfunc* f = avm_getfuncinfo(m->data.funcVal);
             if (f) {
                 std::cout << "User Function: " << f->id << " at address "
                           << f->address << "\n";
             } else {
-                std::cout << "User Function: Unknown at address " << m->funcVal
-                          << "\n";
+                std::cout << "User Function: Unknown at address "
+                          << m->data.funcVal << "\n";
             }
         } else if (m->type == libfunc_m) {
-            std::cout << "Library Function: " << m->libfuncVal << "\n";
+            std::cout << "Library Function: " << m->data.libfuncVal << "\n";
         } else if (m->type == table_m) {
             // Assuming avm_table has a toString method or similar flag gia evi
             assert(0);
@@ -206,18 +211,18 @@ void libfunc_input() {
 
     if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
         retval.type = string_m;
-        retval.strVal = input.substr(1, input.length() - 2);
-        DEBUG_check("Input string: " + retval.strVal);
+        retval.data.strVal = input.substr(1, input.length() - 2);
+        DEBUG_check("Input string: " + retval.data.strVal);
         return;
     }
     if (input == "true") {
         retval.type = bool_m;
-        retval.boolVal = true;
+        retval.data.boolVal = true;
         DEBUG_check("Input boolean: true");
         return;
     } else if (input == "false") {
         retval.type = bool_m;
-        retval.boolVal = false;
+        retval.data.boolVal = false;
         DEBUG_check("Input boolean: false");
         return;
     }
@@ -232,7 +237,7 @@ void libfunc_input() {
     // flag gia alex
     if (iss >> number && iss.eof()) {
         retval.type = number_m;
-        retval.numVal = number;
+        retval.data.numVal = number;
         DEBUG_check("Input number: " + std::to_string(number));
         return;
     }
@@ -271,10 +276,10 @@ void libfunc_objecttotalmembers() {
         retval.type = nil_m;
         return;
     }
-    avm_table* table = arg->tableVal;
+    avm_table* table = arg->data.tableVal;
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.numVal = table->total;
+    retval.data.numVal = table->total;
 }
 
 void libfunc_objectcopy() {
@@ -293,14 +298,14 @@ void libfunc_objectcopy() {
         return;
     }
 
-    avm_table* src_table = arg->tableVal;
+    avm_table* src_table = arg->data.tableVal;
     avm_table* new_table = avm_tablenew();
 
     // flag gia evi
     //  Copy number-indexed elements ==> avm_tablemembercopy
 
     retval.type = table_m;
-    retval.tableVal = new_table;
+    retval.data.tableVal = new_table;
     new_table->total = src_table->total;
     avm_tableincrefcounter(new_table);
 }
@@ -315,13 +320,13 @@ void libfunc_argument() {
     }
 
     avm_memcell* arg0 = avm_getactual(0);
-    if (arg0->type != number_m || arg0->numVal < 0) {
+    if (arg0->type != number_m || arg0->data.numVal < 0) {
         avm_error("argument argument must be a non-negative number");
         retval.type = nil_m;
         return;
     }
 
-    unsigned index = static_cast<unsigned>(arg0->numVal);
+    unsigned index = static_cast<unsigned>(arg0->data.numVal);
 
     if (topsp == 0) {
         avm_warning("argument called outside of a function");
@@ -346,22 +351,22 @@ void libfunc_argument() {
     retval.type = arg_cell->type;
     switch (arg_cell->type) {
         case number_m:
-            retval.numVal = arg_cell->numVal;
+            retval.data.numVal = arg_cell->data.numVal;
             break;
         case string_m:
-            retval.strVal = arg_cell->strVal;
+            retval.data.strVal = arg_cell->data.strVal;
             break;
         case bool_m:
-            retval.boolVal = arg_cell->boolVal;
+            retval.data.boolVal = arg_cell->data.boolVal;
             break;
         case table_m:
-            retval.tableVal = arg_cell->tableVal;
+            retval.data.tableVal = arg_cell->data.tableVal;
             break;
         case userfunc_m:
-            retval.funcVal = arg_cell->funcVal;
+            retval.data.funcVal = arg_cell->data.funcVal;
             break;
         case libfunc_m:
-            retval.libfuncVal = arg_cell->libfuncVal;
+            retval.data.libfuncVal = arg_cell->data.libfuncVal;
             break;
         default:
             break;
@@ -384,17 +389,17 @@ void libfunc_strtonum() {
         return;
     }
     avm_memcellclear(&retval);
-    std::istringstream iss(arg->strVal);
+    std::istringstream iss(arg->data.strVal);
     double number;
     if (iss >> number && iss.eof()) {
-        DEBUG_check("strtonum: converting string '" + arg->strVal +
+        DEBUG_check("strtonum: converting string '" + arg->data.strVal +
                     "' to number: " + std::to_string(number));
         retval.type = number_m;
-        retval.numVal = number;
+        retval.data.numVal = number;
     } else {
         avm_warning("strtonum: invalid string format, returning 0");
         retval.type = number_m;
-        retval.numVal = 0.0;
+        retval.data.numVal = 0.0;
     }
 }
 void libfunc_sqrt() {
@@ -407,16 +412,16 @@ void libfunc_sqrt() {
     }
 
     avm_memcell* arg = avm_getactual(0);
-    if (arg->type != number_m || arg->numVal < 0) {
+    if (arg->type != number_m || arg->data.numVal < 0) {
         avm_error("sqrt expects a non-negative number as argument!");
         retval.type = nil_m;
         return;
     }
 
-    double result = std::sqrt(arg->numVal);
+    double result = std::sqrt(arg->data.numVal);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.numVal = result;
+    retval.data.numVal = result;
 }
 
 void libfunc_cos() {
@@ -433,12 +438,12 @@ void libfunc_cos() {
         retval.type = nil_m;
         return;
     }
-    double degrees = arg->numVal;
+    double degrees = arg->data.numVal;
     degrees = degrees * M_PI / 180.0;
     double result = std::cos(degrees);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.numVal = result;
+    retval.data.numVal = result;
 }
 
 void libfunc_sin() {
@@ -455,12 +460,12 @@ void libfunc_sin() {
         retval.type = nil_m;
         return;
     }
-    double degrees = arg->numVal;
+    double degrees = arg->data.numVal;
     degrees = degrees * M_PI / 180.0;
     double result = std::sin(degrees);
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.numVal = result;
+    retval.data.numVal = result;
 }
 
 void init_lib_functions() {

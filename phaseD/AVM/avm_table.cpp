@@ -13,25 +13,25 @@ void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src) {
     dest->type = src->type;
     switch (src->type) {
         case number_m:
-            dest->numVal = src->numVal;
+            dest->data.numVal = src->data.numVal;
             break;
         case string_m:
-            dest->strVal = src->strVal;
+            dest->data.strVal = src->data.strVal;
             break;
         case bool_m:
-            dest->boolVal = src->boolVal;
+            dest->data.boolVal = src->data.boolVal;
             break;
         case table_m:
-            dest->tableVal = src->tableVal;
-            if (src->tableVal) {
-                avm_tableincrefcounter(src->tableVal);
+            dest->data.tableVal = src->data.tableVal;
+            if (src->data.tableVal) {
+                avm_tableincrefcounter(src->data.tableVal);
             }
             break;
         case userfunc_m:
-            dest->funcVal = src->funcVal;
+            dest->data.funcVal = src->data.funcVal;
             break;
         case libfunc_m:
-            dest->libfuncVal = src->libfuncVal;
+            dest->data.libfuncVal = src->data.libfuncVal;
             break;
         case nil_m:
         case undef_m:
@@ -142,7 +142,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
 
     switch (index->type) {
         case number_m: {
-            double key = index->numVal;
+            double key = index->data.numVal;
             auto it = table->numIndexed->find(key);
             if (it != table->numIndexed->end()) {
                 return &it->second;
@@ -150,7 +150,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case string_m: {
-            std::string key(index->strVal);
+            std::string key(index->data.strVal);
             auto it = table->strIndexed->find(key);
             if (it != table->strIndexed->end()) {
                 return &it->second;
@@ -158,7 +158,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case bool_m: {
-            bool key = index->boolVal;
+            bool key = index->data.boolVal;
             auto it = table->boolIndexed->find(key);
             if (it != table->boolIndexed->end()) {
                 return &it->second;
@@ -166,7 +166,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case table_m: {
-            avm_table* key = index->tableVal;
+            avm_table* key = index->data.tableVal;
             auto it = table->tableIndexed->find(key);
             if (it != table->tableIndexed->end()) {
                 return &it->second;
@@ -174,7 +174,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case userfunc_m: {
-            unsigned key = index->funcVal;
+            unsigned key = index->data.funcVal;
             auto it = table->userfuncIndexed->find(key);
             if (it != table->userfuncIndexed->end()) {
                 return &it->second;
@@ -182,7 +182,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
             break;
         }
         case libfunc_m: {
-            std::string key(index->libfuncVal);
+            std::string key(index->data.libfuncVal);
             auto it = table->libfuncIndexed->find(key);
             if (it != table->libfuncIndexed->end()) {
                 return &it->second;
@@ -208,7 +208,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
 
     switch (index->type) {
         case number_m: {
-            double key = index->numVal;
+            double key = index->data.numVal;
             auto& map = *table->numIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -230,7 +230,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
             break;
         }
         case string_m: {
-            std::string key(index->strVal);
+            std::string key(index->data.strVal);
             auto& map = *table->strIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -252,7 +252,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
             break;
         }
         case bool_m: {
-            bool key = index->boolVal;
+            bool key = index->data.boolVal;
             auto& map = *table->boolIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -274,7 +274,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
             break;
         }
         case table_m: {
-            avm_table* key = index->tableVal;
+            avm_table* key = index->data.tableVal;
             auto& map = *table->tableIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -299,7 +299,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
             break;
         }
         case userfunc_m: {
-            unsigned key = index->funcVal;
+            unsigned key = index->data.funcVal;
             auto& map = *table->userfuncIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);
@@ -321,7 +321,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
             break;
         }
         case libfunc_m: {
-            std::string key(index->libfuncVal);
+            std::string key(index->data.libfuncVal);
             auto& map = *table->libfuncIndexed;
             if (content->type == nil_m) {
                 auto it = map.find(key);

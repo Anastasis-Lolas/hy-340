@@ -35,24 +35,24 @@ void execute_rljump(instruction* instr) {
     else if (rv1->type != rv2->type)
         avm_error("Assigning diff types is illegal");
     else {
-        std::cout << "[AVM DEBUG] Comparing: (" << rv1->numVal << ") with ("
-                  << rv2->numVal << ")" << std::endl;
+        std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal
+                  << ") with (" << rv2->data.numVal << ")" << std::endl;
         switch (instr->opcode) {
             case jge_v:
                 std::cout << "[AVM DEBUG] jge \n";
-                result = jge_impl(rv1->numVal, rv2->numVal);
+                result = jge_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jgt_v:
                 std::cout << "[AVM DEBUG] jgt \n";
-                result = jgt_impl(rv1->numVal, rv2->numVal);
+                result = jgt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jle_v:
                 std::cout << "[AVM DEBUG] jle \n";
-                result = jle_impl(rv1->numVal, rv2->numVal);
+                result = jle_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jlt_v:
                 std::cout << "[AVM DEBUG] jlt \n";
-                result = jlt_impl(rv1->numVal, rv2->numVal);
+                result = jlt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             default:
                 avm_error("Internal error: Unhandled relational jump opcode.");
@@ -67,10 +67,10 @@ void execute_rljump(instruction* instr) {
 }
 
 unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2) {
-    return (op1->numVal == op2->numVal);
+    return (op1->data.numVal == op2->data.numVal);
 }
 unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
-    return (op1->strVal == op2->strVal);
+    return (op1->data.strVal == op2->data.strVal);
 }
 
 void execute_jump(instruction* instr) {

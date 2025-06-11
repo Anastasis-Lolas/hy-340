@@ -62,6 +62,7 @@ void avm_call_functor(avm_table* table) {  // flag edw
 }
 
 void avm_callibfunc(std::string funcName) {
+    DEBUG_check("avm_callibfunc: " + funcName);
     library_func_t f = avm_getlibraryfunc(funcName);
     if (!f) {
         avm_error("unsupported library function '" + funcName + "'called!");
@@ -80,7 +81,6 @@ void avm_callibfunc(std::string funcName) {
 void execute_pusharg(instruction* instr) {
     avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
     assert(arg);
-
     avm_assign(&stack[top], arg);
     ++totalActuals;
     avm_dec_top();
@@ -97,7 +97,7 @@ void execute_funcenter(instruction* instr) {
     top = top - f->localSize;
 }
 void execute_funcexit(instruction*) {
-    unsigned oldTop = top;
+    int oldTop = top;
     top = avm_get_envvalue(topsp + AVM_SAVEDTOP_OFFSET);
     pc = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
     topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -130,7 +130,7 @@ unsigned avm_totalactuals(void) {
 
 avm_memcell* avm_getactual(unsigned i) {
     assert(i < avm_totalactuals());
-    return &stack[top + AVM_STACKENV_SIZE + 1 + i];
+    return &stack[topsp + AVM_STACKENV_SIZE + 1 + i];
 }
 
 void avm_registerlibfunc(std::string id, library_func_t addr) {
@@ -176,6 +176,7 @@ void libfunc_print() {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i) {
         avm_memcell* m = avm_getactual(i);
+        DEBUG_check("libfunc_print: " + avm_toString(m));
         if (m->type == userfunc_m) {
             userfunc* f = avm_getfuncinfo(m->data.funcVal);
             if (f) {
@@ -257,7 +258,7 @@ void libfunc_objectmemberkeys() {
         retval.type = nil_m;
         return;
     }
-    avm_table* table = avm_tablenew();
+    // avm_table* table = avm_tablenew();
     // flag gia evi
     // Add keys from number-indexed map --> avm_tablesetelem(new_table, &ax,
     // key);

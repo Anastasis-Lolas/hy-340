@@ -2,6 +2,7 @@
 
 #include <iomanip>
 
+extern unsigned int total_globals;
 std::vector<incomplete_jump *> incjumps_vec;
 std::vector<std::string> string_vec_consts;
 std::vector<double> num_vec_consts;
@@ -65,6 +66,7 @@ void make_operand(expr *e, vmarg *arg) {
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
+                    
                     arg->type = global_a;
                     break;
                 case LLOCAL:
@@ -692,6 +694,7 @@ void generate_binary_readable(const std::string &outname) {
     // We now have the instruction table
     // since the print is working right we have the 4 'byte' code but it is not
     // yet encoded
+    
     unsigned int total_instructions = instruction_table.size();
     outfile.write(reinterpret_cast<const char *>(&total_instructions),
                   sizeof(unsigned int));
@@ -720,6 +723,10 @@ void generate_binary_readable(const std::string &outname) {
                 outfile.write(
                     reinterpret_cast<const char *>(&current_vmarg->val),
                     sizeof(unsigned int));
+
+
+               
+
             } else {
                 uint8_t type_byte =
                     static_cast<uint8_t>(default_undef_vmarg.type);
@@ -731,6 +738,11 @@ void generate_binary_readable(const std::string &outname) {
             }
         }
     }
+
+
+    outfile.write(reinterpret_cast<const char *>(&total_globals), sizeof(int));
+
+    std::cout<<"Totals : " << total_globals<<std::endl;
 
     // stop writing to this folder ?
     outfile.close();

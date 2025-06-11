@@ -4,12 +4,13 @@
 #include <iostream>
 #include <vector>
 
-
+unsigned int total_globals=0;
 
 /*Creates a new entry for the Symbol Table */
 SymbolTableEntry_T SymTableEntry_new(SymbolType type, std::string name,
                                      unsigned int scope, unsigned int line,
                                      int offset, std::vector<void *> args) {
+    if(scope == 0 ) total_globals++;
     SymbolTableEntry_T entry = new SymbolTableEntry;
     if (entry == NULL) {
         printf("error-out of memory\n");

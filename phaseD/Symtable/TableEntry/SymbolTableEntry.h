@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+extern unsigned int total_globals;
+
 typedef struct Variable {
     std::string name;
     unsigned int scope;

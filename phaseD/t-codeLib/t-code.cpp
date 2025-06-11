@@ -62,11 +62,10 @@ void make_operand(expr *e, vmarg *arg) {
         case arithexpr_e:
         case boolexpr_e:
         case newtable_e: {
-            assert(e->sym);
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
-                    
+
                     arg->type = global_a;
                     break;
                 case LLOCAL:
@@ -306,19 +305,18 @@ void generate_UMINUS(quad *q) {
     instr->opcode = mul_v;
     instr->srcLine = q->line;
 
-    // arg1 = -1
 
-    make_numberoperand(&instr->arg1, -1.0);
+    if (q->arg1) make_operand(q->arg1, &instr->arg1);
 
+    make_numberoperand(&instr->arg2, -1);
 
-    make_operand(q->arg1, &instr->arg2);
-    make_operand(q->result, &instr->result);
+    if (q->result) make_operand(q->result, &instr->result);
 
     vm_emit(instr);
 }
 
 void generate_NOP(quad *) {
-    instruction *t = (instruction *)malloc(sizeof(instruction));
+    instruction *t = new instruction();
     t->opcode = not_v;
     // ??
     t->arg1.type = undef_a;
@@ -491,20 +489,40 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 void generate_instructions() {
-    // pre‐initialize all taddress to “not set”:
-    for (auto &q : quad_table) q->taddress = (unsigned)-1;
+    printf("Generating instructions...\n");
+    for (auto &q : quad_table) {
+        if (q) q->taddress = (unsigned)-1;
+    }
 
     for (auto *q : quad_table) {
-        if (!q) continue;
-        // now q->taddress marks “this quad’s instr idx”:
+        if (!q) {
+            printf("Skipped null quad.\n");
+            continue;
+        }
+
         q->taddress = nextinstructionlabel();
 
-        // dispatch to generate_*()
+        // Debug print before calling the generator
+        printf("Processing quad: op = %d\n", q->op);
+
+        if (q->op < 0 || q->op >= 27) {
+            printf("Invalid op code: %d\n", q->op);
+            continue;  // or handle error
+        }
+
+        if (!generators[q->op]) {
+            printf("Null generator for op code: %d\n", q->op);
+            continue;  // or handle error
+        }
+
+        printf("Calling generator for op = %d...\n", q->op);
         generators[q->op](q);
+        printf("Finished generator for op = %d.\n", q->op);
     }
 
     patch_incomplete_jumps();
 }
+
 void free_instructions() {
     for (auto inst : instruction_table) {
         if (inst) free(inst);
@@ -694,7 +712,7 @@ void generate_binary_readable(const std::string &outname) {
     // We now have the instruction table
     // since the print is working right we have the 4 'byte' code but it is not
     // yet encoded
-    
+
     unsigned int total_instructions = instruction_table.size();
     outfile.write(reinterpret_cast<const char *>(&total_instructions),
                   sizeof(unsigned int));
@@ -725,8 +743,6 @@ void generate_binary_readable(const std::string &outname) {
                     sizeof(unsigned int));
 
 
-               
-
             } else {
                 uint8_t type_byte =
                     static_cast<uint8_t>(default_undef_vmarg.type);
@@ -742,72 +758,78 @@ void generate_binary_readable(const std::string &outname) {
 
     outfile.write(reinterpret_cast<const char *>(&total_globals), sizeof(int));
 
-    std::cout<<"Totals : " << total_globals<<std::endl;
+    std::cout << "Totals : " << total_globals << std::endl;
 
     // stop writing to this folder ?
     outfile.close();
 }
 
-void generate_txt_read(const std::string &outname){
-  std::ofstream outfile(outname);
+void generate_txt_read(const std::string &outname) {
+    std::ofstream outfile(outname);
     if (!outfile.is_open()) {
         return;
     }
 
-    std::string argCodes[] = {
-        "label_a", "global_a", "formal_a", "local_a", "number_a",
-        "string_a", "bool_a", "nil_a", "userfunc_a", "libfunc_a",
-        "retval_a", "undef_a"
-    };
+    std::string argCodes[] = {"label_a",    "global_a",  "formal_a", "local_a",
+                              "number_a",   "string_a",  "bool_a",   "nil_a",
+                              "userfunc_a", "libfunc_a", "retval_a", "undef_a"};
 
-    outfile << "========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
+    outfile
+        << "========= DEBUG PRINT: INSTRUCTIONS (Simple Aligned) =========\n";
     const int col_num = 4;
     const int col_opcode = 15;
     const int col_arg = 20;
     const int col_srcline = 10;
 
-    outfile << std::left << std::setw(col_num) << "No."
-            << std::left << std::setw(col_opcode) << "Opcode"
-            << std::left << std::setw(col_arg) << "Result"
-            << std::left << std::setw(col_arg) << "Arg1"
-            << std::left << std::setw(col_arg) << "Arg2"
-            << std::left << std::setw(col_srcline) << "SrcLine" << "\n";
-    
+    outfile << std::left << std::setw(col_num) << "No." << std::left
+            << std::setw(col_opcode) << "Opcode" << std::left
+            << std::setw(col_arg) << "Result" << std::left << std::setw(col_arg)
+            << "Arg1" << std::left << std::setw(col_arg) << "Arg2" << std::left
+            << std::setw(col_srcline) << "SrcLine" << "\n";
+
     int separator_length = col_num + col_opcode + (col_arg * 3) + col_srcline;
     outfile << std::string(separator_length, '-') << "\n";
 
     for (unsigned int i = 0; i < instruction_table.size(); ++i) {
-        instruction* inst = instruction_table[i];
+        instruction *inst = instruction_table[i];
         if (!inst) {
-            outfile << std::left << std::setw(col_num) << i << "null instruction pointer\n";
+            outfile << std::left << std::setw(col_num) << i
+                    << "null instruction pointer\n";
             continue;
         }
 
         outfile << std::left << std::setw(col_num) << i << " ";
-        outfile << std::left << std::setw(col_opcode) << vmopcode_to_string(inst->opcode);
+        outfile << std::left << std::setw(col_opcode)
+                << vmopcode_to_string(inst->opcode);
 
         std::string result_str = " ";
         if (inst->result.type != undef_a) {
-            result_str = argCodes[inst->result.type] + ":" + std::to_string(inst->result.val);
+            result_str = argCodes[inst->result.type] + ":" +
+                         std::to_string(inst->result.val);
         }
         outfile << std::left << std::setw(col_arg) << result_str;
 
         std::string arg1_str = " ";
         if (inst->arg1.type != undef_a) {
-            arg1_str = argCodes[inst->arg1.type] + ":" + std::to_string(inst->arg1.val);
+            arg1_str = argCodes[inst->arg1.type] + ":" +
+                       std::to_string(inst->arg1.val);
         }
         outfile << std::left << std::setw(col_arg) << arg1_str;
 
         std::string arg2_str = " ";
         if (inst->arg2.type != undef_a) {
-            arg2_str = argCodes[inst->arg2.type] + ":" + std::to_string(inst->arg2.val);
+            arg2_str = argCodes[inst->arg2.type] + ":" +
+                       std::to_string(inst->arg2.val);
         }
         outfile << std::left << std::setw(col_arg) << arg2_str;
 
-        outfile << std::left << std::setw(col_srcline) << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "") << "\n";
+        outfile << std::left << std::setw(col_srcline)
+                << (inst->srcLine > 0 ? std::to_string(inst->srcLine) : "")
+                << "\n";
     }
     outfile << std::string(separator_length, '-') << "\n";
-    outfile << "==============================================================\n";
+    outfile
+        << "==============================================================\n";
 
     outfile << "print_const_strings:\n";
     for (size_t i = 0; i < string_vec_consts.size(); ++i) {
@@ -821,8 +843,9 @@ void generate_txt_read(const std::string &outname){
 
     outfile << "print_userfuncs:\n";
     for (size_t i = 0; i < funcstack.size(); ++i) {
-        const auto& uf = funcstack[i];
-        outfile << i << " : ID=" << uf.id << ", Address=" << uf.address << ", Locals=" << uf.localSize << "\n";
+        const auto &uf = funcstack[i];
+        outfile << i << " : ID=" << uf.id << ", Address=" << uf.address
+                << ", Locals=" << uf.localSize << "\n";
     }
 
     outfile << "print_libfuncs:\n";

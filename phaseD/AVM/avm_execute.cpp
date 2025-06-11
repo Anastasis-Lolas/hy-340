@@ -85,7 +85,8 @@ execute_func_t executeFuncs[] = {
     execute_jgt,          execute_call,         execute_pusharg,
     execute_funcenter,    execute_funcexit,     execute_newtable,
     execute_tablegetelem, execute_tablesetelem, execute_nop,
-    execute_jump,         };
+    execute_jump,
+};
 
 
 void execute_and(instruction *) {}
@@ -96,16 +97,13 @@ void execute_not(instruction *) {}
 
 
 void execute_cycle(void) {
-    
-    while(1){
+    while (1) {
         if (executionFinished)
             break;
         else if (pc == exec_instructions.size()) {
-           
             executionFinished = 1;
             break;
         } else {
-           
             assert(pc < exec_instructions.size());
             instruction *instr = &exec_instructions[pc];
             assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
@@ -123,7 +121,8 @@ void read_and_print_avm_binary(const std::string &filename) {
     if (!infile.is_open()) return;
 
     unsigned int magic_number_read;
-    infile.read(reinterpret_cast<char *>(&magic_number_read), sizeof(unsigned int));
+    infile.read(reinterpret_cast<char *>(&magic_number_read),
+                sizeof(unsigned int));
     if (!infile || magic_number_read != 340200501) return;
 
     unsigned int total_strings;
@@ -147,11 +146,14 @@ void read_and_print_avm_binary(const std::string &filename) {
     }
 
     unsigned int total_user_funcs;
-    infile.read(reinterpret_cast<char *>(&total_user_funcs), sizeof(unsigned int));
+    infile.read(reinterpret_cast<char *>(&total_user_funcs),
+                sizeof(unsigned int));
     for (unsigned int i = 0; i < total_user_funcs; ++i) {
         userfunc uf;
-        infile.read(reinterpret_cast<char *>(&uf.address), sizeof(unsigned int));
-        infile.read(reinterpret_cast<char *>(&uf.localSize), sizeof(unsigned int));
+        infile.read(reinterpret_cast<char *>(&uf.address),
+                    sizeof(unsigned int));
+        infile.read(reinterpret_cast<char *>(&uf.localSize),
+                    sizeof(unsigned int));
         unsigned int id_len;
         infile.read(reinterpret_cast<char *>(&id_len), sizeof(unsigned int));
         uf.id.resize(id_len);
@@ -162,10 +164,12 @@ void read_and_print_avm_binary(const std::string &filename) {
     }
 
     unsigned int total_lib_funcs;
-    infile.read(reinterpret_cast<char *>(&total_lib_funcs), sizeof(unsigned int));
+    infile.read(reinterpret_cast<char *>(&total_lib_funcs),
+                sizeof(unsigned int));
     for (unsigned int i = 0; i < total_lib_funcs; ++i) {
         unsigned int lib_str_len;
-        infile.read(reinterpret_cast<char *>(&lib_str_len), sizeof(unsigned int));
+        infile.read(reinterpret_cast<char *>(&lib_str_len),
+                    sizeof(unsigned int));
         std::string s_lib(lib_str_len, '\0');
         infile.read(&s_lib[0], lib_str_len);
         char null_terminator_lib;
@@ -174,11 +178,13 @@ void read_and_print_avm_binary(const std::string &filename) {
     }
 
     unsigned int total_instructions;
-    infile.read(reinterpret_cast<char *>(&total_instructions), sizeof(unsigned int));
+    infile.read(reinterpret_cast<char *>(&total_instructions),
+                sizeof(unsigned int));
     for (unsigned int i = 0; i < total_instructions; ++i) {
         if (!infile.good()) break;
         uint8_t opcode_byte_read;
-        infile.read(reinterpret_cast<char *>(&opcode_byte_read), sizeof(uint8_t));
+        infile.read(reinterpret_cast<char *>(&opcode_byte_read),
+                    sizeof(uint8_t));
         vmopcode current_opcode = static_cast<vmopcode>(opcode_byte_read);
 
         vmarg result_read, arg1_read, arg2_read;
@@ -186,17 +192,15 @@ void read_and_print_avm_binary(const std::string &filename) {
 
         for (int k = 0; k < 3; ++k) {
             uint8_t type_byte_read;
-            infile.read(reinterpret_cast<char *>(&type_byte_read), sizeof(uint8_t));
+            infile.read(reinterpret_cast<char *>(&type_byte_read),
+                        sizeof(uint8_t));
             vmarg_ptrs_read[k]->type = static_cast<vmarg_t>(type_byte_read);
-            infile.read(reinterpret_cast<char *>(&vmarg_ptrs_read[k]->val), sizeof(unsigned int));
+            infile.read(reinterpret_cast<char *>(&vmarg_ptrs_read[k]->val),
+                        sizeof(unsigned int));
         }
 
-          instruction inst = {
-            current_opcode,
-            result_read,
-            arg1_read,
-            arg2_read,
-            0,
+        instruction inst = {
+            current_opcode, result_read, arg1_read, arg2_read, 0,
         };
 
         exec_instructions.push_back(inst);
@@ -205,5 +209,67 @@ void read_and_print_avm_binary(const std::string &filename) {
     infile.close();
 }
 
+#include <iostream>
 
+void print_string_consts() {
+    std::cout << "=== String Constants ===\n";
+    for (size_t i = 0; i < string_consts.size(); ++i)
+        std::cout << i << ": \"" << string_consts[i] << "\"\n";
+    std::cout << '\n';
+}
 
+void print_number_consts() {
+    std::cout << "=== Number Constants ===\n";
+    for (size_t i = 0; i < nums_consts.size(); ++i)
+        std::cout << i << ": " << nums_consts[i] << '\n';
+    std::cout << '\n';
+}
+
+void print_libfuncs() {
+    std::cout << "=== Library Functions ===\n";
+    for (size_t i = 0; i < libfuncs.size(); ++i)
+        std::cout << i << ": " << libfuncs[i] << '\n';
+    std::cout << '\n';
+}
+
+void print_userfuncs() {
+    std::cout << "=== User Functions ===\n";
+    for (size_t i = 0; i < userfuncs.size(); ++i)
+        std::cout << i << ": " << userfuncs[i].id
+                  << " | address: " << userfuncs[i].address
+                  << " | locals: " << userfuncs[i].localSize << '\n';
+    std::cout << '\n';
+}
+
+void print_vmarg(const vmarg &arg) {
+    if (arg.type == label_a) {
+        std::cout << "label:" << arg.val;
+    } else {
+        std::cout << "type:" << static_cast<int>(arg.type)
+                  << ", val:" << arg.val;
+    }
+}
+
+void print_instructions() {
+    std::cout << "=== Instructions ===\n";
+    for (size_t i = 0; i < exec_instructions.size(); ++i) {
+        const instruction &inst = exec_instructions[i];
+        std::cout << i << ": Opcode = " << static_cast<int>(inst.opcode);
+        std::cout << ", Result = [";
+        print_vmarg(inst.result);
+        std::cout << "], Arg1 = [";
+        print_vmarg(inst.arg1);
+        std::cout << "], Arg2 = [";
+        print_vmarg(inst.arg2);
+        std::cout << "]\n";
+    }
+    std::cout << '\n';
+}
+
+void print_all() {
+    print_string_consts();
+    print_number_consts();
+    print_libfuncs();
+    print_userfuncs();
+    print_instructions();
+}

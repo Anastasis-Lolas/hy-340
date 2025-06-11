@@ -30,7 +30,7 @@ extern std::string typeStrings[];
 #define execute_jle execute_rljump
 #define execute_jlt execute_rljump
 
-#define AVM_MAX_INSTRUCTIONS (unsigned)nop_v
+#define AVM_MAX_INSTRUCTIONS (unsigned)nop_v + 1
 #define AVM_ENDING_PC codeSize
 
 
@@ -147,5 +147,12 @@ void execute_funcexit(instruction* unused);
 
 //----------Binary File Reading and Printing----------//
 void read_and_print_avm_binary(const std::string& filename);
+void print_string_consts();
+void print_number_consts();
+void print_libfuncs();
+void print_userfuncs();
+void print_vmarg(const vmarg& arg);
+void print_instructions();
+void print_all();
 
 #endif  // AVM_EXECUTE_H

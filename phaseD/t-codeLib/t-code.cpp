@@ -62,10 +62,7 @@ void make_operand(expr *e, vmarg *arg) {
         case arithexpr_e:
         case boolexpr_e:
         case newtable_e: {
-<<<<<<< HEAD
             
-=======
->>>>>>> upstream/main
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -311,7 +308,6 @@ void generate_UMINUS(quad *q) {
  
  
 
-<<<<<<< HEAD
     if (q->arg1)
     make_operand(q->arg1, &instr->arg1);  
 
@@ -319,14 +315,6 @@ void generate_UMINUS(quad *q) {
 
     if (q->result)
     make_operand(q->result, &instr->result); 
-=======
-
-    if (q->arg1) make_operand(q->arg1, &instr->arg1);
-
-    make_numberoperand(&instr->arg2, -1);
-
-    if (q->result) make_operand(q->result, &instr->result);
->>>>>>> upstream/main
 
     vm_emit(instr);
 }
@@ -512,26 +500,12 @@ void generate_instructions() {
 
     for (auto *q : quad_table) {
         if (!q) {
-            printf("Skipped null quad.\n");
             continue;
         }
 
         q->taddress = nextinstructionlabel();
 
-        // Debug print before calling the generator
-        printf("Processing quad: op = %d\n", q->op);
 
-        if (q->op < 0 || q->op >= 27) {
-            printf("Invalid op code: %d\n", q->op);
-            continue;  // or handle error
-        }
-
-        if (!generators[q->op]) {
-            printf("Null generator for op code: %d\n", q->op);
-            continue;  // or handle error
-        }
-
-        printf("Calling generator for op = %d...\n", q->op);
         generators[q->op](q);
         printf("Finished generator for op = %d.\n", q->op);
     }

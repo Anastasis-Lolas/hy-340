@@ -416,20 +416,18 @@ void generate_RETURN(quad *q) {
     t->srcLine = q->line;
 
     if (q->result) {
-        make_operand(q->result, &t->arg1); // The value to return is arg1
+        make_operand(q->result, &t->arg1); 
     } else {
-        // If there's no explicit return value (e.g., 'return;'),
-        // it implicitly returns 'nil'. You might want to assign nil_a here.
-        t->arg1.type = nil_a; // Assuming nil_a exists for nil type
+      
+        t->arg1.type = nil_a; 
         t->arg1.val = 0;
     }
 
     t->arg2.type = undef_a;
     t->arg2.val = 0;
-
    
     make_retvaloperand(&t->result); 
-   
+
     vm_emit(t);
 }
 

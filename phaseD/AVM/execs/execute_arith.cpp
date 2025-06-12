@@ -38,7 +38,7 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
     if (lv->type == string_m)
         new (&lv->data.strVal) std::string(rv->data.strVal);
     else if (lv->type == table_m) {
-        assert(0);
+        //assert(0);
         avm_tableincrefcounter(lv->data.tableVal);
     }
 }

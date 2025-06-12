@@ -215,8 +215,12 @@ void libfunc_print() {
         } else if (m->type == libfunc_m) {
             std::cout << "Library Function: " << m->data.libfuncVal;
         } else if (m->type == table_m) {
+<<<<<<< HEAD
+             std::cout << table_toString(m) << "\n";
+=======
             std::cout << table_toString(m);
             // assert(0);
+>>>>>>> upstream/main
         } else {
             std::cout << avm_toString(m);
         }

@@ -574,8 +574,9 @@ expr* newexpr(expr_t t) {
 }
 
 expr* newexpr_conststring(std::string str) {
-    expr* e = newexpr(conststring_e);
-    e->sym = NULL;
+    // expr* e = newexpr2(conststring_e);
+    expr* e = new expr();
+    e->type = conststring_e;
     e->strConst = str;
     return e;
 }

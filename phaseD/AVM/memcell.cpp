@@ -91,7 +91,7 @@ void avm_memcellclear(avm_memcell* m) {
 }
 
 void memclear_string(avm_memcell* m) {
-    assert(!m->data.strVal.empty());
+    // assert(!m->data.strVal.empty());
     m->data.strVal.~basic_string();
     // delete m->strVal;
 }

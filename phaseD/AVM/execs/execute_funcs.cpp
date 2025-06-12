@@ -289,10 +289,40 @@ void libfunc_objectmemberkeys() {
         retval.type = nil_m;
         return;
     }
-    // avm_table* table = avm_tablenew();
     // flag gia evi
-    // Add keys from number-indexed map --> avm_tablesetelem(new_table, &ax,
-    // key);
+    avm_memcellclear(&retval);
+    retval.type = table_m;
+    retval.data.tableVal = avm_tablenew();
+    avm_tableincrefcounter(retval.data.tableVal);
+
+    // pointers to the source and destination tables
+    avm_table* src_table = m->data.tableVal;
+    avm_table* keys_table = retval.data.tableVal;
+    unsigned int counter = 0;
+    // iterate through all key-types of the source table
+    for (auto const& [key, val] : *src_table->numIndexed) {
+        avm_memcell new_index, new_content;
+
+        new_index.type = number_m;
+        new_index.data.numVal = counter++;
+
+        new_content.type = number_m;
+        new_content.data.numVal = key;
+
+        avm_tablesetelem(keys_table, &new_index, &new_content);
+    }
+    // ηandle string keys
+    for (auto const& [key, val] : *src_table->strIndexed) {
+        avm_memcell new_index, new_content;
+        new_index.type = number_m;
+        new_index.data.numVal = counter++;
+        new_content.type = string_m;
+        new (&new_content.data.strVal) std::string(key);
+
+        avm_tablesetelem(keys_table, &new_index, &new_content);
+
+        new_content.data.strVal.~basic_string();
+    }
 }
 void libfunc_objecttotalmembers() {
     unsigned n = avm_totalactuals();
@@ -336,6 +366,17 @@ void libfunc_objectcopy() {
     // flag gia evi
     //  Copy number-indexed elements ==> avm_tablemembercopy
 
+    // handle arithmetic keys
+    for (auto const& [key, val] : *src_table->numIndexed) {
+        avm_assign(&(*new_table->numIndexed)[key],
+                   const_cast<avm_memcell*>(&val));
+    }
+    // handle string keys
+    for (auto const& [key, val] : *src_table->strIndexed) {
+        avm_assign(&(*new_table->strIndexed)[key],
+                   const_cast<avm_memcell*>(&val));
+    }
+    new_table->total = src_table->total;
     retval.type = table_m;
     retval.data.tableVal = new_table;
     new_table->total = src_table->total;

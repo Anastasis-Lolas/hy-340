@@ -2,11 +2,12 @@
 #include "../avm_helper.h"
 #include "../avm_table.h"
 
-
+#define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
 extern avm_memcell stack[AVM_STACKSIZE];
 
 
 void execute_newtable(instruction* instr) {
+       DEBUG_check("execute_newtable");
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
     assert(lv && (&stack[N - 1] >= lv && lv > &stack[top] || lv == &retval));
 
@@ -15,10 +16,12 @@ void execute_newtable(instruction* instr) {
     lv->type = table_m;
     lv->data.tableVal = avm_tablenew();
     avm_tableincrefcounter(lv->data.tableVal);
+      DEBUG_check("New table created and assigned");
 }
 
 
 void execute_tablegetelem(instruction* instr) {
+      DEBUG_check("execute_tablegetelem");
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
     avm_memcell* t = avm_translate_operand(&instr->arg1, (avm_memcell*)0);
     avm_memcell* i = avm_translate_operand(&instr->arg2, &ax);
@@ -35,8 +38,9 @@ void execute_tablegetelem(instruction* instr) {
 
     else {
         avm_memcell* content = avm_tablegetelem(t->data.tableVal, i);
-        if (content)
+        if (content){
             avm_assign(lv, content);
+            DEBUG_check("Table element found and assigned");}
         else {
             std::string ts = avm_toString(t);
             std::string is = avm_toString(i);
@@ -54,8 +58,10 @@ void execute_tablesetelem(instruction* instr) {
 
     if (t->type != table_m)
         avm_error("Illegal use of type " + typeStrings[t->type] + " as table!");
-    else
+    else{
         avm_tablesetelem(t->data.tableVal, i, c);
+                DEBUG_check("Table element set: key = " + avm_toString(i) + ", value = " + avm_toString(c));
+    }
 }
 
 void avm_push_table_arg(avm_table* t) {
@@ -63,4 +69,5 @@ void avm_push_table_arg(avm_table* t) {
     avm_tableincrefcounter(stack[top].data.tableVal = t);
     ++totalActuals;
     avm_dec_top();
+      DEBUG_check("Table argument pushed; totalActuals = " + std::to_string(totalActuals));
 }

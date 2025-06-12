@@ -189,13 +189,13 @@ void libfunc_print() {
         } else if (m->type == libfunc_m) {
             std::cout << "Library Function: " << m->data.libfuncVal << "\n";
         } else if (m->type == table_m) {
-            // Assuming avm_table has a toString method or similar flag gia evi
-            assert(0);
+             std::cout << table_toString(m) << "\n";
         } else {
             std::cout << avm_toString(m) << "\n";
         }
     }
 }
+
 void libfunc_input() {
     unsigned n = avm_totalactuals();
     if (n != 0) {

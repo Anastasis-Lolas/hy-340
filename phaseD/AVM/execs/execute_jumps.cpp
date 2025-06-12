@@ -13,7 +13,7 @@ double jle_impl(double x, double y) { return x <= y; }
 double jlt_impl(double x, double y) { return x < y; }
 
 void execute_rljump(instruction* instr) {
-    std::cout << "[AVM DEBUG] relational!\n";
+   // std::cout << "[AVM DEBUG] relational!\n";
     assert(instr->result.type == label_a);
 
     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
@@ -32,23 +32,23 @@ void execute_rljump(instruction* instr) {
     else if (rv1->type != rv2->type)
         avm_error("Assigning diff types is illegal");
     else {
-        std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal
-                  << ") with (" << rv2->data.numVal << ")" << std::endl;
+        // std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal
+        //           << ") with (" << rv2->data.numVal << ")" << std::endl;
         switch (instr->opcode) {
             case jge_v:
-                std::cout << "[AVM DEBUG] jge \n";
+                //std::cout << "[AVM DEBUG] jge \n";
                 result = jge_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jgt_v:
-                std::cout << "[AVM DEBUG] jgt \n";
+                //std::cout << "[AVM DEBUG] jgt \n";
                 result = jgt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jle_v:
-                std::cout << "[AVM DEBUG] jle \n";
+                //std::cout << "[AVM DEBUG] jle \n";
                 result = jle_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jlt_v:
-                std::cout << "[AVM DEBUG] jlt \n";
+                //std::cout << "[AVM DEBUG] jlt \n";
                 result = jlt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             default:
@@ -73,7 +73,7 @@ unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
 void execute_jump(instruction* instr) {
     assert(instr->result.type == label_a);
     unsigned int target_pc = instr->result.val;
-    std::cout << "[AVM DEBUG] JUMP to instruction: " << target_pc << std::endl;
+   // std::cout << "[AVM DEBUG] JUMP to instruction: " << target_pc << std::endl;
     pc = instr->result.val;
 }
 
@@ -111,7 +111,34 @@ void execute_nop(instruction*) {
 }
 
 
-void execute_jne(instruction* instr) { assert(instr->result.type == label_a); }
+void execute_jne(instruction* instr) {
+    
+    assert(instr->result.type == label_a);
+    avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
+    avm_memcell* rv2 = avm_translate_operand(&instr->arg2, &bx);
+    unsigned char result = 0;
+
+    if (rv1->type == undef_m || rv2->type == undef_m)
+        avm_error("'undef' involved in equality!");
+
+    else if (rv1->type == nil_m || rv2->type == nil_m)
+        result = rv1->type == nil_m && rv2->type == nil_m;
+
+    else if (rv1->type == bool_m || rv2->type == bool_m)
+        result = (avm_tobool(rv1) != avm_tobool(rv2));
+
+    else if (rv1->type != rv2->type)
+        avm_error(typeStrings[rv1->type] + std::string(" ") +
+                  typeStrings[rv2->type] + " is illegal!");
+     else {
+        unsigned char equal = (*equal_check_dispatcher[rv1->type])(rv1, rv2);
+        result = !equal;;
+    }
+
+    if (!executionFinished && result) pc = instr->result.val;
+
+
+}
 void execute_jle(instruction*);
 void execute_jge(instruction*);
 void execute_jlt(instruction*);

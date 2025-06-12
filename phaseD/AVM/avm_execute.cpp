@@ -113,21 +113,7 @@ void execute_cycle(void) {
 
             if (instr->srcLine) currLine = instr->srcLine;
             unsigned oldPC = pc;
-            std::cout << "Executed instruction at PC: " << oldPC
-                      << ", Opcode: " << vmopcode_to_string(instr->opcode)
-                      << std::endl;
             executeFuncs[instr->opcode](instr);
-            if (pc == 1) {
-                std::cout << "\n=== STACK ===\n";
-                for (int i = top; i < AVM_STACKSIZE; ++i) {
-                    if (stack[i].type != undef_m) {
-                        std::cout << "[" << i << "]: ";
-                        std::cout << avm_toString(&stack[i])
-                                  << " (type = " << stack[i].type << ")\n";
-                    }
-                }
-                std::cout << "===================\n";
-            }
             if (pc == oldPC) ++pc;
         }
     }

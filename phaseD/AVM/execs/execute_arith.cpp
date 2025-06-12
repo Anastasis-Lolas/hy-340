@@ -11,19 +11,10 @@ arithmetic_func_t arithmeticFuncs[] = {add_impl, sub_impl, mul_impl, div_impl,
 void execute_assign(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
     avm_memcell* rv = avm_translate_operand(&instr->arg1, &ax);
-
-    // assert(lv);
-    // assert(&stack[N - 1] >= lv);
-    // std::cout << "lv = " << lv - stack << ", top = " << top << std::endl;
-    // assert(lv >= &stack[top]);
-    // assert(lv == &retval);
-    // assert(rv);  // should do similar assertion tests here
     if (rv == &retval) {
         avm_memcellclear(rv);
         return;
     }
-    std::cout << "Executing assign: lv = " << avm_toString(lv)
-              << ", rv = " << avm_toString(rv) << std::endl;
     assert(lv);
     assert(rv);
     avm_assign(lv, rv);
@@ -31,7 +22,6 @@ void execute_assign(instruction* instr) {
 
 
 void avm_assign(avm_memcell* lv, avm_memcell* rv) {
-    static int i = 0;
     if (lv == rv) return;
 
     if (lv->type == table_m && rv->type == table_m &&
@@ -41,37 +31,10 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
     if (rv->type == undef_m) {
         avm_warning("assigning from 'undef' content!");
     }
-    if (i == 5) {
-        std::cout << "\n\n===BEFORE CLEANING STACK " << " ===\n";
-        for (int i = top; i < AVM_STACKSIZE; ++i) {
-            if (stack[i].type != undef_m) {
-                std::cout << "[" << i << "]: ";
-                std::cout << avm_toString(&stack[i])
-                          << " (type = " << stack[i].type << ")\n";
-            }
-        }
-        std::cout << "\n\n===================\n";
-    }
-    if (i == 5) {
-        std::cout << "Assigning from " << avm_toString(lv) << " to "
-                  << avm_toString(rv) << std::endl;
-    }
+
     avm_memcellclear(lv);
     memcpy(lv, rv, sizeof(avm_memcell));
 
-    if (i == 5) {
-        std::cout << "\n\n===AFTER CLEANING STACK " << ++i << " ===\n";
-        for (int i = top; i < AVM_STACKSIZE; ++i) {
-            if (stack[i].type != undef_m) {
-                std::cout << "[" << i << "]: ";
-                std::cout << avm_toString(&stack[i])
-                          << " (type = " << stack[i].type << ")\n";
-            }
-        }
-        std::cout << "\n\n===================\n";
-    } else {
-        i++;
-    }
     // lv->type = rv->type;
 
     if (lv->type == string_m)

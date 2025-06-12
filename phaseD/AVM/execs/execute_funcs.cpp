@@ -2,13 +2,14 @@
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
-#define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
-#define DEBUG_colored_red(msg) \
-    std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
-#define DEBUG_colored_green(msg) \
-    std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
-// #define DEBUG_check(msg)
+// #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
 // #define DEBUG_colored_red(msg)
+//     std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
+// #define DEBUG_colored_green(msg)
+//     std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
+#define DEBUG_check(msg)
+#define DEBUG_colored_green(msg)
+#define DEBUG_colored_red(msg)
 
 extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
@@ -84,18 +85,6 @@ void avm_callibfunc(std::string funcName) {
 }
 
 void execute_pusharg(instruction* instr) {
-    DEBUG_colored_green("====");
-    std::cout << "\n=== STACK ===\n";
-    for (int i = top; i < AVM_STACKSIZE; ++i) {
-        if (stack[i].type != undef_m) {
-            std::cout << "[" << i << "]: ";
-            std::cout << avm_toString(&stack[i]) << " (type = " << stack[i].type
-                      << ")\n";
-        }
-    }
-    std::cout << "===================\n";
-    DEBUG_colored_green("====");
-
     DEBUG_colored_red("execute_pusharg" << " | arg1: " << instr->arg1.type
                                         << ", val: " << instr->arg1.val
                                         << " | result: " << instr->result.type
@@ -130,15 +119,6 @@ void execute_funcexit(instruction*) {
                             std::to_string(oldTop));
         avm_memcellclear(&stack[oldTop]);
     }
-    std::cout << "\n=== STACK DUMP ===\n";
-    for (int i = top; i < AVM_STACKSIZE; ++i) {
-        if (stack[i].type != undef_m) {
-            std::cout << "[" << i << "]: ";
-            std::cout << avm_toString(&stack[i]) << " (type = " << stack[i].type
-                      << ")\n";
-        }
-    }
-    std::cout << "===================\n";
 }
 
 unsigned avm_get_envvalue(unsigned i) {
@@ -217,18 +197,18 @@ void libfunc_print() {
             userfunc* f = avm_getfuncinfo(m->data.funcVal);
             if (f) {
                 std::cout << "User Function: " << f->id << " at address "
-                          << f->address << "\n";
+                          << f->address;
             } else {
                 std::cout << "User Function: Unknown at address "
-                          << m->data.funcVal << "\n";
+                          << m->data.funcVal;
             }
         } else if (m->type == libfunc_m) {
-            std::cout << "Library Function: " << m->data.libfuncVal << "\n";
+            std::cout << "Library Function: " << m->data.libfuncVal;
         } else if (m->type == table_m) {
-            std::cout << table_toString(m) << "\n";
+            std::cout << table_toString(m);
             // assert(0);
         } else {
-            std::cout << avm_toString(m) << "\n";
+            std::cout << avm_toString(m);
         }
     }
 }

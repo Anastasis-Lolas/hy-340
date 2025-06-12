@@ -182,8 +182,9 @@ void libfunc_typeof() {
         " | to string: " + memcell_type_to_string(avm_getactual(0)->type));
     // new (&retval.data.strVal)
     // std::string(typeStrings[avm_getactual(0)->type]);
-    new (&retval.data.strVal)
-        std::string(memcell_type_to_string(avm_getactual(0)->type));
+    // new (&retval.data.strVal)
+    //     std::string(memcell_type_to_string(avm_getactual(0)->type));
+    new (&retval.data.strVal) std::string(typeStrings[avm_getactual(0)->type]);
     // retval.data.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {

@@ -326,7 +326,7 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     for (void* arg : args) {
         int different_line = find_line(name);
         std::string* cur_arg = static_cast<std::string*>(arg);
-        if (*cur_arg == name && different_line == yylineno) {
+        if (*cur_arg == name) {
             std::cerr << "Error at line " << yylineno
                       << ": duplicate argument '" << name << "' in function"
                       << std::endl;

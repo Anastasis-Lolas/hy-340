@@ -129,8 +129,7 @@ void execute_jne(instruction* instr) {
         avm_error("'undef' involved in equality!");
 
     else if (rv1->type == nil_m || rv2->type == nil_m)
-        result = rv1->type == nil_m && rv2->type == nil_m;
-
+        result = !(rv1->type == nil_m && rv2->type == nil_m);
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) != avm_tobool(rv2));
 

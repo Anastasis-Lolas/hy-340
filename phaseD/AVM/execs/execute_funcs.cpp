@@ -10,6 +10,9 @@
 #define DEBUG_check(msg)
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
+#define DEBUG_colored_red2(msg) \
+    std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
+
 
 extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
@@ -166,7 +169,14 @@ void libfunc_typeof() {
     }
     avm_memcellclear(&retval);
     retval.type = string_m;
-    new (&retval.data.strVal) std::string(typeStrings[avm_getactual(0)->type]);
+    DEBUG_colored_red(
+        "libfunc_typeof: " + avm_toString(avm_getactual(0)) +
+        " | type: " + typeStrings[avm_getactual(0)->type] +
+        " | to string: " + memcell_type_to_string(avm_getactual(0)->type));
+    // new (&retval.data.strVal)
+    // std::string(typeStrings[avm_getactual(0)->type]);
+    new (&retval.data.strVal)
+        std::string(memcell_type_to_string(avm_getactual(0)->type));
     // retval.data.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {
@@ -414,14 +424,14 @@ void libfunc_strtonum() {
     std::istringstream iss(arg->data.strVal);
     double number;
     if (iss >> number && iss.eof()) {
-        DEBUG_check("strtonum: converting string '" + arg->data.strVal +
-                    "' to number: " + std::to_string(number));
+        DEBUG_colored_red2("strtonum: converting string '" + arg->data.strVal +
+                           "' to number: " + std::to_string(number));
         retval.type = number_m;
         retval.data.numVal = number;
     } else {
         avm_warning("strtonum: invalid string format, returning 0");
-        retval.type = number_m;
-        retval.data.numVal = 0.0;
+        retval.type = nil_m;
+        // retval.data.numVal = 0.0;
     }
 }
 void libfunc_sqrt() {

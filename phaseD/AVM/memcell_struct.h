@@ -65,5 +65,6 @@ std::string libfunc_get(unsigned index);
 void memclear_string(avm_memcell* m);
 void memclear_table(avm_memcell* m);
 void avm_memcellclear(avm_memcell* m);
+std::string memcell_type_to_string(avm_memcell_t type);
 
 #endif

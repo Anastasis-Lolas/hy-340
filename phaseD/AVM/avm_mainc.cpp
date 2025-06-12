@@ -13,4 +13,5 @@ int main() {
     init_lib_functions();
     avm_initstack();
     execute_cycle();
+    std::cout << std::endl;
 }

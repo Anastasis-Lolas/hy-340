@@ -130,3 +130,26 @@ void avm_callsaveenvironment(void) {
     avm_push_envvalue(top + totalActuals + 2);
     avm_push_envvalue(topsp);
 }
+
+std::string memcell_type_to_string(avm_memcell_t type) {
+    switch (type) {
+        case number_m:
+            return "number_m";
+        case string_m:
+            return "string_m";
+        case bool_m:
+            return "bool_m";
+        case table_m:
+            return "table_m";
+        case userfunc_m:
+            return "userfunc_m";
+        case libfunc_m:
+            return "libfunc_m";
+        case nil_m:
+            return "nil_m";
+        case undef_m:
+            return "undef_m";
+        default:
+            return "invalid_type";
+    }
+}

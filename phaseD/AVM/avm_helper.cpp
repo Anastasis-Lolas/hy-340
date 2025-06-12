@@ -1,5 +1,6 @@
 #include "avm_helper.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 
@@ -77,11 +78,10 @@ std::string table_toString(avm_memcell* m) {
 
     std::vector<double> keys;
     keys.reserve(table->numIndexed->size());
-    for (const auto& p : *table->numIndexed)
-        keys.push_back(p.first);
+    for (const auto& p : *table->numIndexed) keys.push_back(p.first);
     std::sort(keys.begin(), keys.end());
 
-  
+
     for (size_t i = 0; i < keys.size(); ++i) {
         double idx = keys[i];
         avm_memcell& cell = (*table->numIndexed)[idx];
@@ -91,8 +91,7 @@ std::string table_toString(avm_memcell* m) {
         } else {
             oss << avm_toString(&cell);
         }
-        if (i + 1 < keys.size())
-            oss << ", ";
+        if (i + 1 < keys.size()) oss << ", ";
     }
 
     oss << " ]";

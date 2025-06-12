@@ -2,8 +2,14 @@
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
-#define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
-// #define DEBUG_check(msg)
+// #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
+// #define DEBUG_colored_red(msg)
+//     std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
+// #define DEBUG_colored_green(msg)
+//     std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
+#define DEBUG_check(msg)
+#define DEBUG_colored_green(msg)
+#define DEBUG_colored_red(msg)
 
 extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
@@ -12,12 +18,11 @@ void execute_call(instruction* instr) {
     DEBUG_check("execute_call");
 
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
-    DEBUG_check("sdasd");
     DEBUG_check("Function to call: " + avm_toString(func));
     assert(func);
+    avm_callsaveenvironment();  // Maybe outside switch?
     switch (func->type) {
         case userfunc_m: {
-            avm_callsaveenvironment();  // Maybe outside switch?
             pc = func->data.funcVal;
             assert(code[pc].opcode == funcenter_v);
             break;
@@ -30,7 +35,8 @@ void execute_call(instruction* instr) {
             avm_callibfunc(func->data.libfuncVal);
             break;
         case table_m:
-            avm_call_functor(func->data.tableVal);
+            assert(0);
+            // avm_callibfunc(func->data.tableVal);
             break;
 
         default:
@@ -68,7 +74,7 @@ void avm_callibfunc(std::string funcName) {
         avm_error("unsupported library function '" + funcName + "'called!");
         executionFinished = 1;
     } else {
-        avm_callsaveenvironment();
+        // avm_callsaveenvironment();
         topsp = top;
         totalActuals = 0;
         (*f)();
@@ -79,7 +85,14 @@ void avm_callibfunc(std::string funcName) {
 }
 
 void execute_pusharg(instruction* instr) {
+    DEBUG_colored_red("execute_pusharg" << " | arg1: " << instr->arg1.type
+                                        << ", val: " << instr->arg1.val
+                                        << " | result: " << instr->result.type
+                                        << ", val: " << instr->result.val);
+    // if (instr->arg1.val == 2) instr->arg1.val = 1;
     avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
+    DEBUG_colored_red("Argument to push: " + avm_toString(arg));
+
     assert(arg);
     avm_assign(&stack[top], arg);
     ++totalActuals;
@@ -102,6 +115,8 @@ void execute_funcexit(instruction*) {
     pc = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
     topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     while (++oldTop < top) { /* Intentionally ignoring first. */
+        DEBUG_colored_green("Clearing stack cell at index " +
+                            std::to_string(oldTop));
         avm_memcellclear(&stack[oldTop]);
     }
 }
@@ -151,7 +166,8 @@ void libfunc_typeof() {
     }
     avm_memcellclear(&retval);
     retval.type = string_m;
-    retval.data.strVal = typeStrings[avm_getactual(0)->type];
+    new (&retval.data.strVal) std::string(typeStrings[avm_getactual(0)->type]);
+    // retval.data.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -181,17 +197,22 @@ void libfunc_print() {
             userfunc* f = avm_getfuncinfo(m->data.funcVal);
             if (f) {
                 std::cout << "User Function: " << f->id << " at address "
-                          << f->address << "\n";
+                          << f->address;
             } else {
                 std::cout << "User Function: Unknown at address "
-                          << m->data.funcVal << "\n";
+                          << m->data.funcVal;
             }
         } else if (m->type == libfunc_m) {
-            std::cout << "Library Function: " << m->data.libfuncVal << "\n";
+            std::cout << "Library Function: " << m->data.libfuncVal;
         } else if (m->type == table_m) {
+<<<<<<< HEAD
              std::cout << table_toString(m) << "\n";
+=======
+            std::cout << table_toString(m);
+            // assert(0);
+>>>>>>> upstream/main
         } else {
-            std::cout << avm_toString(m) << "\n";
+            std::cout << avm_toString(m);
         }
     }
 }
@@ -212,7 +233,10 @@ void libfunc_input() {
 
     if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
         retval.type = string_m;
-        retval.data.strVal = input.substr(1, input.length() - 2);
+        new (&retval.data.strVal)
+            std::string(input.substr(1, input.length() - 2));
+
+        // retval.data.strVal = input.substr(1, input.length() - 2);
         DEBUG_check("Input string: " + retval.data.strVal);
         return;
     }
@@ -355,7 +379,8 @@ void libfunc_argument() {
             retval.data.numVal = arg_cell->data.numVal;
             break;
         case string_m:
-            retval.data.strVal = arg_cell->data.strVal;
+            new (&retval.data.strVal) std::string(arg_cell->data.strVal);
+            // retval.data.strVal = arg_cell->data.strVal;
             break;
         case bool_m:
             retval.data.boolVal = arg_cell->data.boolVal;

@@ -388,6 +388,8 @@ void generate_CALL(quad *q) {
     vm_emit(t);
 }
 
+
+
 void generate_GETRETVAL(quad *q) {
     assert(q);
 
@@ -414,17 +416,20 @@ void generate_RETURN(quad *q) {
     t->srcLine = q->line;
 
     if (q->result) {
-        make_operand(q->result, &t->arg1);
+        make_operand(q->result, &t->arg1); // The value to return is arg1
     } else {
-        t->arg1.type = undef_a;
+        // If there's no explicit return value (e.g., 'return;'),
+        // it implicitly returns 'nil'. You might want to assign nil_a here.
+        t->arg1.type = nil_a; // Assuming nil_a exists for nil type
         t->arg1.val = 0;
     }
 
     t->arg2.type = undef_a;
     t->arg2.val = 0;
-    t->result.type = undef_a;
-    t->result.val = 0;
 
+   
+    make_retvaloperand(&t->result); 
+   
     vm_emit(t);
 }
 
@@ -482,7 +487,7 @@ unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
 }
 
 void generate_instructions() {
-    printf("Generating instructions...\n");
+
     for (auto &q : quad_table) {
         if (q) q->taddress = (unsigned)-1;
     }
@@ -496,7 +501,6 @@ void generate_instructions() {
 
 
         generators[q->op](q);
-        printf("Finished generator for op = %d.\n", q->op);
     }
 
     patch_incomplete_jumps();

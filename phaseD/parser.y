@@ -315,7 +315,7 @@ term: LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
                                                     check_arith($2, "unary minus");
                                                     $$ = newexpr(arithexpr_e);
                                                     $$->sym = newtemp();
-                                                   emit(uminus, NULL, $2, $$, -1, yylineno);}
+                                                   emit(uminus, $2, $2, $$, -1, yylineno);}
     | NOT expr
                                                     { 
                                                     DEBUG_REDUCE("term -> not expr");

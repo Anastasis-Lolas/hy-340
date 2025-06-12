@@ -39,6 +39,7 @@ typedef void (*library_func_t)(void);
 
 // externs
 //======
+extern std::vector<instruction> exec_instructions;
 extern std::vector<std::string> string_consts;
 extern std::vector<double> nums_consts;
 extern std::vector<std::string> libfuncs;

@@ -57,7 +57,7 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             return reg;
         case userfunc_a:
             reg->type = userfunc_m;
-            reg->data.funcVal = arg->val;
+            reg->data.funcVal = userfuncs[arg->val].address;
             return reg;
         case libfunc_a:  // 10
             reg->type = libfunc_m;
@@ -65,7 +65,8 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
             new (&reg->data.libfuncVal) std::string(tempStr);
             return reg;
         default:
-            std::cerr << "Invalid operand type: " << arg->type << std::endl;
+            avm_error("Invalid operand type: " + vmarg_t_to_string(arg->type) +
+                      "\n");
             assert(0);
     }
 }
@@ -151,5 +152,35 @@ std::string memcell_type_to_string(avm_memcell_t type) {
             return "undef_m";
         default:
             return "invalid_type";
+    }
+}
+std::string vmarg_t_to_string(vmarg_t type) {
+    switch (type) {
+        case label_a:
+            return "label_a";
+        case global_a:
+            return "global_a";
+        case formal_a:
+            return "formal_a";
+        case local_a:
+            return "local_a";
+        case number_a:
+            return "number_a";
+        case string_a:
+            return "string_a";
+        case bool_a:
+            return "bool_a";
+        case nil_a:
+            return "nil_a";
+        case userfunc_a:
+            return "userfunc_a";
+        case libfunc_a:
+            return "libfunc_a";
+        case retval_a:
+            return "retval_a";
+        case undef_a:
+            return "undef_a";
+        default:
+            return "unknown_arg_type";
     }
 }

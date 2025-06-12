@@ -161,6 +161,7 @@ void read_and_print_avm_binary(const std::string &filename) {
         userfunc uf;
         infile.read(reinterpret_cast<char *>(&uf.address),
                     sizeof(unsigned int));
+        std::cout << "User function address: " << uf.address << std::endl;
         infile.read(reinterpret_cast<char *>(&uf.localSize),
                     sizeof(unsigned int));
         unsigned int id_len;
@@ -189,6 +190,7 @@ void read_and_print_avm_binary(const std::string &filename) {
     unsigned int total_instructions;
     infile.read(reinterpret_cast<char *>(&total_instructions),
                 sizeof(unsigned int));
+    codeSize = total_instructions;
     for (unsigned int i = 0; i < total_instructions; ++i) {
         if (!infile.good()) break;
         uint8_t opcode_byte_read;

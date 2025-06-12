@@ -10,8 +10,9 @@
 #define DEBUG_check(msg)
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
-#define DEBUG_colored_red2(msg) \
-    std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
+#define DEBUG_colored_red2(msg)
+// #define DEBUG_colored_red2(msg)     std::cout << "\033[1;31m[DEBUG]: " << msg
+// << "\033[0m\n";
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -27,7 +28,12 @@ void execute_call(instruction* instr) {
     switch (func->type) {
         case userfunc_m: {
             pc = func->data.funcVal;
-            assert(code[pc].opcode == funcenter_v);
+            DEBUG_colored_red2(
+                "Calling user function at address: " + std::to_string(pc) +
+                " | AVM_ENDING_PC: " + std::to_string(AVM_ENDING_PC));
+            assert(pc < AVM_ENDING_PC);
+            DEBUG_colored_red2("User " + avm_toString(func));
+            assert(exec_instructions[pc].opcode == funcenter_v);
             break;
         }
         case string_m:
@@ -61,7 +67,7 @@ void avm_call_functor(avm_table* table) {  // flag edw
         avm_call_functor(f->data.tableVal);
     } else if (f->type == userfunc_m) {
         avm_push_table_arg(table);
-        avm_callsaveenvironment();
+        // avm_callsaveenvironment();
         pc = f->data.funcVal;
         // pc < AVM_ENDING_PC &&
         assert(code[pc].opcode == funcenter_v);
@@ -71,7 +77,6 @@ void avm_call_functor(avm_table* table) {  // flag edw
 }
 
 void avm_callibfunc(std::string funcName) {
-    DEBUG_check("avm_callibfunc: " + funcName);
     library_func_t f = avm_getlibraryfunc(funcName);
     if (!f) {
         avm_error("unsupported library function '" + funcName + "'called!");
@@ -111,6 +116,8 @@ void execute_funcenter(instruction* instr) {
     userfunc* f = avm_getfuncinfo(func->data.funcVal);
     topsp = top;
     top = top - f->localSize;
+    DEBUG_colored_red2(("execute_funcenter: " + std::string(" | local size: ") +
+                        std::to_string(f->localSize)));
 }
 void execute_funcexit(instruction*) {
     int oldTop = top;
@@ -202,7 +209,6 @@ void libfunc_print() {
     unsigned n = avm_totalactuals();
     for (unsigned i = 0; i < n; ++i) {
         avm_memcell* m = avm_getactual(i);
-        DEBUG_check("libfunc_print: " + avm_toString(m));
         if (m->type == userfunc_m) {
             userfunc* f = avm_getfuncinfo(m->data.funcVal);
             if (f) {
@@ -243,23 +249,19 @@ void libfunc_input() {
             std::string(input.substr(1, input.length() - 2));
 
         // retval.data.strVal = input.substr(1, input.length() - 2);
-        DEBUG_check("Input string: " + retval.data.strVal);
         return;
     }
     if (input == "true") {
         retval.type = bool_m;
         retval.data.boolVal = true;
-        DEBUG_check("Input boolean: true");
         return;
     } else if (input == "false") {
         retval.type = bool_m;
         retval.data.boolVal = false;
-        DEBUG_check("Input boolean: false");
         return;
     }
     if (input == "nil") {
         retval.type = nil_m;
-        DEBUG_check("Input nil");
         return;
     }
 
@@ -269,7 +271,6 @@ void libfunc_input() {
     if (iss >> number && iss.eof()) {
         retval.type = number_m;
         retval.data.numVal = number;
-        DEBUG_check("Input number: " + std::to_string(number));
         return;
     }
 }
@@ -349,25 +350,21 @@ void libfunc_argument() {
         retval.type = nil_m;
         return;
     }
-
     avm_memcell* arg0 = avm_getactual(0);
     if (arg0->type != number_m || arg0->data.numVal < 0) {
         avm_error("argument argument must be a non-negative number");
         retval.type = nil_m;
         return;
     }
-
     unsigned index = static_cast<unsigned>(arg0->data.numVal);
+    unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
 
-    if (topsp == 0) {
+    if (p_topsp == 0) {
         avm_warning("argument called outside of a function");
         retval.type = nil_m;
         return;
     }
-
-    // flag check topsp
-    // check total_args
-    unsigned total_args = avm_get_envvalue(topsp + AVM_NUMACTUALS_OFFSET);
+    unsigned total_args = avm_get_envvalue(p_topsp + AVM_NUMACTUALS_OFFSET);
 
     if (index >= total_args) {
         avm_warning(
@@ -377,7 +374,8 @@ void libfunc_argument() {
         return;
     }
 
-    avm_memcell* arg_cell = &stack[topsp + AVM_STACKENV_SIZE + index + 1];
+    avm_memcell* arg_cell = &stack[p_topsp + AVM_STACKENV_SIZE + 1 + index];
+
     avm_memcellclear(&retval);
     retval.type = arg_cell->type;
     switch (arg_cell->type) {
@@ -386,19 +384,21 @@ void libfunc_argument() {
             break;
         case string_m:
             new (&retval.data.strVal) std::string(arg_cell->data.strVal);
-            // retval.data.strVal = arg_cell->data.strVal;
             break;
         case bool_m:
             retval.data.boolVal = arg_cell->data.boolVal;
             break;
         case table_m:
             retval.data.tableVal = arg_cell->data.tableVal;
+            avm_tableincrefcounter(
+                retval.data.tableVal);  // Πρόσθεσε αυτό για σωστό ref counting
             break;
         case userfunc_m:
             retval.data.funcVal = arg_cell->data.funcVal;
             break;
         case libfunc_m:
-            retval.data.libfuncVal = arg_cell->data.libfuncVal;
+            new (&retval.data.libfuncVal)
+                std::string(arg_cell->data.libfuncVal);
             break;
         default:
             break;
@@ -424,8 +424,6 @@ void libfunc_strtonum() {
     std::istringstream iss(arg->data.strVal);
     double number;
     if (iss >> number && iss.eof()) {
-        DEBUG_colored_red2("strtonum: converting string '" + arg->data.strVal +
-                           "' to number: " + std::to_string(number));
         retval.type = number_m;
         retval.data.numVal = number;
     } else {

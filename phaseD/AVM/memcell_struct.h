@@ -66,5 +66,6 @@ void memclear_string(avm_memcell* m);
 void memclear_table(avm_memcell* m);
 void avm_memcellclear(avm_memcell* m);
 std::string memcell_type_to_string(avm_memcell_t type);
+std::string vmarg_t_to_string(vmarg_t type);
 
 #endif

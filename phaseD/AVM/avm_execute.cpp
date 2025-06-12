@@ -2,7 +2,10 @@
 
 #include <iomanip>
 #include <iostream>
+
 #include "../t-codeLib/t-code.h"
+
+#define AVM_ENDING_PC codeSize
 
 std::vector<instruction> exec_instructions;
 std::vector<std::string> string_consts;
@@ -97,25 +100,34 @@ void execute_not(instruction *) {}
 
 
 void execute_cycle(void) {
-    while (executionFinished == 0) {
+    while (1) {
         if (executionFinished)
             break;
-        else if (pc == AVM_ENDING_PC) {
+        else if (pc == exec_instructions.size()) {
             executionFinished = 1;
             break;
         } else {
-            assert(pc < AVM_ENDING_PC);
+            assert(pc < exec_instructions.size());
             instruction *instr = &exec_instructions[pc];
             assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
-            std::cout << "Executing instruction at PC: " << pc
-                      << ", Opcode: " << vmopcode_to_string(instr->opcode)
-                      << ", SrcLine: " << instr->srcLine << std::endl;
+
             if (instr->srcLine) currLine = instr->srcLine;
             unsigned oldPC = pc;
-            executeFuncs[instr->opcode](instr);
             std::cout << "Executed instruction at PC: " << oldPC
                       << ", Opcode: " << vmopcode_to_string(instr->opcode)
                       << std::endl;
+            executeFuncs[instr->opcode](instr);
+            if (pc == 1) {
+                std::cout << "\n=== STACK ===\n";
+                for (int i = top; i < AVM_STACKSIZE; ++i) {
+                    if (stack[i].type != undef_m) {
+                        std::cout << "[" << i << "]: ";
+                        std::cout << avm_toString(&stack[i])
+                                  << " (type = " << stack[i].type << ")\n";
+                    }
+                }
+                std::cout << "===================\n";
+            }
             if (pc == oldPC) ++pc;
         }
     }
@@ -185,7 +197,6 @@ void read_and_print_avm_binary(const std::string &filename) {
     unsigned int total_instructions;
     infile.read(reinterpret_cast<char *>(&total_instructions),
                 sizeof(unsigned int));
-    codeSize = total_instructions;
     for (unsigned int i = 0; i < total_instructions; ++i) {
         if (!infile.good()) break;
         uint8_t opcode_byte_read;
@@ -213,12 +224,12 @@ void read_and_print_avm_binary(const std::string &filename) {
     }
 
     infile.read(reinterpret_cast<char *>(&total_glob), sizeof(int));
-    std::cout << "Total globals used in instructions (read from binary): " << total_glob << std::endl;
+    std::cout << "Total globals used in instructions (read from binary): "
+              << total_glob << std::endl;
 
     infile.close();
     total_glob = get_total_globals(exec_instructions);
 }
-
 
 
 void print_string_consts() {

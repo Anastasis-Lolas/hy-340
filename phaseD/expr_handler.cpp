@@ -493,7 +493,7 @@ SymbolTableEntry_T newtemp() {
     int offset;
     SymbolType symtype = (scope == 0 ? GLOBAL : LLOCAL);
     std::string name = newtempname();
-    entry = lookup_within_scope(scopeList, name, scope);
+    // entry = lookup_within_scope(scopeList, name, scope);
     if (!entry) {
         // offset = find_offset(scopeList, scope);
         // offset = currscopeoffset();

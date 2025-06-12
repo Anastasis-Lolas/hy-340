@@ -18,12 +18,72 @@ void execute_assign(instruction* instr) {
     // assert(lv >= &stack[top]);
     // assert(lv == &retval);
     // assert(rv);  // should do similar assertion tests here
+    if (rv == &retval) {
+        avm_memcellclear(rv);
+        return;
+    }
+    std::cout << "Executing assign: lv = " << avm_toString(lv)
+              << ", rv = " << avm_toString(rv) << std::endl;
     assert(lv);
     assert(rv);
     avm_assign(lv, rv);
 }
 
 
+void avm_assign(avm_memcell* lv, avm_memcell* rv) {
+    static int i = 0;
+    if (lv == rv) return;
+
+    if (lv->type == table_m && rv->type == table_m &&
+        lv->data.tableVal == rv->data.tableVal)
+        return;
+
+    if (rv->type == undef_m) {
+        avm_warning("assigning from 'undef' content!");
+    }
+    if (i == 5) {
+        std::cout << "\n\n===BEFORE CLEANING STACK " << " ===\n";
+        for (int i = top; i < AVM_STACKSIZE; ++i) {
+            if (stack[i].type != undef_m) {
+                std::cout << "[" << i << "]: ";
+                std::cout << avm_toString(&stack[i])
+                          << " (type = " << stack[i].type << ")\n";
+            }
+        }
+        std::cout << "\n\n===================\n";
+    }
+    if (i == 5) {
+        std::cout << "Assigning from " << avm_toString(lv) << " to "
+                  << avm_toString(rv) << std::endl;
+    }
+    avm_memcellclear(lv);
+    memcpy(lv, rv, sizeof(avm_memcell));
+
+    if (i == 5) {
+        std::cout << "\n\n===AFTER CLEANING STACK " << ++i << " ===\n";
+        for (int i = top; i < AVM_STACKSIZE; ++i) {
+            if (stack[i].type != undef_m) {
+                std::cout << "[" << i << "]: ";
+                std::cout << avm_toString(&stack[i])
+                          << " (type = " << stack[i].type << ")\n";
+            }
+        }
+        std::cout << "\n\n===================\n";
+    } else {
+        i++;
+    }
+    // lv->type = rv->type;
+
+    if (lv->type == string_m)
+        // lv->strVal = strdup(rv->strVal);
+        // lv->data.strVal = rv->data.strVal;
+        new (&lv->data.strVal) std::string(rv->data.strVal);
+    else if (lv->type == table_m) {
+        assert(0);
+        avm_tableincrefcounter(lv->data.tableVal);
+    }
+}
+/*
 void avm_assign(avm_memcell* lv, avm_memcell* rv) {
     if (lv == rv) return;
 
@@ -35,21 +95,37 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
         avm_warning("assigning from 'undef' content!");
     }
     avm_memcellclear(lv);
-
-    memcpy(lv, rv, sizeof(avm_memcell));
-
     lv->type = rv->type;
-
-    if (lv->type == string_m)
-        // lv->strVal = strdup(rv->strVal);
-        // lv->data.strVal = rv->data.strVal;
-        new (&lv->data.strVal) std::string(rv->data.strVal);
-    else if (lv->type == table_m) {
-        // assert(0);
-        avm_tableincrefcounter(lv->data.tableVal);
+    switch (rv->type) {
+        case number_m:
+            lv->data.numVal = rv->data.numVal;
+            break;
+        case string_m:
+            new (&lv->data.strVal) std::string(rv->data.strVal);
+            // lv->data.strVal = rv->data.strVal;
+            break;
+        case bool_m:
+            lv->data.boolVal = rv->data.boolVal;
+            break;
+        case table_m:
+            lv->data.tableVal = rv->data.tableVal;
+            avm_tableincrefcounter(lv->data.tableVal);
+            break;
+        case userfunc_m:
+            lv->data.funcVal = rv->data.funcVal;
+            break;
+        case libfunc_m:
+            lv->data.libfuncVal = rv->data.libfuncVal;
+            break;
+        case nil_m:
+            break;
+        case undef_m:
+            break;
+        default:
+            assert(0 && "Unknown type in avm_assign");
     }
 }
-
+*/
 double add_impl(double x, double y) { return x + y; }
 double sub_impl(double x, double y) { return x - y; }
 double mul_impl(double x, double y) { return x * y; }

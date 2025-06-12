@@ -67,5 +67,8 @@ void memclear_table(avm_memcell* m);
 void avm_memcellclear(avm_memcell* m);
 std::string memcell_type_to_string(avm_memcell_t type);
 std::string vmarg_t_to_string(vmarg_t type);
-
+unsigned char check_eq_table(avm_memcell* op1, avm_memcell* op2);
+unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2);
+unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2);
+unsigned char check_eq_bools(avm_memcell*, avm_memcell*);
 #endif

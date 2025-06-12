@@ -3,7 +3,8 @@
 
 extern avm_memcell stack[AVM_STACKSIZE];
 
-equality_check equal_check_dispatcher[] = {check_eq_number, check_eq_strings};
+equality_check equal_check_dispatcher[] = {check_eq_number, check_eq_strings,
+                                           check_eq_bools, check_eq_table};
 
 jump_cmp_func jump_dispatcher[] = {jge_impl, jgt_impl, jle_impl, jlt_impl};
 
@@ -69,6 +70,12 @@ unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2) {
 unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
     return (op1->data.strVal == op2->data.strVal);
 }
+unsigned char check_eq_table(avm_memcell* op1, avm_memcell* op2) {
+    return (op1->data.tableVal == op2->data.tableVal);
+}
+
+unsigned char check_eq_bools(avm_memcell*, avm_memcell*) { assert(0); }
+
 
 void execute_jump(instruction* instr) {
     assert(instr->result.type == label_a);

@@ -16,7 +16,7 @@ void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src) {
             dest->data.numVal = src->data.numVal;
             break;
         case string_m:
-            dest->data.strVal = src->data.strVal;
+            new (&dest->data.strVal) std::string(src->data.strVal);
             break;
         case bool_m:
             dest->data.boolVal = src->data.boolVal;
@@ -31,7 +31,8 @@ void avm_memcell_copy(avm_memcell* dest, const avm_memcell* src) {
             dest->data.funcVal = src->data.funcVal;
             break;
         case libfunc_m:
-            dest->data.libfuncVal = src->data.libfuncVal;
+            new (&dest->data.libfuncVal) std::string(src->data.libfuncVal);
+            // dest->data.libfuncVal = src->data.libfuncVal;
             break;
         case nil_m:
         case undef_m:
@@ -205,7 +206,6 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
 void avm_tablesetelem(avm_table* table, avm_memcell* index,
                       avm_memcell* content) {
     assert(table != nullptr && index != nullptr && content != nullptr);
-
     switch (index->type) {
         case number_m: {
             double key = index->data.numVal;

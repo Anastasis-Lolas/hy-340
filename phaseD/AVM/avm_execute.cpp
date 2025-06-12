@@ -6,6 +6,8 @@
 #include "../t-codeLib/t-code.h"
 
 #define AVM_ENDING_PC codeSize
+// #define DEB(msg) std::cout << "\033[1;34m" << msg << "\033[0m\n"
+#define DEB(msg)
 
 std::vector<instruction> exec_instructions;
 std::vector<std::string> string_consts;
@@ -110,7 +112,11 @@ void execute_cycle(void) {
             assert(pc < exec_instructions.size());
             instruction *instr = &exec_instructions[pc];
             assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
-
+            std::string msg =
+                "Executing instruction at PC: " + std::to_string(pc) +
+                " | Opcode: " + vmopcode_to_string(instr->opcode) +
+                " | SrcLine: " + std::to_string(instr->srcLine);
+            DEB(msg);
             if (instr->srcLine) currLine = instr->srcLine;
             unsigned oldPC = pc;
             executeFuncs[instr->opcode](instr);

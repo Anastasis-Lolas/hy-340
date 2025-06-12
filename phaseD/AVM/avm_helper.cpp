@@ -119,8 +119,8 @@ std::string undef_toString(avm_memcell* m) {
 
 
 void avm_error(const std::string& msg) {
-    std::cerr << "\033[1;31mAVM Error: " << msg << "\033[0m\n";
+    std::cerr << "\n\033[1;31mAVM Error: " << msg << "\033[0m\n";
 }
 void avm_warning(const std::string& msg) {
-    std::cerr << "\033[1;33mAVM Warning: " << msg << "\033[0m\n";
+    std::cerr << "\n\033[1;33mAVM Warning: " << msg << "\033[0m\n";
 }

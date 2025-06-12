@@ -64,20 +64,15 @@ void exit_block() {
 void enter_func(int flag, std::string name) {
     scope++;
     infunction++;
-    // nextquad ??
     if (flag == 0) {
-        // std::cout << "Anonymous function" << std::endl;
         name = create_func_name();
         anonym_funcs.push_back(name);
     } else {
         // std::cout << "Function name: " << name << std::endl;
     }
-    // $funcprefix.iaddress = nextquadlabel();
-    // if_noteq unsigned funcStartQuad = nextquadlabel();
     push_loopcounter();
     jump_stack.push_back(nextquad());
     emit(jump, nullptr, nullptr, nullptr, 0, nextquad());
-    // logika anti gia yylineno thelei quads ??
     emit(funcstart, nullptr, nullptr, newexpr(programfunc_e), -1, nextquad());
 
     scopeoffsetstack.push_back(currscopeoffset());
@@ -89,19 +84,12 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
     int offset, totalLocals;
     SymbolTableEntry_T entry = nullptr;
     if (flag == 0) {
-        // std::cout << "Anonymous function" << std::endl;
         name = anonym_funcs.back();
         anonym_funcs.pop_back();
     }
     pop_loopcounter();
-    /*
-    std::cout << "exit_" << name << " {" << std::endl;
-    print_offset();
-    std::cout << "}" << std::endl;
-    */
     totalLocals = currscopeoffset();
 
-    // pou to apothikeuw? entry->value.funcVal->totalLocals = totalLocals;
     offset = scopeoffsetstack.back();
     scopeoffsetstack.pop_back();
     resetfunctionlocaloffset();
@@ -110,13 +98,10 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
     entry = lookup_within_scope(scopeList, name, scope);
     if (entry) {
         entry->value.funcVal->totalLocals = totalLocals;
-        // std::cout << "Total local var: " << totalLocals << std::endl;
     }
     if (currscopespace() == formalarg) {
         exitscopespace();
     }
-    // emit(funcend, nullptr, nullptr,newexpr(programfunc_e),  -1,
-    // nextquad());
     emit(funcend, nullptr, nullptr, newexpr_conststring(name), -1, nextquad());
     patchlabel(jump_stack.back(), nextquad());
     jump_stack.pop_back();
@@ -137,7 +122,6 @@ void add_function(std::string name, std::vector<void*> args,
 
     resetfunctionlocaloffset();
     if (search_LIBS_FUNC(name) == 0) {
-        // print error message shadows lib function
         std::cerr << "Error at line " << yylineno << ": function [" << name
                   << "] shadows lib function" << std::endl;
         return;
@@ -146,14 +130,11 @@ void add_function(std::string name, std::vector<void*> args,
         entry = lookup_within_scope(scopeList, name, scope);
         if (entry) {
             if (entry->type == USERFUNC) {
-                // print error message function already declared in the same
-                // scope
                 std::cerr << "Error at line " << yylineno << ": function "
                           << name << " already declared in line "
                           << entry->value.funcVal->line << std::endl;
                 return;
             } else {
-                // print error message function-same name as variable
                 std::cerr << "Error at line " << yylineno << ": function ["
                           << name << "] same name as variable in line "
                           << entry->value.varVal->line << std::endl;
@@ -162,7 +143,6 @@ void add_function(std::string name, std::vector<void*> args,
         }
     }
 
-    // offset = find_offset(scopeList, scope);
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
     entry->value.funcVal->funcIndex = funcIndex;
     add_entry(scopeList, entry, scope);
@@ -177,7 +157,6 @@ void add_anon_function(std::vector<void*> args, unsigned int funcIndex) {
     enterscopespace();
     resetfunctionlocaloffset();
 
-    // offset = find_offset(scopeList, scope);
     entry = SymTableEntry_new(USERFUNC, name, scope, yylineno, offset, args);
     entry->value.funcVal->funcIndex = funcIndex;
     add_entry(scopeList, entry, scope);
@@ -190,12 +169,6 @@ SymbolTableEntry_T add_ident(std::string name) {
 
     entry = lookup_active(scopeList, name, scope);
     if (entry) {
-        /* Found something (var or function) that we have access to it, so
-        the
-         * var refers to it
-        std::cout << "Found something (var or function) with name: " << name
-                  << " that we have access to "
-                     "it, so the var refers to it\n";*/
         return entry;
 
     } else {
@@ -203,11 +176,6 @@ SymbolTableEntry_T add_ident(std::string name) {
         if (entry) {
             if (entry->type == USERFUNC) {
                 // Collision with library function
-                /*
-                std::cout << "Error at line " << yylineno
-                          << ": Cannot access function :" << name
-                          << " with scope: " << entry->value.funcVal->scope
-                          << " inside scope: " << scope << std::endl;*/
                 return entry;
             } else {
                 // print error message function-same name as variable
@@ -220,10 +188,7 @@ SymbolTableEntry_T add_ident(std::string name) {
         } else {
             entry = lookup_within_scope(scopeList, name, 0, true);
             if (!entry) {
-                // offset = find_offset(scopeList, scope);
                 offset = currscopeoffset();
-                // std::cout << "Creating new entry with name: " << name
-                //           << " and offset: " << offset << std::endl;
                 entry = SymTableEntry_new(symtype, name, scope, yylineno,
                                           offset, {});
                 add_entry(scopeList, entry, scope);
@@ -247,7 +212,6 @@ SymbolTableEntry_T add_local_dent(std::string name) {
     }
     entry = lookup_within_scope(scopeList, name, scope);
 
-    // offset = find_offset(scopeList, scope);
     offset = currscopeoffset();
     entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
     add_entry(scopeList, entry, scope);
@@ -320,8 +284,6 @@ void print_entry(SymbolTableEntry_T entry) {
 }
 
 void temrs_error(expr* entry, std::string op) {
-    // null_entry(entry, "lvalue ");
-
     if (entry) {
         if (entry->type == programfunc_e || entry->type == libraryfunc_e) {
             std::cerr << "Error at line " << yylineno
@@ -376,7 +338,6 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     args.push_back(static_cast<void*>(name_copy));
 
     // Add to symbol table
-    // int offset = find_offset(scopeList, scope);
     int offset = currscopeoffset();
 
     SymbolTableEntry_T formal_arg =
@@ -480,13 +441,11 @@ void printFullSymTable(SymTable_T table) {
     std::cout << "\n--------------------------------------------------\n";
 }
 
-// ===================================================================================
 
 std::string newtempname() { return "_t" + std::to_string(temp_num++); }
 
 void resettemp() { temp_num = 0; }
 
-// flag ----?>>?>?>?>?>?>?
 SymbolTableEntry_T newtemp() {
     // ignore for now
     SymbolTableEntry_T entry = nullptr;
@@ -495,8 +454,6 @@ SymbolTableEntry_T newtemp() {
     std::string name = newtempname();
     // entry = lookup_within_scope(scopeList, name, scope);
     if (!entry) {
-        // offset = find_offset(scopeList, scope);
-        // offset = currscopeoffset();
         offset = currscopeoffset();
         entry = SymTableEntry_new(symtype, name, scope, yylineno, offset, {});
         add_entry(scopeList, entry, scope);
@@ -505,24 +462,6 @@ SymbolTableEntry_T newtemp() {
     }
     return entry;
 }
-
-// expr* lvalue_id_handler(expr* lvalue, std::string name) {
-//     expr* tableitem;
-
-//     if (!lvalue) {
-//         std::cerr << "Error in line " << yylineno
-//                   << ": lvalue was not declared '" << name << "' in scope: ["
-//                   << scope << "]." << std::endl;
-
-//     } else if (lvalue->type == programfunc_e || lvalue->type ==
-//     libraryfunc_e) {
-//         std::cerr << "Error in line " << yylineno
-//                   << ": Cannot use function name as lvalue '" << name
-//                   << "' in scope: [" << scope << "]." << std::endl;
-//     }
-//     tableitem = member_item(lvalue, name);
-//     return tableitem;
-// }
 
 
 expr* lvalue_id_handler(expr* lvalue, std::string name) {
@@ -805,16 +744,6 @@ stmt_t* handle_breaks() {
     }
     return $$;
 }
-
-
-// ignore for now=================================================
-expr* normal_call_handler(std::vector<expr*> args) {              //|
-    for (auto it = args.rbegin(); it != args.rend(); ++it) {      //|
-        emit(param, *it, nullptr, nullptr, -1, nextquadlabel());  //|
-    }  //|
-    return nullptr;  //|
-}  //|
-//=================================================================
 
 // debug
 void print_expr_list(expr* head) {

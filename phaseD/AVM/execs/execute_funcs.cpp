@@ -11,8 +11,8 @@
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
 #define DEBUG_colored_red2(msg)
-// #define DEBUG_colored_red2(msg)     std::cout << "\033[1;31m[DEBUG]: " << msg
-// << "\033[0m\n";
+// #define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<
+// "\033[0m\n";
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -442,6 +442,10 @@ void libfunc_sqrt() {
     }
 
     avm_memcell* arg = avm_getactual(0);
+    DEBUG_colored_red2(
+        "libfunc_sqrt: arg type: " + memcell_type_to_string(arg->type) +
+        ", value: " + avm_toString(arg) +
+        " | arg->data.numVal: " + std::to_string(arg->data.numVal));
     if (arg->type != number_m || arg->data.numVal < 0) {
         avm_error("sqrt expects a non-negative number as argument!");
         retval.type = nil_m;

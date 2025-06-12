@@ -187,8 +187,8 @@ expr:
                                                 std::cout << "Illegal use of '*' with non-numeric expression at line " << yylineno << std::endl;
                                             } else {
                                                 DEBUG_REDUCE("expr -> expr * expr");
-                                                $$ = emit_arith_op(mul, $1, $3);
-        }
+                                                $$ = emit_arith_op(mul, $3, $1);
+                                            }
       }
 
     | expr DIV expr

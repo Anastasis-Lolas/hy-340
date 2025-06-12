@@ -439,7 +439,7 @@ void generate_FUNCEND(quad *q) {
 
     if (q->result) {
         t->result.val = labstack.back();
-        labstack.pop_back();
+        // labstack.pop_back();
         t->result.type = userfunc_a;
     }
 

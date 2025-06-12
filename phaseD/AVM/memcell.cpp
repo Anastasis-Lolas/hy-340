@@ -58,12 +58,8 @@ avm_memcell* avm_translate_operand(vmarg* arg, avm_memcell* reg) {
         case userfunc_a:
             reg->type = userfunc_m;
             reg->data.funcVal = arg->val;
-            // reg->funcVal = userfunc_get(arg->val)->address;
             return reg;
         case libfunc_a:  // 10
-                         // reg->type = libfunc_m;
-                         // libfuncName = libfunc_get(arg->val);
-                         // reg->data.libfuncVal = libfuncName;
             reg->type = libfunc_m;
             tempStr = libfunc_get(arg->val);
             new (&reg->data.libfuncVal) std::string(tempStr);

@@ -62,7 +62,6 @@ void make_operand(expr *e, vmarg *arg) {
         case arithexpr_e:
         case boolexpr_e:
         case newtable_e: {
-            
             arg->val = e->sym->value.varVal->offset;
             switch (e->sym->type) {
                 case GLOBAL:
@@ -305,16 +304,11 @@ void generate_UMINUS(quad *q) {
     instruction *instr = new instruction();
     instr->opcode = mul_v;
     instr->srcLine = q->line;
- 
- 
+    if (q->arg1) make_operand(q->arg1, &instr->arg1);
 
-    if (q->arg1)
-    make_operand(q->arg1, &instr->arg1);  
+    make_numberoperand(&instr->arg2, -1);
 
-    make_numberoperand(&instr->arg2, -1);     
-
-    if (q->result)
-    make_operand(q->result, &instr->result); 
+    if (q->result) make_operand(q->result, &instr->result);
 
     vm_emit(instr);
 }
@@ -400,7 +394,7 @@ void generate_GETRETVAL(quad *q) {
     instruction *t = new instruction();
     t->opcode = assign_v;
     q->taddress = nextinstructionlabel();
-    t->srcLine = q->line;  // ? q->taddress;
+    t->srcLine = q->line;
 
 
     if (q->result) {
@@ -416,8 +410,8 @@ void generate_RETURN(quad *q) {
     assert(q);
     instruction *t = new instruction();
     t->opcode = assign_v;
-    q->taddress = nextinstructionlabel();  // ?
-    t->srcLine = q->line;                  // ? q->taddress;
+    q->taddress = nextinstructionlabel();
+    t->srcLine = q->line;
 
     if (q->result) {
         make_operand(q->result, &t->arg1);
@@ -436,18 +430,14 @@ void generate_RETURN(quad *q) {
 
 
 void generate_FUNCEND(quad *q) {
-    // SymTableEntry f = pop(funcstack);
-    // backpatch(f.returnList, nextinstructionlabel());
     assert(q);
-
-    q->taddress = nextinstructionlabel();  // ?
+    q->taddress = nextinstructionlabel();
 
     instruction *t = new instruction();
     t->opcode = funcexit_v;
-    t->srcLine = q->line;  // ? q->taddress;
+    t->srcLine = q->line;
 
     if (q->result) {
-        // make_operand(q->result, t->result);
         t->result.val = labstack.back();
         labstack.pop_back();
         t->result.type = userfunc_a;
@@ -463,11 +453,10 @@ void generate_FUNCSTART(quad *q) {
     assert(q);
     SymbolTableEntry_T f = q->result->sym;
 
-    // f->taddress = nextinstructionlabel(); // ?
-    q->taddress = nextinstructionlabel();  // ?
+    q->taddress = nextinstructionlabel();
     instruction *t = new instruction();
     t->opcode = funcenter_v;
-    t->srcLine = q->line;  // ? q->taddress;
+    t->srcLine = q->line;
 
     if (q->result) make_operand(q->result, &t->result);
     labstack.push_back(funcstack.size() - 1);
@@ -750,7 +739,6 @@ void generate_binary_readable(const std::string &outname) {
 
     std::cout << "Totals : " << total_globals << std::endl;
 
-    // stop writing to this folder ?
     outfile.close();
 }
 

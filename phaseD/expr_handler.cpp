@@ -346,6 +346,7 @@ std::vector<void*> handle_func_args(std::vector<void*> args, std::string name) {
     SymTable_put(oSymTable, name, formal_arg);
     incurrscopeoffset();
 
+    args.clear();
     return args;
 }
 

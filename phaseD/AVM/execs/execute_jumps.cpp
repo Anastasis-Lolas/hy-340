@@ -1,5 +1,9 @@
+#include <cmath>
+#include <iomanip>
+
 #include "../avm_execute.h"
 
+const double compari = 0.000001;
 
 extern avm_memcell stack[AVM_STACKSIZE];
 
@@ -65,7 +69,7 @@ void execute_rljump(instruction* instr) {
 }
 
 unsigned char check_eq_number(avm_memcell* op1, avm_memcell* op2) {
-    return (op1->data.numVal == op2->data.numVal);
+    return fabs(op1->data.numVal - op2->data.numVal) < compari;
 }
 unsigned char check_eq_strings(avm_memcell* op1, avm_memcell* op2) {
     return (op1->data.strVal == op2->data.strVal);

@@ -20,7 +20,6 @@ SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
     DEBUG_check("execute_call");
-
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
     DEBUG_check("Function to call: " + avm_toString(func));
     assert(func);
@@ -190,8 +189,7 @@ void libfunc_typeof() {
 void libfunc_totalarguments() {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     avm_memcellclear(&retval);
-
-    if (!p_topsp) {
+    if (!p_topsp || p_topsp == AVM_STACKSIZE - 1) {
         avm_error("totalarguments called outside of a function!");
         retval.type = nil_m;
     } else {
@@ -244,14 +242,14 @@ void libfunc_input() {
     input.erase(0, input.find_first_not_of(" \t\r\n"));
     input.erase(input.find_last_not_of(" \t\r\n") + 1);
 
-    if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
-        retval.type = string_m;
-        new (&retval.data.strVal)
-            std::string(input.substr(1, input.length() - 2));
+    // if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
+    //     retval.type = string_m;
+    //     new (&retval.data.strVal)
+    //         std::string(input.substr(1, input.length() - 2));
 
-        // retval.data.strVal = input.substr(1, input.length() - 2);
-        return;
-    }
+    //     // retval.data.strVal = input.substr(1, input.length() - 2);
+    //     return;
+    // }
     if (input == "true") {
         retval.type = bool_m;
         retval.data.boolVal = true;
@@ -274,6 +272,8 @@ void libfunc_input() {
         retval.data.numVal = number;
         return;
     }
+    retval.type = string_m;
+    new (&retval.data.strVal) std::string(input);
 }
 
 void libfunc_objectmemberkeys() {
@@ -400,7 +400,11 @@ void libfunc_argument() {
     }
     unsigned index = static_cast<unsigned>(arg0->data.numVal);
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
-
+    if (p_topsp >= AVM_STACKSIZE - 1 - total_glob) {
+        avm_error("argument() cannot be called from the global scope");
+        retval.type = nil_m;
+        return;
+    }
     if (p_topsp == 0) {
         avm_warning("argument called outside of a function");
         retval.type = nil_m;

@@ -16,6 +16,9 @@ extern SymTable_T oSymTable;
 extern int yylineno;
 extern ScopeList_T scopeList;
 
+void push_scope_to_stack();
+void pop_scope_from_stack();
+
 void init_tables();
 std::string create_func_name(void);
 void add_function(std::string name, std::vector<void*> args,

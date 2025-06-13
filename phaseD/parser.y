@@ -773,6 +773,9 @@ returnstmt:
             if(infunction==0){
                 std::cerr <<"Error at line " << yylineno << ": using return statement outside of function\n";
             }  
+            if($2->type == boolexpr_e){
+                $2 = boolify_expr($2);
+            }
             emit(ret,  nullptr, nullptr, $2, -1, nextquadlabel());
             $$ = new stmt_t();
             make_stmt($$);

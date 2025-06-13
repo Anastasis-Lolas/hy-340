@@ -61,7 +61,13 @@ void exit_block() {
     scope--;
     reactivate_scope(scopeList, scope);
 }
+std::vector<int> scope_stack = {1};
+
 void enter_func(int flag, std::string name) {
+    if (infunction > 0) {
+        scope_stack.push_back(scope);
+    }
+
     scope++;
     infunction++;
     if (flag == 0) {
@@ -109,6 +115,14 @@ SymbolTableEntry_T exit_func(int flag, std::string name, int returnList) {
         patchlist(returnList, nextquad() - 1);
     }
     infunction--;
+
+    if (infunction > 0) {
+        scope_stack.pop_back();
+        int count = scope_stack.back();
+        for (int i = scope; i >= count; i--) {
+            reactivate_scope(scopeList, i);
+        }
+    }
     return entry;
 }
 
@@ -581,6 +595,7 @@ expr* emit_relop_op(iopcode op, expr* e1, expr* e2) {
 }
 
 expr* symEntr_to_expr(SymbolTableEntry_T entry) {
+    assert(entry);
     expr* e;
     if (!entry) {
         std::cerr << "Error at line " << yylineno << ": entry is null"

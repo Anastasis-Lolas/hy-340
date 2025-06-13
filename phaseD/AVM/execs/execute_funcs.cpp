@@ -3,14 +3,14 @@
 #include "../library_functions.h"
 
 // #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
-// #define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
-// #define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
-// #define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
+// #define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg <<
+// "\033[0m\n"; #define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]:
+// " << msg << "\033[0m\n"; #define DEBUG_colored_red2(msg)std::cout <<
+// "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
 #define DEBUG_check(msg)
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
 #define DEBUG_colored_red2(msg)
-
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -22,7 +22,7 @@ void execute_call(instruction* instr) {
     DEBUG_check("Function to call: " + avm_toString(func));
     avm_toString(func);
     assert(func);
-   
+
     switch (func->type) {
         case userfunc_m: {
             avm_callsaveenvironment();
@@ -36,11 +36,11 @@ void execute_call(instruction* instr) {
             break;
         }
         case string_m:
-         avm_callsaveenvironment(); 
+            avm_callsaveenvironment();
             avm_callibfunc(func->data.strVal);
             break;
         case libfunc_m:
-         avm_callsaveenvironment(); 
+            avm_callsaveenvironment();
             DEBUG_check("Calling library function: " + func->data.libfuncVal);
             avm_callibfunc(func->data.libfuncVal);
             break;
@@ -54,11 +54,13 @@ void execute_call(instruction* instr) {
             avm_memcell temp_key_cell;
             temp_key_cell.type = string_m;
             temp_key_cell.data.strVal = "()";
-            avm_memcell* potential_func = avm_tablegetelem(func->data.tableVal, &temp_key_cell);
-            //avm_memcellclear(&temp_key_cell);
+            avm_memcell* potential_func =
+                avm_tablegetelem(func->data.tableVal, &temp_key_cell);
+            // avm_memcellclear(&temp_key_cell);
 
             if (potential_func && potential_func->type == userfunc_m) {
-                DEBUG_check("Found '()' in table. Type: " + std::string(typeStrings[potential_func->type]));
+                DEBUG_check("Found '()' in table. Type: " +
+                            std::string(typeStrings[potential_func->type]));
                 // Push the table as the first argument
                 avm_assign(&stack[top], func);
                 ++totalActuals;
@@ -67,16 +69,18 @@ void execute_call(instruction* instr) {
                 pc = potential_func->data.funcVal;
                 assert(pc < AVM_ENDING_PC);
                 assert(exec_instructions[pc].opcode == funcenter_v);
-                  // Save environment after all arguments are set
+                // Save environment after all arguments are set
             } else {
-                std::string err_msg = "Call: Table does not contain a '()' function!";
+                std::string err_msg =
+                    "Call: Table does not contain a '()' function!";
                 avm_error(err_msg);
                 executionFinished = 1;
             }
             break;
         }
         default:
-            std::string err_msg = "Call: cannot bind " + avm_toString(func) + " to function!";
+            std::string err_msg =
+                "Call: cannot bind " + avm_toString(func) + " to function!";
             avm_error(err_msg);
             executionFinished = 1;
     }
@@ -147,10 +151,6 @@ void execute_funcenter(instruction* instr) {
     DEBUG_colored_red2(("execute_funcenter: " + std::string(" | local size: ") +
                         std::to_string(f->localSize)));
 }
-
-
-
-
 
 
 void execute_funcexit(instruction*) {
@@ -249,8 +249,8 @@ void libfunc_print() {
                 std::cout << "User Function: " << f->id << " at address "
                           << f->address;
             } else {
-                std::cout << "User Function: Unknown at address "
-                          << m->data.funcVal;
+                // std::cout << "User Function: Unknown at address "
+                //           << m->data.funcVal;
             }
         } else if (m->type == libfunc_m) {
             std::cout << "Library Function: " << m->data.libfuncVal;

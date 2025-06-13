@@ -469,11 +469,11 @@ void generate_FUNCSTART(quad *q) {
 unsigned userfunc_newfunc(SymbolTableEntry_T sym) {
     assert(sym);
     assert(sym->type == USERFUNC);
-    for (unsigned int i = 0; i < funcstack.size(); ++i) {
-        if (funcstack[i].id == sym->value.funcVal->name) {
-            return i;
-        }
-    }
+    // for (unsigned int i = 0; i < funcstack.size(); ++i) {
+    //     if (funcstack[i].id == sym->value.funcVal->name) {
+    //         return i;
+    //     }
+    // }
     userfunc *f = new userfunc();
     f->address = sym->value.funcVal->funcIndex;
     f->localSize = sym->value.funcVal->totalLocals;

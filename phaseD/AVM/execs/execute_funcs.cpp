@@ -5,11 +5,12 @@
 // #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
 // #define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
 // #define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
+// #define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
 #define DEBUG_check(msg)
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
 #define DEBUG_colored_red2(msg)
-// #define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
+
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -376,7 +377,9 @@ void libfunc_objecttotalmembers() {
     avm_table* table = arg->data.tableVal;
     avm_memcellclear(&retval);
     retval.type = number_m;
-    retval.data.numVal = table->total;
+
+
+    retval.data.numVal = table->numIndexed->size();
 }
 
 void libfunc_objectcopy() {

@@ -2,14 +2,14 @@
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
-#define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
-#define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
-#define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
-// #define DEBUG_check(msg)
-// #define DEBUG_colored_green(msg)
-// #define DEBUG_colored_red(msg)
-// #define DEBUG_colored_red2(msg)
-#define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
+// #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
+// #define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg << "\033[0m\n";
+// #define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]: " << msg << "\033[0m\n";
+#define DEBUG_check(msg)
+#define DEBUG_colored_green(msg)
+#define DEBUG_colored_red(msg)
+#define DEBUG_colored_red2(msg)
+//#define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -20,9 +20,10 @@ void execute_call(instruction* instr) {
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
     DEBUG_check("Function to call: " + avm_toString(func));
     assert(func);
-    avm_callsaveenvironment();  // Maybe outside switch?
+   
     switch (func->type) {
         case userfunc_m: {
+            avm_callsaveenvironment();
             pc = func->data.funcVal;
             DEBUG_colored_red2(
                 "Calling user function at address: " + std::to_string(pc) +
@@ -33,69 +34,39 @@ void execute_call(instruction* instr) {
             break;
         }
         case string_m:
+         avm_callsaveenvironment(); 
             avm_callibfunc(func->data.strVal);
             break;
         case libfunc_m:
+         avm_callsaveenvironment(); 
             DEBUG_check("Calling library function: " + func->data.libfuncVal);
             avm_callibfunc(func->data.libfuncVal);
             break;
         case table_m: {
             DEBUG_check("Attempting to call table as a function.");
-            // Check if func->data.tableVal is valid 
             if (!func->data.tableVal) {
                 avm_error("Attempt to call a null or uninitialized table!");
                 executionFinished = 1;
                 break;
             }
-            DEBUG_check("Table pointer: " + std::to_string((uintptr_t)func->data.tableVal));
-            DEBUG_check("Table refCounter: " + std::to_string(func->data.tableVal->refCounter));
-            DEBUG_check("Table total elements: " + std::to_string(func->data.tableVal->total));
-
-
             avm_memcell temp_key_cell;
-            avm_memcellclear(&temp_key_cell);
             temp_key_cell.type = string_m;
             temp_key_cell.data.strVal = "()";
-
-            //  using key "()"
             avm_memcell* potential_func = avm_tablegetelem(func->data.tableVal, &temp_key_cell);
-
             avm_memcellclear(&temp_key_cell);
-                    if (potential_func) {
-                        DEBUG_check("Found '()' in table. Type: " + std::string(typeStrings[potential_func->type]));
-                        // Now, recursively call the execution logic for the retrieved function
-                        switch (potential_func->type) {
-                            case userfunc_m: {
-                                pc = potential_func->data.funcVal;
-                                DEBUG_colored_red2(
-                                    "Calling user function from table at address: " + std::to_string(pc) +
-                                    " | AVM_ENDING_PC: " + std::to_string(AVM_ENDING_PC));
-                                assert(pc < AVM_ENDING_PC);
-                                assert(exec_instructions[pc].opcode == funcenter_v); // 'funcenter_v' or 'enterfunc_v'
-                                break;
-                            }
-                            case string_m:
-                                avm_callibfunc(potential_func->data.strVal);
-                                break;
-                            case libfunc_m:
-                                DEBUG_check("Calling library function from table: " + potential_func->data.libfuncVal);
-                                avm_callibfunc(potential_func->data.libfuncVal);
-                                break;
-                            case table_m: {
-                                std::string err_msg = "Call: Cannot bind nested table ('()') to function!";
-                                avm_error(err_msg);
-                                executionFinished = 1;
-                                break;
-                            }
-                            default: {
-                                std::string err_msg =
-                                    "Call: Cannot bind " + avm_toString(potential_func) + " retrieved from '()' to function!";
-                                avm_error(err_msg);
-                                executionFinished = 1;
-                                break;
-                            }
-                        }       
-                } else {
+
+            if (potential_func && potential_func->type == userfunc_m) {
+                DEBUG_check("Found '()' in table. Type: " + std::string(typeStrings[potential_func->type]));
+                // Push the table as the first argument
+                avm_assign(&stack[top], func);
+                ++totalActuals;
+                avm_dec_top();
+                avm_callsaveenvironment();
+                pc = potential_func->data.funcVal;
+                assert(pc < AVM_ENDING_PC);
+                assert(exec_instructions[pc].opcode == funcenter_v);
+                  // Save environment after all arguments are set
+            } else {
                 std::string err_msg = "Call: Table does not contain a '()' function!";
                 avm_error(err_msg);
                 executionFinished = 1;
@@ -103,13 +74,54 @@ void execute_call(instruction* instr) {
             break;
         }
         default:
-            std::string err_msg =
-                "Call: cannot bind " + avm_toString(func) + " to function!";
+            std::string err_msg = "Call: cannot bind " + avm_toString(func) + " to function!";
             avm_error(err_msg);
             executionFinished = 1;
     }
     DEBUG_check("=====================\tENDexecute_call");
 }
+
+
+
+// void execute_call(instruction* instr) {
+//     DEBUG_check("execute_call");
+
+//     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
+//     DEBUG_check("Function to call: " + avm_toString(func));
+//     assert(func);
+//     avm_callsaveenvironment();  // Maybe outside switch?
+//     switch (func->type) {
+//         case userfunc_m: {
+//             pc = func->data.funcVal;
+//             DEBUG_colored_red2(
+//                 "Calling user function at address: " + std::to_string(pc) +
+//                 " | AVM_ENDING_PC: " + std::to_string(AVM_ENDING_PC));
+//             assert(pc < AVM_ENDING_PC);
+//             DEBUG_colored_red2("User " + avm_toString(func));
+//             assert(exec_instructions[pc].opcode == funcenter_v);
+//             break;
+//         }
+//         case string_m:
+//             avm_callibfunc(func->data.strVal);
+//             break;
+//         case libfunc_m:
+//             DEBUG_check("Calling library function: " + func->data.libfuncVal);
+//             avm_callibfunc(func->data.libfuncVal);
+//             break;
+//         case table_m:
+//             assert(0);
+//             // avm_callibfunc(func->data.tableVal);
+//             break;
+
+//         default:
+//             std::string err_msg =
+//                 "Call: cannot bind " + avm_toString(func) + " to function!";
+//             avm_error(err_msg);
+//             executionFinished = 1;
+//     }
+//     DEBUG_check("=====================\tENDexecute_call");
+// }
+
 
 void avm_call_functor(avm_table* table) {  // flag edw
     cx.type = string_m;
@@ -178,41 +190,6 @@ void execute_funcenter(instruction* instr) {
 
 
 
-
-
-// void execute_funcenter(instruction* instr) {
-//     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
-//     assert(func);
-//     assert(pc == func->data.funcVal); /* Func address should match PC. */
-
-//     // Save totalActuals *before* resetting
-//     unsigned int numActuals = totalActuals;
-//     totalActuals = 0; // Reset for the callee's environment
-
-//     userfunc* f = avm_getfuncinfo(func->data.funcVal);
-
-//     topsp = top; 
-
-//     top = top - f->localSize; 
-//     DEBUG_colored_red2(("execute_funcenter: Setting topsp: " + std::to_string(topsp) +
-//                         " | New top: " + std::to_string(top) +
-//                         " | local size: " + std::to_string(f->localSize) +
-//                         " | Actual args to copy: " + std::to_string(numActuals)));
-   
-
-//     for (unsigned int i = 0; i < numActuals; ++i) {
-       
-//         avm_memcell* src_arg_cell = &stack[topsp + 4 + i];
-
-        
-//         avm_memcell* dest_formal_cell = &stack[topsp - numActuals + i];
-
-//         avm_memcellclear(dest_formal_cell);
-//         avm_assign(dest_formal_cell, src_arg_cell);
-
-//         DEBUG_colored_red2("Copied Arg " + std::to_string(i) + " (" + avm_toString(src_arg_cell) + ") to formal slot " + std::to_string(topsp - numActuals + i));
-//     }
-// }
 
 
 void execute_funcexit(instruction*) {

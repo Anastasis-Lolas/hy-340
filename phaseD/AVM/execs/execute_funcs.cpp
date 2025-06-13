@@ -9,7 +9,7 @@
 #define DEBUG_colored_green(msg)
 #define DEBUG_colored_red(msg)
 #define DEBUG_colored_red2(msg)
-//#define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
+// #define DEBUG_colored_red2(msg)std::cout << "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
@@ -19,6 +19,7 @@ void execute_call(instruction* instr) {
     DEBUG_check("execute_call");
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
     DEBUG_check("Function to call: " + avm_toString(func));
+    avm_toString(func);
     assert(func);
    
     switch (func->type) {
@@ -53,7 +54,7 @@ void execute_call(instruction* instr) {
             temp_key_cell.type = string_m;
             temp_key_cell.data.strVal = "()";
             avm_memcell* potential_func = avm_tablegetelem(func->data.tableVal, &temp_key_cell);
-            avm_memcellclear(&temp_key_cell);
+            //avm_memcellclear(&temp_key_cell);
 
             if (potential_func && potential_func->type == userfunc_m) {
                 DEBUG_check("Found '()' in table. Type: " + std::string(typeStrings[potential_func->type]));
@@ -80,47 +81,6 @@ void execute_call(instruction* instr) {
     }
     DEBUG_check("=====================\tENDexecute_call");
 }
-
-
-
-// void execute_call(instruction* instr) {
-//     DEBUG_check("execute_call");
-
-//     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
-//     DEBUG_check("Function to call: " + avm_toString(func));
-//     assert(func);
-//     avm_callsaveenvironment();  // Maybe outside switch?
-//     switch (func->type) {
-//         case userfunc_m: {
-//             pc = func->data.funcVal;
-//             DEBUG_colored_red2(
-//                 "Calling user function at address: " + std::to_string(pc) +
-//                 " | AVM_ENDING_PC: " + std::to_string(AVM_ENDING_PC));
-//             assert(pc < AVM_ENDING_PC);
-//             DEBUG_colored_red2("User " + avm_toString(func));
-//             assert(exec_instructions[pc].opcode == funcenter_v);
-//             break;
-//         }
-//         case string_m:
-//             avm_callibfunc(func->data.strVal);
-//             break;
-//         case libfunc_m:
-//             DEBUG_check("Calling library function: " + func->data.libfuncVal);
-//             avm_callibfunc(func->data.libfuncVal);
-//             break;
-//         case table_m:
-//             assert(0);
-//             // avm_callibfunc(func->data.tableVal);
-//             break;
-
-//         default:
-//             std::string err_msg =
-//                 "Call: cannot bind " + avm_toString(func) + " to function!";
-//             avm_error(err_msg);
-//             executionFinished = 1;
-//     }
-//     DEBUG_check("=====================\tENDexecute_call");
-// }
 
 
 void avm_call_functor(avm_table* table) {  // flag edw

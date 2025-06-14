@@ -39,9 +39,9 @@ void execute_tablegetelem(instruction* instr) {
             avm_assign(lv, content);
         } else {
             // std::string ts = avm_toString(t);
-            // std::string is = avm_toString(i);
-            // avm_warning(ts + "[" + is + "] not found!");
-            avm_warning("Dummy warning");
+            std::string is = avm_toString(i);
+            avm_warning("table [" + is + "] not found!");
+            // avm_warning("table[] not found!");
         }
     }
 }

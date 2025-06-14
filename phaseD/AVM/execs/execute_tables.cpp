@@ -4,7 +4,7 @@
 
 
 extern avm_memcell stack[AVM_STACKSIZE];
-
+extern int removewarning;
 
 void execute_newtable(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
@@ -38,10 +38,13 @@ void execute_tablegetelem(instruction* instr) {
         if (content) {
             avm_assign(lv, content);
         } else {
+            if(removewarning) {removewarning--;}
+            else{
             // std::string ts = avm_toString(t);
             std::string is = avm_toString(i);
             avm_warning("table [" + is + "] not found!");
             // avm_warning("table[] not found!");
+            }
         }
     }
 }

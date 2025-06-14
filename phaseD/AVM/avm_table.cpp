@@ -202,6 +202,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
     return nullptr;  // Key not found
 }
 
+int removewarning = 0;  
 
 void avm_tablesetelem(avm_table* table, avm_memcell* index,
                       avm_memcell* content) {
@@ -216,6 +217,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                     avm_memcellclear(&it->second);
                     map.erase(it);
                     table->total--;
+                    removewarning++;
                 }
             } else {
                 auto it = map.find(key);

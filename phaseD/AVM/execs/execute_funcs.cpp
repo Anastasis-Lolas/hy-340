@@ -2,19 +2,36 @@
 #include "../avm_execute.h"
 #include "../library_functions.h"
 
+// #define DEBUG_check(msg) std::cout << "[DEBUG]: " << msg << std::endl;
+// #define DEBUG_colored_red(msg) std::cout << "\033[1;31m[DEBUG]: " << msg <<
+// "\033[0m\n"; #define DEBUG_colored_green(msg)std::cout << "\033[1;32m[DEBUG]:
+// " << msg << "\033[0m\n"; #define DEBUG_colored_red2(msg)std::cout <<
+// "\033[1;31m[DEBUG]: " << msg <<"\033[0m\n";
+#define DEBUG_check(msg)
+#define DEBUG_colored_green(msg)
+#define DEBUG_colored_red(msg)
+#define DEBUG_colored_red2(msg)
+
+
 extern avm_memcell stack[AVM_STACKSIZE];
 SymTable_T libFuncs;
 
 void execute_call(instruction* instr) {
+    DEBUG_check("execute_call");
     avm_memcell* func = avm_translate_operand(&instr->result, &ax);
+    DEBUG_check("Function to call: " + avm_toString(func));
+    avm_toString(func);
     assert(func);
 
     switch (func->type) {
         case userfunc_m: {
             avm_callsaveenvironment();
             pc = func->data.funcVal;
-
+            DEBUG_colored_red2(
+                "Calling user function at address: " + std::to_string(pc) +
+                " | AVM_ENDING_PC: " + std::to_string(AVM_ENDING_PC));
             assert(pc < AVM_ENDING_PC);
+            DEBUG_colored_red2("User " + avm_toString(func));
             assert(exec_instructions[pc].opcode == funcenter_v);
             break;
         }
@@ -24,9 +41,11 @@ void execute_call(instruction* instr) {
             break;
         case libfunc_m:
             avm_callsaveenvironment();
+            DEBUG_check("Calling library function: " + func->data.libfuncVal);
             avm_callibfunc(func->data.libfuncVal);
             break;
         case table_m: {
+            DEBUG_check("Attempting to call table as a function.");
             if (!func->data.tableVal) {
                 avm_error("Attempt to call a null or uninitialized table!");
                 executionFinished = 1;
@@ -40,7 +59,9 @@ void execute_call(instruction* instr) {
             // avm_memcellclear(&temp_key_cell);
 
             if (potential_func && potential_func->type == userfunc_m) {
-                               // Push the table as the first argument
+                DEBUG_check("Found '()' in table. Type: " +
+                            std::string(typeStrings[potential_func->type]));
+                // Push the table as the first argument
                 avm_assign(&stack[top], func);
                 ++totalActuals;
                 avm_dec_top();
@@ -63,6 +84,7 @@ void execute_call(instruction* instr) {
             avm_error(err_msg);
             executionFinished = 1;
     }
+    DEBUG_check("=====================\tENDexecute_call");
 }
 
 
@@ -77,6 +99,7 @@ void avm_call_functor(avm_table* table) {  // flag edw
         avm_call_functor(f->data.tableVal);
     } else if (f->type == userfunc_m) {
         avm_push_table_arg(table);
+        // avm_callsaveenvironment();
         pc = f->data.funcVal;
         // pc < AVM_ENDING_PC &&
         assert(code[pc].opcode == funcenter_v);
@@ -102,8 +125,13 @@ void avm_callibfunc(std::string funcName) {
 }
 
 void execute_pusharg(instruction* instr) {
+    DEBUG_colored_red("execute_pusharg" << " | arg1: " << instr->arg1.type
+                                        << ", val: " << instr->arg1.val
+                                        << " | result: " << instr->result.type
+                                        << ", val: " << instr->result.val);
     // if (instr->arg1.val == 2) instr->arg1.val = 1;
     avm_memcell* arg = avm_translate_operand(&instr->arg1, &ax);
+    DEBUG_colored_red("Argument to push: " + avm_toString(arg));
 
     assert(arg);
     avm_assign(&stack[top], arg);
@@ -120,6 +148,8 @@ void execute_funcenter(instruction* instr) {
     userfunc* f = avm_getfuncinfo(func->data.funcVal);
     topsp = top;
     top = top - f->localSize;
+    DEBUG_colored_red2(("execute_funcenter: " + std::string(" | local size: ") +
+                        std::to_string(f->localSize)));
 }
 
 
@@ -129,6 +159,8 @@ void execute_funcexit(instruction*) {
     pc = avm_get_envvalue(topsp + AVM_SAVEDPC_OFFSET);
     topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
     while (++oldTop < top) { /* Intentionally ignoring first. */
+        DEBUG_colored_green("Clearing stack cell at index " +
+                            std::to_string(oldTop));
         avm_memcellclear(&stack[oldTop]);
     }
 }
@@ -178,7 +210,16 @@ void libfunc_typeof() {
     }
     avm_memcellclear(&retval);
     retval.type = string_m;
+    DEBUG_colored_red(
+        "libfunc_typeof: " + avm_toString(avm_getactual(0)) +
+        " | type: " + typeStrings[avm_getactual(0)->type] +
+        " | to string: " + memcell_type_to_string(avm_getactual(0)->type));
+    // new (&retval.data.strVal)
+    // std::string(typeStrings[avm_getactual(0)->type]);
+    // new (&retval.data.strVal)
+    //     std::string(memcell_type_to_string(avm_getactual(0)->type));
     new (&retval.data.strVal) std::string(typeStrings[avm_getactual(0)->type]);
+    // retval.data.strVal = typeStrings[avm_getactual(0)->type];
 }
 void libfunc_totalarguments() {
     unsigned p_topsp = avm_get_envvalue(topsp + AVM_SAVEDTOPSP_OFFSET);
@@ -196,6 +237,7 @@ library_func_t avm_getlibraryfunc(std::string id) {
     return (library_func_t)SymTable_get(libFuncs, id);
 }
 
+// checkpoint for alex
 
 void libfunc_print() {
     unsigned n = avm_totalactuals();
@@ -214,6 +256,7 @@ void libfunc_print() {
             std::cout << "Library Function: " << m->data.libfuncVal;
         } else if (m->type == table_m) {
             std::cout << table_toString(m);
+            // assert(0);
         } else {
             std::cout << avm_toString(m);
         }
@@ -234,6 +277,14 @@ void libfunc_input() {
     input.erase(0, input.find_first_not_of(" \t\r\n"));
     input.erase(input.find_last_not_of(" \t\r\n") + 1);
 
+    // if (input.size() >= 2 && input.front() == '"' && input.back() == '"') {
+    //     retval.type = string_m;
+    //     new (&retval.data.strVal)
+    //         std::string(input.substr(1, input.length() - 2));
+
+    //     // retval.data.strVal = input.substr(1, input.length() - 2);
+    //     return;
+    // }
     if (input == "true") {
         retval.type = bool_m;
         retval.data.boolVal = true;
@@ -250,7 +301,7 @@ void libfunc_input() {
 
     std::istringstream iss(input);
     double number;
-
+    // flag gia alex
     if (iss >> number && iss.eof()) {
         retval.type = number_m;
         retval.data.numVal = number;
@@ -274,7 +325,7 @@ void libfunc_objectmemberkeys() {
         retval.type = nil_m;
         return;
     }
-
+    // flag gia evi
     avm_memcellclear(&retval);
     retval.type = table_m;
     retval.data.tableVal = avm_tablenew();
@@ -328,7 +379,8 @@ void libfunc_objecttotalmembers() {
     retval.type = number_m;
 
 
-    retval.data.numVal = table->numIndexed->size();
+    // retval.data.numVal = table->numIndexed->size();
+    retval.data.numVal = table->get_avm_tableElement_count();
 }
 
 void libfunc_objectcopy() {
@@ -350,6 +402,7 @@ void libfunc_objectcopy() {
     avm_table* src_table = arg->data.tableVal;
     avm_table* new_table = avm_tablenew();
 
+    // flag gia evi
     //  Copy number-indexed elements ==> avm_tablemembercopy
 
     // handle arithmetic keys
@@ -421,7 +474,8 @@ void libfunc_argument() {
             break;
         case table_m:
             retval.data.tableVal = arg_cell->data.tableVal;
-            avm_tableincrefcounter(retval.data.tableVal);
+            avm_tableincrefcounter(
+                retval.data.tableVal);  // Πρόσθεσε αυτό για σωστό ref counting
             break;
         case userfunc_m:
             retval.data.funcVal = arg_cell->data.funcVal;
@@ -472,6 +526,10 @@ void libfunc_sqrt() {
     }
 
     avm_memcell* arg = avm_getactual(0);
+    DEBUG_colored_red2(
+        "libfunc_sqrt: arg type: " + memcell_type_to_string(arg->type) +
+        ", value: " + avm_toString(arg) +
+        " | arg->data.numVal: " + std::to_string(arg->data.numVal));
     if (arg->type != number_m || arg->data.numVal < 0) {
         avm_error("sqrt expects a non-negative number as argument!");
         retval.type = nil_m;

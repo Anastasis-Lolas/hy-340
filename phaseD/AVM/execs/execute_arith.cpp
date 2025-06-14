@@ -11,10 +11,6 @@ arithmetic_func_t arithmeticFuncs[] = {add_impl, sub_impl, mul_impl, div_impl,
 void execute_assign(instruction* instr) {
     avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*)0);
     avm_memcell* rv = avm_translate_operand(&instr->arg1, &ax);
-    // if (rv == &retval) {
-    //     avm_memcellclear(rv);
-    //     return;
-    // }
     if (rv == &retval && retval.type == undef_m) {
         return;
     }
@@ -37,11 +33,9 @@ void avm_assign(avm_memcell* lv, avm_memcell* rv) {
 
     avm_memcellclear(lv);
     memcpy(lv, rv, sizeof(avm_memcell));
-    // lv->type = rv->type;
     if (lv->type == string_m)
         new (&lv->data.strVal) std::string(rv->data.strVal);
     else if (lv->type == table_m) {
-        // assert(0);
         lv->data.tableVal = rv->data.tableVal;
         avm_tableincrefcounter(lv->data.tableVal);
     }

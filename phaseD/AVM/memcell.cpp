@@ -87,11 +87,7 @@ void avm_memcellclear(avm_memcell* m) {
     }
 }
 
-void memclear_string(avm_memcell* m) {
-    // assert(!m->data.strVal.empty());
-    m->data.strVal.~basic_string();
-    // delete m->strVal;
-}
+void memclear_string(avm_memcell* m) { m->data.strVal.~basic_string(); }
 
 void memclear_table(avm_memcell* m) {
     assert(m->data.tableVal);

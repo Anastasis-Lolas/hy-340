@@ -66,40 +66,6 @@ std::string bool_toString(avm_memcell* m) {
     return m->data.boolVal ? "true" : "false";
 }
 
-/*
-std::string table_toString(avm_memcell* m) {
-    assert(m && m->type == table_m);
-
-    avm_table* table = m->data.tableVal;
-    assert(table);
-
-    std::ostringstream oss;
-    oss << "[ ";
-
-
-    std::vector<double> keys;
-    keys.reserve(table->numIndexed->size());
-    for (const auto& p : *table->numIndexed) keys.push_back(p.first);
-    std::sort(keys.begin(), keys.end());
-
-
-    for (size_t i = 0; i < keys.size(); ++i) {
-        double idx = keys[i];
-        avm_memcell& cell = (*table->numIndexed)[idx];
-        // if nested table, recurse; otherwise print directly
-        if (cell.type == table_m) {
-            oss << table_toString(&cell);
-        } else {
-            oss << avm_toString(&cell);
-        }
-        if (i + 1 < keys.size()) oss << ", ";
-    }
-
-    oss << " ]";
-    return oss.str();
-}
-*/
-
 std::string userfunc_toString(avm_memcell* m) {
     assert(m && m->type == userfunc_m);
     return "userfunc" + std::to_string(m->data.funcVal);

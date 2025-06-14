@@ -345,6 +345,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
         default:
             std::cerr << "Error: Invalid key type in avm_tablesetelem."
                       << std::endl;
-            break;
+            return;
     }
+    table->total++;
 }

@@ -18,7 +18,6 @@ double jle_impl(double x, double y) { return x <= y; }
 double jlt_impl(double x, double y) { return x < y; }
 
 void execute_rljump(instruction* instr) {
-    // std::cout << "[AVM DEBUG] relational!\n";
     assert(instr->result.type == label_a);
 
     avm_memcell* rv1 = avm_translate_operand(&instr->arg1, &ax);
@@ -37,23 +36,17 @@ void execute_rljump(instruction* instr) {
     else if (rv1->type != rv2->type)
         avm_error("Assigning diff types is illegal");
     else {
-        // std::cout << "[AVM DEBUG] Comparing: (" << rv1->data.numVal
-        //           << ") with (" << rv2->data.numVal << ")" << std::endl;
         switch (instr->opcode) {
             case jge_v:
-                // std::cout << "[AVM DEBUG] jge \n";
                 result = jge_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jgt_v:
-                // std::cout << "[AVM DEBUG] jgt \n";
                 result = jgt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jle_v:
-                // std::cout << "[AVM DEBUG] jle \n";
                 result = jle_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             case jlt_v:
-                // std::cout << "[AVM DEBUG] jlt \n";
                 result = jlt_impl(rv1->data.numVal, rv2->data.numVal);
                 break;
             default:
@@ -84,8 +77,6 @@ unsigned char check_eq_bools(avm_memcell*, avm_memcell*) { assert(0); }
 void execute_jump(instruction* instr) {
     assert(instr->result.type == label_a);
     unsigned int target_pc = instr->result.val;
-    // std::cout << "[AVM DEBUG] JUMP to instruction: " << target_pc <<
-    // std::endl;
     pc = instr->result.val;
 }
 

@@ -495,66 +495,28 @@ elist_tail:
     | /* empty */                           { $$ = nullptr;             }
     ;
 
-
 objectdef:
-    
-    LEFT_BRACKET elist RIGHT_BRACKET
-    {
-        expr* t = newexpr(newtable_e);
-        t->sym = newtemp();
-        emit(tablecreate,  NULL, NULL, t, -1, yylineno);
+      LEFT_BRACKET elist RIGHT_BRACKET          {
+                                                    expr* t = newexpr(newtable_e);
+                                                    t->sym = newtemp();
+                                                    emit(tablecreate,  NULL, NULL, t,-1, yylineno);
+                                                    for (int i = 0; $elist; $elist = $elist->next)
+                                                        emit(tablesetelem, newexpr_constdouble(i++), $elist,  t, -1, yylineno);
+                                                    $$ = t;
+                                                    DEBUG_REDUCE("objectdef -> {elist}"); 
+                                                }
 
-      
-        expr* el = $2;
-        for (int i = 0; el; el = el->next) {
-             emit(tablesetelem, newexpr_constdouble(i++), el,  t, -1, yylineno);
-        }
-
-        $$ = t;
-        DEBUG_REDUCE("objectdef -> [elist]");
-    }
-
-   
-|   LEFT_BRACKET indexed RIGHT_BRACKET
-    {
-      
-        expr* t_array = newexpr(newtable_e);
-        t_array->sym = newtemp();
-        emit(tablecreate, NULL, NULL, t_array, -1, yylineno);
-
-        int i = 0; 
-
-      
-        expr* current_pair = $2;
-        while (current_pair) {
-            
-            expr* t_inner = newexpr(newtable_e);
-            t_inner->sym = newtemp();
-            emit(tablecreate, NULL, NULL, t_inner, -1, yylineno);
-
-         
-            expr* key_expr = current_pair->index;
-            expr* val_expr = current_pair;
-
-      
-            if (key_expr && key_expr->type == boolexpr_e) {
-                key_expr = boolify_expr(key_expr);
-            }
-            if (val_expr && val_expr->type == boolexpr_e) {
-                val_expr = boolify_expr(val_expr);
-            }
-
-            emit(tablesetelem, key_expr, val_expr, t_inner, -1, yylineno);
-
-            emit(tablesetelem, newexpr_constdouble(i++), t_inner, t_array, -1, yylineno);
-
-            current_pair = current_pair->next;
-        }
-
-        $$ = t_array;
-        DEBUG_REDUCE("objectdef -> [indexed]");
-
-    }
+      | LEFT_BRACKET indexed RIGHT_BRACKET      { 
+                                                    expr* t = newexpr(newtable_e);
+                                                    t->sym = newtemp();
+                                                    emit(tablecreate,  NULL, NULL, t, -1, yylineno);
+                                                    while($2){
+                                                        emit(tablesetelem, $2->index, $2, t, -1, yylineno);
+                                                        $2 = $2->next;
+                                                    }
+                                                    $$ = t;
+                                                    DEBUG_REDUCE("objectdef -> indexed ");  
+                                                }
     ;
 
 indexed:

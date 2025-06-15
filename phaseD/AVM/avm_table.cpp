@@ -202,7 +202,7 @@ avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index) {
     return nullptr;  // Key not found
 }
 
-int removewarning = 0;  
+int removewarning = 0;
 
 void avm_tablesetelem(avm_table* table, avm_memcell* index,
                       avm_memcell* content) {
@@ -217,7 +217,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                     avm_memcellclear(&it->second);
                     map.erase(it);
                     table->total--;
-                    removewarning++;
+                    // removewarning++;
                 }
             } else {
                 auto it = map.find(key);
@@ -226,7 +226,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -239,7 +239,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 if (it != map.end()) {
                     avm_memcellclear(&it->second);
                     map.erase(it);
-                    table->total--;
+                    // table->total--;
                 }
             } else {
                 auto it = map.find(key);
@@ -248,7 +248,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -261,7 +261,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 if (it != map.end()) {
                     avm_memcellclear(&it->second);
                     map.erase(it);
-                    table->total--;
+                    // table->total--;
                 }
             } else {
                 auto it = map.find(key);
@@ -270,7 +270,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -284,7 +284,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                     avm_memcellclear(&it->second);
                     map.erase(it);
                     avm_tabledecrefcounter(key);
-                    table->total--;
+                    // table->total--;
                 }
             } else {
                 auto it = map.find(key);
@@ -295,7 +295,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -308,7 +308,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 if (it != map.end()) {
                     avm_memcellclear(&it->second);
                     map.erase(it);
-                    table->total--;
+                    // table->total--;
                 }
             } else {
                 auto it = map.find(key);
@@ -317,7 +317,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -330,7 +330,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 if (it != map.end()) {
                     avm_memcellclear(&it->second);
                     map.erase(it);
-                    table->total--;
+                    // table->total--;
                 }
             } else {
                 auto it = map.find(key);
@@ -339,7 +339,7 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                 }
                 avm_memcell_copy(&map[key], content);
                 if (it == map.end()) {
-                    table->total++;
+                    // table->total++;
                 }
             }
             break;
@@ -349,5 +349,5 @@ void avm_tablesetelem(avm_table* table, avm_memcell* index,
                       << std::endl;
             return;
     }
-    table->total++;
+    if (content->type != nil_m) table->total++;
 }

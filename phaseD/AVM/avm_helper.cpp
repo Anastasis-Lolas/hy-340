@@ -100,7 +100,67 @@ std::string table_toString(avm_memcell* m) {
     assert(m && m->type == table_m);
     std::unordered_set<avm_table*> visited;
     return table_toString_recursive(m->data.tableVal, visited);
-}
+ }
+// std::string table_toString_recursive(avm_table* table,
+//                                      std::unordered_set<avm_table*>& visited) {
+//     assert(table);
+
+//     if (visited.count(table)) {
+//         return "[...CYCLES...]";
+//     }
+//     visited.insert(table);
+
+//     std::ostringstream oss;
+//     oss << "[";
+//     bool first_element_printed = false;
+
+//     if (!table->numIndexed->empty()) {
+//         std::vector<double> keys;
+//         keys.reserve(table->numIndexed->size());
+//         for (const auto& pair : *table->numIndexed) {
+//             keys.push_back(pair.first);
+//         }
+//         std::sort(keys.begin(), keys.end());
+
+//         for (size_t i = 0; i < keys.size(); ++i) {
+//             if (i > 0) oss << ", ";
+//             avm_memcell& cell = (*table->numIndexed)[keys[i]];
+//             oss << " { " << keys[i] << " : ";
+//             if (cell.type == table_m) {
+//                 oss << table_toString_recursive(cell.data.tableVal, visited);
+//             } else {
+//                 oss << avm_toString(&cell);
+//             }
+//             oss << " }";
+//         }
+//         first_element_printed = true;
+//     }
+
+//     if (!table->strIndexed->empty()) {
+//         if (first_element_printed) {
+//             oss << ", ";
+//         }
+
+//         bool first_str_key = true;
+//         for (auto& pair : *table->strIndexed) {
+//             if (!first_str_key) oss << ", ";
+//             avm_memcell& cell = pair.second;
+//             oss << " { \"" << pair.first << "\" : ";
+//             if (cell.type == table_m) {
+//                 oss << table_toString_recursive(cell.data.tableVal, visited);
+//             } else {
+//                 oss << avm_toString(&cell);
+//             }
+//             oss << " }";
+            
+//         }
+//     }
+//     oss << " ]";
+
+//     visited.erase(table);
+//     return oss.str();
+// }
+
 
 std::string table_toString_recursive(avm_table* table,
                                      std::unordered_set<avm_table*>& visited) {
@@ -112,21 +172,53 @@ std::string table_toString_recursive(avm_table* table,
     visited.insert(table);
 
     std::ostringstream oss;
+
+    //  numeric keys
+    std::vector<double> numKeys;
+    numKeys.reserve(table->numIndexed->size());
+    for (auto const& p : *table->numIndexed) {
+        numKeys.push_back(p.first);
+    }
+    std::sort(numKeys.begin(), numKeys.end());
+
+    //  string keys
+    std::vector<std::string> strKeys;
+    strKeys.reserve(table->strIndexed->size());
+    for (auto const& p : *table->strIndexed) {
+        strKeys.push_back(p.first);
+    }
+    std::sort(strKeys.begin(), strKeys.end());
+
+
+    bool isArray = !numKeys.empty();
+    for (size_t i = 0; i < numKeys.size(); ++i) {
+        if (numKeys[i] != static_cast<double>(i)) {
+            isArray = false;
+            break;
+        }
+    }
+
+
     oss << "[";
-    bool first_element_printed = false;
-
-    if (!table->numIndexed->empty()) {
-        std::vector<double> keys;
-        keys.reserve(table->numIndexed->size());
-        for (const auto& pair : *table->numIndexed) {
-            keys.push_back(pair.first);
+    if (isArray) {
+        //  just values
+        for (size_t i = 0; i < numKeys.size(); ++i) {
+            if (i) oss << ", ";
+            avm_memcell& cell = (*table->numIndexed)[numKeys[i]];
+            if (cell.type == table_m) {
+                oss << table_toString_recursive(cell.data.tableVal, visited);
+            } else {
+                oss << avm_toString(&cell);
+            }
         }
-        std::sort(keys.begin(), keys.end());
-
-        for (size_t i = 0; i < keys.size(); ++i) {
-            if (i > 0) oss << ", ";
-            avm_memcell& cell = (*table->numIndexed)[keys[i]];
-            oss << " { " << keys[i] << " : ";
+    } else {
+        // Map-style
+        bool first = true;
+        for (double k : numKeys) {
+            if (!first) oss << ", ";
+            first = false;
+            avm_memcell& cell = (*table->numIndexed)[k];
+            oss << "{ " << k << " : ";
             if (cell.type == table_m) {
                 oss << table_toString_recursive(cell.data.tableVal, visited);
             } else {
@@ -134,29 +226,20 @@ std::string table_toString_recursive(avm_table* table,
             }
             oss << " }";
         }
-        first_element_printed = true;
-    }
-
-    if (!table->strIndexed->empty()) {
-        if (first_element_printed) {
-            oss << ", ";
-        }
-
-        bool first_str_key = true;
-        for (auto& pair : *table->strIndexed) {
-            if (!first_str_key) oss << ", ";
-            avm_memcell& cell = pair.second;
-            oss << " { \"" << pair.first << "\" : ";
+        
+        for (const auto& key : strKeys) {
+            if (!first) oss << ", ";
+            first = false;
+            const avm_memcell& cell = (*table->strIndexed)[key];
+            oss << "{ \"" << key << "\" : ";
             if (cell.type == table_m) {
                 oss << table_toString_recursive(cell.data.tableVal, visited);
             } else {
-                oss << avm_toString(&cell);
+                oss << avm_toString(const_cast<avm_memcell*>(&cell));
             }
             oss << " }";
-            first_str_key = false;
         }
     }
-
     oss << " ]";
 
     visited.erase(table);

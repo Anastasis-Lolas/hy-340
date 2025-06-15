@@ -9,7 +9,7 @@
 int main() {
     // First we are going to read the binary file
     read_and_print_avm_binary("../bifile.abc");
-    print_all();
+    // print_all();
     init_lib_functions();
     avm_initstack();
     execute_cycle();

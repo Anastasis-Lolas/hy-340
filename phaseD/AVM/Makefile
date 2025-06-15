@@ -1,6 +1,6 @@
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -g
+CXXFLAGS = -Wall -Wextra -g -w
 
 SRC := $(wildcard *.cpp) $(wildcard execs/*.cpp) ../Symtable/symtablehash.cpp ../Symtable/TableEntry/SymbolTableEntry.cpp
 OBJ := $(SRC:.cpp=.o)

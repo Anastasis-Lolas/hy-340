@@ -154,7 +154,6 @@ void read_and_print_avm_binary(const std::string &filename) {
         userfunc uf;
         infile.read(reinterpret_cast<char *>(&uf.address),
                     sizeof(unsigned int));
-        std::cout << "User function address: " << uf.address << std::endl;
         infile.read(reinterpret_cast<char *>(&uf.localSize),
                     sizeof(unsigned int));
         unsigned int id_len;
@@ -211,9 +210,6 @@ void read_and_print_avm_binary(const std::string &filename) {
     }
 
     infile.read(reinterpret_cast<char *>(&total_glob), sizeof(int));
-    std::cout << "Total globals used in instructions (read from binary): "
-              << total_glob << std::endl;
-
     infile.close();
     total_glob = get_total_globals(exec_instructions);
 }
